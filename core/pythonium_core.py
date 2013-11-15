@@ -171,6 +171,11 @@ class PythoniumCore(NodeVisitor):
             args = map(self.visit, node.args)
             out = ', '.join(args)
             return 'var {}'.format(out)
+        elif name == 'new':
+            args = map(self.visit, node.args)
+            object = args[0]
+            args = ', '.join(args[1:])
+            return 'new {}({})'.format(object, out)
         elif name == 'JSArray':
             if node.args:
                 args = map(self.visit, node.args)
