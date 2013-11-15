@@ -17,17 +17,18 @@ Pythonium will exists in several flavors, each of which with their own strength 
   - Native Javascript speed
   - Exact same syntax as Python 3
   - Compatible with existing Javascript libraries
-  - Function with positional arguments to javascript functions
+  - Function with positional arguments are translate to javascript functions
   - Automatic scope handling and ``global`` support
-  - Use ``for`` to iterate over javascript arrays
+  - ``for`` iterates over javascript arrays
   - Python types are mapped to javascript types
   - Single inheritance classes with mixins
   - Anonymous exceptions with ``__exception__`` special variable
   - Support of ``yield``
-  - Javascript ``new`` is a special function that translates to Javascript ``new``
+  - ``print`` is translated to ``console.log``
+  - ``new(SomeObject, arg0, arg1)`` is a special function that translates to Javascript ``new SomeObject(arg0, args1)`` with any number of arguments
   - if ``__DOLLAR__`` is found in any name, it will be remplaced by ``$`` character.
   - Optionnal support of ``import ... from ...`` with `requirejs <http://requirejs.org/>`_
-
+  
 - Pythonium **Veloce** support all the above features and adds the following: 
 
   - One dependency ``pythonium.veloce.js`` expected to be 10kb
@@ -35,7 +36,10 @@ Pythonium will exists in several flavors, each of which with their own strength 
   - Support of ``__getattribute__`` and ``__getattr__`` hooks
   - Support of metaclass
   - Support for ``list``, ``dict``, ``set``, ``float``, ``int``, ``str``
-  - ``for`` 
+  - Full support of ``for`` 
+  - Full support of exceptions
+  - Support of ``with``
+  - Support of ``yield from``
 
 - Pythonium **Compliant** 100% compliant with CPython 3
 
