@@ -21,7 +21,7 @@ Pythonium will exists in several flavors, each of which with their own strength 
   - Automatic scope handling and ``global`` support
   - ``for`` iterates over javascript arrays
   - Python types are mapped to javascript types
-  - Single inheritance classes with mixins
+  - Single inheritance classes
   - Anonymous exceptions with ``__exception__`` special variable
   - Support of ``yield``
   - ``print`` is translated to ``console.log``
