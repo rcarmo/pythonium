@@ -137,7 +137,7 @@ class PythoniumCore(NodeVisitor):
             return 'false'
         elif node.id == 'null':
             return 'null'
-        return node.id
+        return node.id.replace('__DOLLAR__', '$')
 
     def visit_Attribute(self, node):
         name = self.visit(node.value)
