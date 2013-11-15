@@ -12,8 +12,10 @@ Pythonium will exists in several flavors, each of which with their own strength 
 
 - Pythonium **Core**
 
+  - Fully portable
   - No external dependency
-  - Exact same syntax as Python
+  - Native Javascript speed
+  - Exact same syntax as Python 3
   - Compatible with existing Javascript libraries
   - Function with positional arguments to javascript functions
   - Automatic scope handling and ``global`` support
