@@ -22,7 +22,7 @@ from ast import FunctionDef
 from ast import NodeVisitor
 
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 
 
 class PythoniumCore(NodeVisitor):
@@ -243,7 +243,7 @@ class PythoniumCore(NodeVisitor):
         left = self.visit(node.left)
         op = self.visit(node.op)
         right = self.visit(node.right)
-        return '{} {} {}'.format(left, op, right)
+        return '({} {} {})'.format(left, op, right)
 
     def visit_Mult(self, node):
         return '*'
@@ -355,12 +355,12 @@ class PythoniumCore(NodeVisitor):
         iter = reversed(ops)
         c = next(iter)
         for op in iter:
-            c = '({}.{}({})'.format(next(iter), op, c)
+            c = '({} {} {})'.format(next(iter), op, c)
         return c
 
     def visit_BoolOp(self, node):
         op = self.visit(node.op)
-        return op.join([self.visit(v) for v in node.values])
+        return '({})'.format(op.join([self.visit(v) for v in node.values]))
 
     def visit_If(self, node):
         test = self.visit(node.test)
@@ -396,6 +396,10 @@ class PythoniumCore(NodeVisitor):
 
     def visit_Continue(self, node):
         return 'continue'
+
+    def visit_Lambda(self, node):
+        args = ', '.join(map(self.visit, node.args.args))
+        return '(function ({}) {{{}}})'.format(args, self.visit(node.body))
 
     def visit_ClassDef(self, node):
         # 'name', 'bases', 'keywords', 'starargs', 'kwargs', 'body', 'decorator_lis't
@@ -443,7 +447,9 @@ def generate_js(filepath, requirejs, root_path=None, output=None, deep=None):
     output.write(script)
 
 
-def main(args):
+def main():
+    from docopt import docopt
+    args = docopt(__doc__, version='pythonium_core ' + __version__)
     requirejs = args['--requirejs']
     filepaths = args['FILE']
     output = args['--output']
@@ -458,6 +464,4 @@ def main(args):
         output.close()
 
 if __name__ == '__main__':
-    from docopt import docopt
-    args = docopt(__doc__, version='pythonium_core ' + __version__)
-    main(args)
+    main()
