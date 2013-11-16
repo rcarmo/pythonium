@@ -51,11 +51,11 @@ Can you trade some features for speed? **Yes**.
 
 For the industry, experienced programers, and hobbyst, what is best is to have something tailored to get things done in the browser with the syntax they prefer. 
 
-Anyway, the APIs are different from backend and desktop, so there will be things to learn. For instance, if you choose **pythonium core** you will need to learn to work with Javascript arrays and objects and work around their specificities. So working, around specifities of the *language* can be boring, but it's the best that is available right now, and it's after all, not that bad.
+Anyway, the APIs are different from backend and desktop, so there will be things to learn. For instance, if you choose **pythonium core** you will need to learn to work with Javascript arrays and objects and work around their specificities. Working around specifities of the *language* can be boring, but it's the best that is available right now, and it's after all, not that bad.
 
 As a programmer that knows both Python and Javascript, I prefer to focus on what is the easiest for me to do and maximise what I will be able to do next. The immediate answer to this answer is what is already available in the repository.
 
-I understand, that in the long run it's nice to have fully compliant Python in the browser, for learning purpose, to avoid bugs that are not reported correctly and many things. That said, I prefer to focus on tooling, library support, demos and other things that can people like me get actually things done.
+I understand, that in the long run it's nice to have fully compliant Python in the browser, for learning purpose, to avoid bugs that are not reported correctly and many things. That said, I prefer to focus on tooling, library support, demos and other things that can allow people like me to get things done.
 
 I've already done it in `PythonJS <https://github.com/PythonJS/PythonJS>`_, I know it's possible to even have 100% compliance. PythonJS code is poor, I though it was possible to improve the things so I started this new project.
 
