@@ -16,6 +16,8 @@ class PythoniumCore(NodeVisitor):
     def __init__(self):
         super().__init__()
         self.dependencies = []
+        self.in_classdef = None
+        self._function_stack = []
 
     def visit(self, node):
         if os.environ.get('DEBUG', False):
@@ -81,12 +83,15 @@ class PythoniumCore(NodeVisitor):
         return ''
 
     def visit_FunctionDef(self, node):
-        if not hasattr(self, '_function_stack'):
-            self._function_stack = []
-
         self._function_stack.append(node.name)
-        f = self.visit(node.args)
-        buffer = 'var {} = function({}) {{\n'.format(node.name, f)
+        args = self.visit(node.args)
+
+        if self.in_classdef and len(self._function_stack) == 1:
+            args = ', '.join(args[1:])
+            buffer = '{}: function({}) {{\n'.format(node.name, args)
+        else:
+            args = ', '.join(args)
+            buffer = 'var {} = function({}) {{\n'.format(node.name, args)
 
         # check for variable creation use var if not global
         def retrieve_vars(body):
@@ -117,8 +122,12 @@ class PythoniumCore(NodeVisitor):
         # output function body
         body = '\n'.join(map(self.visit, node.body))
         buffer += body
-        buffer += '\n}\n'
+        if self.in_classdef and len(self._function_stack) == 1:
+            buffer += '\n},\n'
+        else:
+            buffer += '\n};\n'
 
+        self._function_stack.pop()
         return buffer
 
     def visit_Subscript(self, node):
@@ -126,11 +135,13 @@ class PythoniumCore(NodeVisitor):
 
     def visit_arguments(self, node):
         # no support for annotation
-        return ', '.join(map(lambda x: x.arg, node.args))
+        return list(map(lambda x: x.arg, node.args))
 
     def visit_Name(self, node):
         if node.id == 'None':
             return 'undefined'
+        elif node.id == 'self':
+            return 'this'
         elif node.id == 'True':
             return 'true'
         elif node.id == 'False':
@@ -154,7 +165,7 @@ class PythoniumCore(NodeVisitor):
         if name == 'instanceof':
             # this gets used by "with javascript:" blocks
             # to test if an instance is a JavaScript type
-            args = map(self.visit, node.args)
+            args = list(map(self.visit, node.args))
             if len(args) == 2:
                 return '{} instanceof {}'.format(*tuple(args))
             else:
@@ -172,10 +183,13 @@ class PythoniumCore(NodeVisitor):
             out = ', '.join(args)
             return 'var {}'.format(out)
         elif name == 'new':
-            args = map(self.visit, node.args)
+            args = list(map(self.visit, node.args))
             object = args[0]
             args = ', '.join(args[1:])
-            return 'new {}({})'.format(object, out)
+            return 'new {}({})'.format(object, args)
+        elif name == 'super':
+            args = ', '.join(map(self.visit, node.args))
+            return 'this.$super({})'.format(args)
         elif name == 'JSArray':
             if node.args:
                 args = map(self.visit, node.args)
@@ -297,7 +311,10 @@ class PythoniumCore(NodeVisitor):
         else:
             target = self.visit(target)
             value = self.visit(node.value)
-            code = '{} = {};'.format(target, value)
+            if self.in_classdef and len(self._function_stack) == 0:
+                code = '{}: {},'.format(target, value)
+            else:
+                code = '{} = {};'.format(target, value)
             return code
 
     def visit_Expr(self, node):
@@ -365,6 +382,23 @@ class PythoniumCore(NodeVisitor):
 
     def visit_Continue(self, node):
         return 'continue'
+
+    def visit_ClassDef(self, node):
+        # 'name', 'bases', 'keywords', 'starargs', 'kwargs', 'body', 'decorator_lis't
+        if len(node.bases) > 1:
+            raise NotImplemented
+        name = node.name
+        if len(node.bases) == 0:
+            out = 'var {} = Class.$extend({{\n'.format(name)
+        else:
+            base = self.visit(node.bases[0])
+            out = 'var {} = {}.$extend({{\n'.format(name, base)
+        self.in_classdef = name
+        for node in node.body:
+            out += self.visit(node)
+        out += '});\n'
+        self.in_classdef = None
+        return out
 
 
 def generate_js(filepath, requirejs, root_path=None):
