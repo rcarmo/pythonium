@@ -12,7 +12,6 @@ setup(
     author_email='amirouche.boubekki@gmail.com',
     url='https://github.com/pythonium/pythonium',
     zip_safe=False,
-    long_description=open('../README.rst').read(),
     py_modules=['pythonium_core'],
     install_requires=['docopt'],
     entry_points="""
