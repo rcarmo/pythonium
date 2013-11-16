@@ -100,3 +100,9 @@ Want to help? (30 seconds)
 - [0] Except for class support and ``from ... import ...``
 - [1] Nested class definition are not supported
 - [2] Calling super method is done with ``super(arg0, arg1, arg2, ...)``
+
+
+.. image:: https://d2weczhvl823v0.cloudfront.net/pythonium/pythonium/trend.png
+   :alt: Bitdeli badge
+   :target: https://bitdeli.com/free
+
