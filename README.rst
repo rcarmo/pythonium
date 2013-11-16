@@ -1,7 +1,7 @@
 Pythonium
 #########
 
-(9 minutes)
+(8 minutes)
 
 Python 3 to Javascript translator written in Python that produce fast portable javascript code.
 
@@ -16,12 +16,16 @@ Then you can use pip to install the stable translator::
 
 The above package installs ``pythonium_core`` command that has the following options::
 
-  pythonium_core [--generate-requirejs-modules] FILE [FILE ...]
+  pythonium_core
 
-  Will generate FILE.js based on FILE.
+  Usage: pythonium_core [-h][-d][-r] FILE [FILE ...] [-o FILE]
 
-  --generate-requirejs-modules: generate requirejs modules
-  --help: show help
+  Options:
+    -h --help        show this
+    -v --version     show version
+    -o --output FILE specify output file [default: stdout]
+    -d --deep        generate file dependencies. If --output is not provided, it will generate for each source file a coresponding .js file.
+    -r --requirejs   generate requirejs compatible module
 
 
 
@@ -62,7 +66,7 @@ Pythonium will exists in several flavors, each of which with their own strength 
 
 - Pythonium **Compliant** 100% compliant with CPython 3
 
-Why? (5 minutes)
+Why? (3 minutes)
 ================
 
 Is 100% is of any interest right **now**? Do you need to build anything that use **all the features** of CPython right now? **No**. 

@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+"""pythonium_core
+
+Usage: pythonium_core [-h][-d][-r] FILE [FILE ...] [-o FILE]
+
+Options:
+  -h --help        show this
+  -v --version     show version
+  -o --output FILE specify output file [default: stdout]
+  -d --deep        generate file dependencies. If --output is not provided, it will generate for each source file a coresponding .js file.
+  -r --requirejs   generate requirejs compatible module
+"""
 import os
 import sys
 
@@ -9,6 +20,11 @@ from ast import Assign
 from ast import Global
 from ast import FunctionDef
 from ast import NodeVisitor
+
+from docopt import docopt
+
+
+__version__ = '0.2'
 
 
 class PythoniumCore(NodeVisitor):
@@ -401,13 +417,14 @@ class PythoniumCore(NodeVisitor):
         return out
 
 
-def generate_js(filepath, requirejs, root_path=None):
+def generate_js(filepath, requirejs, root_path=None, output=None, deep=None):
     dirname = os.path.abspath(os.path.dirname(filepath))
     if not root_path:
         root_path = dirname
     basename = os.path.basename(filepath)
     output_name = os.path.join(dirname, basename + '.js')
-    print('Generating {}'.format(output_name))
+    if not output:
+        print('Generating {}'.format(output_name))
     # generate js
     with open(os.path.join(dirname, basename)) as f:
         input = parse(f.read())
@@ -419,39 +436,29 @@ def generate_js(filepath, requirejs, root_path=None):
         out += script
         out += '\n}\n'
         script = out
-    with open(output_name, 'w') as f:
-        f.write(script)
-    for dependency in python_core.dependencies:
-        if dependency.startswith('.'):
-            generate_js(os.path.join(dirname, dependency + '.py'), requirejs, root_path)
-        else:
-            generate_js(os.path.join(root_path, dependency[1:] + '.py'), requirejs, root_path)
+    if deep:
+        for dependency in python_core.dependencies:
+            if dependency.startswith('.'):
+                generate_js(os.path.join(dirname, dependency + '.py'), requirejs, root_path, output, deep)
+            else:
+                generate_js(os.path.join(root_path, dependency[1:] + '.py'), requirejs, root_path, output, deep)
+    output.write(script)
 
 
-def main():
-    args = sys.argv[1:]
-    if '--help' in args or '-h' in args:
-        print('pythonium_core [--generate-requirejs-modules] FILE [FILE ...]\n')
-        print('Will generate FILE.js based on FILE.\n')
-        print('--generate-requirejs-modules: generate requirejs modules')
-        print('--help: show help')
+def main(args):
+    requirejs = args['--requirejs']
+    filepaths = args['FILE']
+    output = args['--output']
+    if output is None:
+        output = sys.stdout
     else:
-        # --with-requirejs
-        requirejs = False
-        for arg in args:
-            if '--generate-requirejs-modules' in args:
-                requirejs = True
-                break
-        # handle filepath
-        filepaths = []
-        for arg in args:
-            if not arg.startswith('-'):
-                filepaths.append(arg)
-        if not filepaths:
-            print("you must provide at least a FILE")
-        for filepath in filepaths:
-            generate_js(filepath, requirejs)
-
+        output = open(output, 'w')
+    deep = args['--deep']
+    for filepath in filepaths:
+        generate_js(filepath, requirejs, None, output, deep)
+    if output:
+        output.close()
 
 if __name__ == '__main__':
-    main()
+    args = docopt(__doc__, version='pythonium_core ' + __version__)
+    main(args)
