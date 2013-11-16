@@ -13,22 +13,22 @@ Pythonium will exists in several flavors, each of which with their own strength 
 - Pythonium **Core**
 
   - Fully portable
-  - No external dependency
+  - No external dependency [0]
   - Native Javascript speed
   - Exact same syntax as Python 3
   - Compatible with existing Javascript libraries
-  - Function with positional arguments are translate to javascript functions
+  - Function with positional arguments are translated to javascript functions
   - Automatic scope handling and ``global`` support
   - ``for`` iterates over javascript arrays
   - Python types are mapped to javascript types
-  - Single inheritance classes
   - Anonymous exceptions with ``__exception__`` special variable
   - Support of ``yield``
   - ``print`` is translated to ``console.log``
   - ``new(SomeObject, arg0, arg1)`` is a special function that translates to Javascript ``new SomeObject(arg0, args1)`` with any number of arguments
   - if ``__DOLLAR__`` is found in any name, it will be remplaced by ``$`` character.
-  - Optionnal support of ``import ... from ...`` with `requirejs <http://requirejs.org/>`_
-  
+  - Support of ``import ... from ...`` via `requirejs <http://requirejs.org/>`_
+  - Support of single inheritance classes via `classy <http://classy.pocoo.org/>`_ [1][2]
+
 - Pythonium **Veloce** support all the above features and adds the following: 
 
   - One dependency ``pythonium.veloce.js`` expected to be 10kb
@@ -71,3 +71,7 @@ Want to help? (30 seconds)
 - `Star this repository <https://github.com/pythonium/pythonium/star>`_
 - `Follow the project on twitter <https://twitter.com/intent/user?screen_name=pythonium>`_
 - `Join the mailling list <https://groups.google.com/forum/?hl=fr#!forum/pythonium-users>`_
+
+[0] Except for class support and ``from ... import ...``
+[1] Nested class definition are not supported
+[2] Calling super method is done with ``super(arg0, arg1, arg2, ...)``
