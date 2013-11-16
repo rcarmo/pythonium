@@ -21,10 +21,8 @@ from ast import Global
 from ast import FunctionDef
 from ast import NodeVisitor
 
-from docopt import docopt
 
-
-__version__ = '0.2'
+__version__ = '0.2.1'
 
 
 class PythoniumCore(NodeVisitor):
@@ -460,5 +458,6 @@ def main(args):
         output.close()
 
 if __name__ == '__main__':
+    from docopt import docopt
     args = docopt(__doc__, version='pythonium_core ' + __version__)
     main(args)
