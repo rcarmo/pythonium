@@ -432,6 +432,7 @@ def main():
     args = sys.argv[1:]
     if '--help' in args or '-h' in args:
         print('pythonium_core [--generate-requirejs-modules] FILE [FILE ...]\n')
+        print('Will generate FILE.js based on FILE.\n')
         print('--generate-requirejs-modules: generate requirejs modules')
         print('--help: show help')
     else:
