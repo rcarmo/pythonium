@@ -374,7 +374,7 @@ class PythoniumCore(NodeVisitor):
         iterator_name = 'iterator_{}'.format(target)
         pre_for = 'var {} = {};\n'.format(iterator_name, iterator)
         # replace the replace target with the javascript iterator
-        body = '{} = {}[{}];\n'.format(target, iterator_name, iterator_index)
+        body = 'var {} = {}[{}];\n'.format(target, iterator_name, iterator_index)
         body += '\n'.join(map(self.visit, node.body)) + '\n'
         for_block = pre_for 
         for_block += 'for (var {}=0; {} < {}.length; {}++) {{\n{}}}\n'.format(iterator_index, iterator_index, iterator_name, iterator_index, body)
