@@ -52,6 +52,8 @@ Pythonium will exist in several flavors, each with their own strengths and perfo
   - Support of ``import ... from ...`` via `requirejs <http://requirejs.org/>`_
   - Support of single inheritance classes via `classy <http://classy.pocoo.org/>`_ [1][2]
 
+Also there is `cookbook <https://github.com/pythonium/pythonium/wiki/Pythonium-Core-Cookbook>`_.
+
 - Pythonium **Veloce** supports all the above features and adds the following: 
 
   - One dependency ``pythonium.veloce.js`` (estimated to be around 10KB)
