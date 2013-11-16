@@ -13,7 +13,9 @@ Options:
 import os
 import sys
 
+from ast import Str
 from ast import Name
+from ast import List
 from ast import Tuple
 from ast import parse
 from ast import Assign
@@ -32,11 +34,15 @@ class PythoniumCore(NodeVisitor):
         self.dependencies = []
         self.in_classdef = None
         self._function_stack = []
+        self.__all__ = None
 
     def visit(self, node):
         if os.environ.get('DEBUG', False):
             print(">>>", node.__class__.__name__, node._fields)
         return super().visit(node)
+
+    def visit_Pass(self, node):
+        return ''
 
     def visit_Try(self, node):
         out = 'try {\n'
@@ -328,7 +334,21 @@ class PythoniumCore(NodeVisitor):
             if self.in_classdef and len(self._function_stack) == 0:
                 code = '{}: {},'.format(target, value)
             else:
-                code = '{} = {};'.format(target, value)
+                if target == '__all__':
+                    if isinstance(node.value, Name):
+                        self.__all__ = value
+                    elif isinstance(node.value, Str):
+                        self.__all__ = node.value.s
+                    elif isinstance(node.value, List):
+                        if isinstance(node.value.elts[0], Name):
+                            self.__all__ = list(map(self.visit, node.value.elts))
+                        else:
+                            self.__all__ = list(map(lambda x: x.s, node.value.elts))
+                    else:
+                        raise NotImplementedError
+                    code = ''
+                else:
+                    code = '{} = {};'.format(target, value)
             return code
 
     def visit_Expr(self, node):
@@ -436,6 +456,11 @@ def generate_js(filepath, requirejs, root_path=None, output=None, deep=None):
     if requirejs:
         out = 'define(function(require)) {\n'
         out += script
+        if isinstance(python_core.__all__, str):
+            out += '\nreturn {};\n'.format(python_core.__all__)
+        else:
+            public = '{{{}}}'.format(', '.join(map(lambda x: '{}: {}'.format(x[0], x[1]), zip(python_core.__all__, python_core.__all__))))
+            out += '\nreturn {};\n'.format(public)
         out += '\n}\n'
         script = out
     if deep:
