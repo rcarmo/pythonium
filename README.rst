@@ -5,6 +5,26 @@ Pythonium
 
 Python 3 to Javascript translator written in Python that produce fast portable javascript code.
 
+Getting started (2 minutes)
+===========================
+
+You will need Python 3 to run the translator. Refer to your operating system documentation to know how to do it. 
+
+Then you can use pip to install the stable translator::
+
+  pip install pythonium-core
+
+The above package installs ``pythonium_core`` command that has the following options::
+
+  pythonium_core [--generate-requirejs-modules] FILE [FILE ...]
+
+  Will generate FILE.js based on FILE.
+
+  --generate-requirejs-modules: generate requirejs modules
+  --help: show help
+
+
+
 What? (2 minutes)
 =================
 
