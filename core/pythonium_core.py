@@ -454,7 +454,7 @@ def generate_js(filepath, requirejs, root_path=None, output=None, deep=None):
     python_core = PythoniumCore()
     script = python_core.visit(tree)
     if requirejs:
-        out = 'define(function(require)) {\n'
+        out = 'define(function(require) {\n'
         out += script
         if isinstance(python_core.__all__, str):
             out += '\nreturn {};\n'.format(python_core.__all__)
