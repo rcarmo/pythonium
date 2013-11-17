@@ -49,7 +49,7 @@ Pythonium will exist in several flavors, each with their own strengths and perfo
   - ``print`` is translated to ``console.log``
   - ``new(SomeObject, arg0, arg1)`` as a special function that translates to Javascript ``new SomeObject(arg0, args1)`` with any number of arguments
   - if ``__DOLLAR__`` is found in any name, it will be replaced by ``$`` character.
-  - Support of ``import ... from ...`` via `requirejs <http://requirejs.org/>`_
+  - Support of ``from ... import ...`` via `requirejs <http://requirejs.org/>`_
   - Support of single inheritance classes via `classy <http://classy.pocoo.org/>`_ [1][2]
 
 Also there is `cookbook <https://github.com/pythonium/pythonium/wiki/Pythonium-Core-Cookbook>`_.
@@ -99,7 +99,6 @@ Want to help? (30 seconds)
 
 ---
 
-- [0] Except for class support and ``from ... import ...``
 - [1] Nested class definition are not supported
 - [2] Calling super method is done with ``super(arg0, arg1, arg2, ...)``
 
