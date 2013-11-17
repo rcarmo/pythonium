@@ -103,16 +103,28 @@ class PythoniumCore(NodeVisitor):
         return ''
 
     def visit_FunctionDef(self, node):
+        # 'name', 'args', 'body', 'decorator_list', 'returns'
         self._function_stack.append(node.name)
-        args = self.visit(node.args)
+        args, kwargs, varargs, varkwargs = self.visit(node.args)
 
         if self.in_classdef and len(self._function_stack) == 1:
-            args = ', '.join(args[1:])
-            buffer = '{}: function({}) {{\n'.format(node.name, args)
+            __args = ', '.join(args[1:])
+            buffer = '{}: function({}) {{\n'.format(node.name, __args)
         else:
-            args = ', '.join(args)
-            buffer = 'var {} = function({}) {{\n'.format(node.name, args)
-
+            __args = ', '.join(args)
+            buffer = 'var {} = function({}) {{\n'.format(node.name, __args)
+        if not varkwargs:
+            varkwargs = '__kwargs'
+        
+        # unpack arguments
+        buffer += 'var __args = Array.prototype.slice.call(arguments);\n'
+        buffer += 'var {} = __args[__args.length - 1];\n'.format(varkwargs)
+        for keyword in kwargs.keys():
+            buffer += '{} = {} || {}.{} || {};\n'.format(keyword, keyword, varkwargs, keyword, kwargs[keyword])
+            buffer += 'delete {}.{};\n'.format(varkwargs, keyword)
+        if varargs:
+            buffer += 'var {} = __args.splice({});\n'.format(varargs, len(args))
+            buffer += '{}.pop();\n'.format(varargs)
         # check for variable creation use var if not global
         def retrieve_vars(body):
             local_vars = set()
@@ -154,8 +166,14 @@ class PythoniumCore(NodeVisitor):
         return '{}[{}]'.format(self.visit(node.value), self.visit(node.slice.value))
 
     def visit_arguments(self, node):
-        # no support for annotation
-        return list(map(lambda x: x.arg, node.args))
+        # 'args', 'vararg', 'varargannotation', 'kwonlyargs', 'kwarg', 'kwargannotation', 'defaults', 'kw_defaults'
+        args = list(map(lambda x: x.arg, node.args))
+        vararg = node.vararg
+        kwonlyargs = node.kwonlyargs
+        varkwargs = node.kwarg
+        defaults = list(map(self.visit, node.defaults))
+        kwargs = dict(zip(args[-len(defaults):], defaults))
+        return args, kwargs, vararg, varkwargs
 
     def visit_Name(self, node):
         if node.id == 'None':
@@ -458,10 +476,12 @@ def generate_js(filepath, requirejs, root_path=None, output=None, deep=None):
         out += script
         if isinstance(python_core.__all__, str):
             out += '\nreturn {};\n'.format(python_core.__all__)
-        else:
+        elif python_core.__all__:
             public = '{{{}}}'.format(', '.join(map(lambda x: '{}: {}'.format(x[0], x[1]), zip(python_core.__all__, python_core.__all__))))
             out += '\nreturn {};\n'.format(public)
-        out += '\n}\n'
+        else:
+            raise Exception('__all__ is not defined!')
+        out += '\n})\n'
         script = out
     if deep:
         for dependency in python_core.dependencies:
