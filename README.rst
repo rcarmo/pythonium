@@ -40,7 +40,7 @@ Pythonium will exist in several flavors, each with their own strengths and perfo
   - Native Javascript speed
   - Exact same syntax as Python 3
   - Compatible with existing Javascript libraries
-  - Function with positional arguments are translated to Javascript functions
+  - Functions are translated to Javascript functions with support for keyword arguments, ``*args`` and ``**kwargs``
   - Automatic scope handling and ``global`` support
   - ``for`` iterates over Javascript arrays
   - Python types are mapped to Javascript types
