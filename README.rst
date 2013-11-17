@@ -18,15 +18,18 @@ The above package installs a ``pythonium_core`` command that has the following o
 
   pythonium_core
 
-  Usage: pythonium_core [-h][-d][-r] FILE [FILE ...] [-o FILE]
+  Usage::
 
-  Options:
+    pythonium_core [-h][-d][-r] FILE [FILE ...] [-o FILE]
+
+
+  Options::
+  
     -h --help        show this
     -v --version     show version
     -o --output FILE specify output file [default: stdout]
     -d --deep        generate file dependencies. If --output is not provided, it will generate for each source file a coresponding .js file.
     -r --requirejs   generate requirejs compatible module
-
 
 
 What? (2 minutes)
