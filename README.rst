@@ -97,11 +97,21 @@ Want to help? (30 seconds)
 - `Follow the project on twitter <https://twitter.com/intent/user?screen_name=pythonium>`_
 - `Join the mailling list <https://groups.google.com/forum/#!forum/pythonium-users>`_
 
----
+Documentation
+=============
+
+Documentation is available in the `wiki <https://github.com/pythonium/pythonium/wiki>`_.
+
+Licensing
+=========
+
+The translator is licensed under the AGPLv3 but not the result of the compilation (of course). So if you do **not** use some library provided by Pythonium you can use it in whatever situations. If you are not sure send a mail on the mailling list.
+
+I intend to sell licenses for the libraries, but it's not ready yet.
+
 
 - [1] Nested class definition are not supported
 - [2] Calling super method is done with ``super(arg0, arg1, arg2, ...)``
-
 
 .. image:: https://d2weczhvl823v0.cloudfront.net/pythonium/pythonium/trend.png
    :alt: Bitdeli badge
