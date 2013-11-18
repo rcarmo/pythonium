@@ -457,7 +457,7 @@ class PythoniumCore(NodeVisitor):
         return out
 
 
-def generate_js(filepath, requirejs, root_path=None, output=None, deep=None):
+def generate_js(filepath, requirejs=False, root_path=None, output=None, deep=None):
     dirname = os.path.abspath(os.path.dirname(filepath))
     if not root_path:
         root_path = dirname
