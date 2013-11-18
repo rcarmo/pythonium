@@ -132,6 +132,9 @@ class PythoniumCore(NodeVisitor):
             for n in body:
                 if isinstance(n, Assign) and isinstance(n.targets[0], Name):
                     local_vars.add(n.targets[0].id)
+                elif isinstance(n, Assign) and isinstance(n.targets[0], Tuple):
+                    for target in n.targets[0].elts:
+                        local_vars.add(target.id)
                 elif isinstance(n, Global):
                     global_vars.update(n.names)
                 elif hasattr(n, 'body') and not isinstance(n, FunctionDef):
@@ -345,7 +348,12 @@ class PythoniumCore(NodeVisitor):
         # XXX: I'm not sure why it is a list since, mutiple targets are inside a tuple
         target = node.targets[0]
         if isinstance(target, Tuple):
-            raise NotImplementedError
+            targets = map(self.visit, target.elts)
+            value = self.visit(node.value)
+            code = 'var __targets = {};\n'.format(value)
+            for index, target in enumerate(targets):
+                code += '{} = __targets[{}];\n'.format(target, index)
+            return code
         else:
             target = self.visit(target)
             value = self.visit(node.value)

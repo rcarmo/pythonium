@@ -2,6 +2,7 @@
 import os
 import sys
 from difflib import Differ
+from traceback import print_exc
 
 from envoy import run
 
@@ -16,12 +17,15 @@ if __name__ == '__main__':
     for test in os.listdir(TESTS_ROOT):
         if test.endswith('.py'):
             filepath = os.path.join(TESTS_ROOT, test)
-            with open(filepath) as f:
-                script = f.read()
             exec_script = test + 'exec.js'
             exec_script = os.path.join('/tmp', exec_script)
             with open(exec_script, 'w') as f:
-                f.write(generate_js(script))
+                try:
+                    generate_js(filepath, output=f)
+                except Exception as exc:
+                    print_exc()
+                    print('Translating {} failed with the above exception.'.format(test))
+                    continue
             r = run('nodejs %s' % exec_script)
             if r.status_code != 0:
                 print(r.std_out)
