@@ -8,4 +8,3 @@ def func(a, b, c, d=1, f=2, *args, **kwargs):
 
 kwargs = {"foo": "bar"}
 func(42, 43, 44, 45, 46, 100, 102, key="value", **kwargs)
-    

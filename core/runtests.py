@@ -32,17 +32,29 @@ if __name__ == '__main__':
                 print(result.std_err)
                 print('< %s ERROR :(' % test)
             else:
-                expected = run('python3 {}'.format(filepath))
-                if expected.status_code != 0:
-                    print(expected.std_out)
-                    print(expected.std_err)
-                    print('< %s PYTHON ERROR :(' % test)
-                if expected.std_out == result.std_out:
-                    print('< %s PASS :)' % test)
+                expected = os.path.join(TESTS_ROOT, test+'.expected')
+                if os.path.exists(expected):
+                    with open(expected, 'r') as f:
+                        expected = f.read()
+                    if expected == result.std_out:
+                        print('< %s PASS :)' % test)
+                    else:
+                        compare = Differ().compare
+                        diff = compare(expected.split('\n'), result.std_out.split('\n'))
+                        for line in diff:
+                            print(line)
+                        print('< %s FAILED :(' % test)                        
                 else:
-                    compare = Differ().compare
-                    diff = compare(expected.std_out.split('\n'), result.std_out.split('\n'))
-                    for line in diff:
-                        print(line)
-                    print('< %s FAILED :(' % test)
-        print('\n')
+                    expected = run('python3 {}'.format(filepath))
+                    if expected.status_code != 0:
+                        print(expected.std_out)
+                        print(expected.std_err)
+                        print('< %s PYTHON ERROR :(' % test)
+                    if expected.std_out == result.std_out:
+                        print('< %s PASS :)' % test)
+                    else:
+                        compare = Differ().compare
+                        diff = compare(expected.std_out.split('\n'), result.std_out.split('\n'))
+                        for line in diff:
+                            print(line)
+                        print('< %s FAILED :(' % test)

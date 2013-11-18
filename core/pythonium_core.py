@@ -56,6 +56,11 @@ class PythoniumCore(NodeVisitor):
         self._function_stack = []
         self.__all__ = None
         self.writer = Writer()
+        self._uuid = -1
+
+    def uuid(self):
+        self._uuid += 1
+        return self._uuid
 
     def visit(self, node):
         if os.environ.get('DEBUG', False):
@@ -278,10 +283,21 @@ class PythoniumCore(NodeVisitor):
         else:
             if node.args:
                 args = [self.visit(e) for e in node.args]
-                args = ', '.join([e for e in args if e])
+                args = [e for e in args if e]
             else:
-                args = ''
-            return '{}({})'.format(name, args)
+                args = []
+            if node.keywords and not node.kwargs:
+                keywords = '__kwargs{}__'.format(self.uuid())
+                _ = ', '.join(map(lambda x: '{}: {}'.format(x[0], x[1]), map(self.visit, node.keywords)))
+                self.writer.write('var {} = {{{}}}'.format(keywords, _))
+                args.append(keywords)
+            elif node.kwargs and not node.keywords:
+                args.append(node.kwargs.id)
+            elif node.kwargs and node.keywords:
+                for key, value in map(self.visit, node.keywords):
+                    self.writer.write('{}.{} = {}'.format(node.kwargs.id, key, value))
+                args.append(node.kwargs.id)
+            return '{}({})'.format(name, ', '.join(args))
 
     def visit_While(self, node):
         self.writer.write('while({}) {{'.format(node.test))
