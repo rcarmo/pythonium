@@ -107,6 +107,14 @@ class PythoniumCore(NodeVisitor):
         self._function_stack.append(node.name)
         args, kwargs, varargs, varkwargs = self.visit(node.args)
 
+        all_parameters = list(args)
+        all_parameters.extend(kwargs.keys())
+        if varargs:
+            all_parameters.append(varargs)
+        if varkwargs:
+            all_parameters.append(varkwargs)
+        all_parameters = set(all_parameters)
+
         if self.in_classdef and len(self._function_stack) == 1:
             __args = ', '.join(args[1:])
             buffer = '{}: function({}) {{\n'.format(node.name, __args)
@@ -115,7 +123,7 @@ class PythoniumCore(NodeVisitor):
             buffer = 'var {} = function({}) {{\n'.format(node.name, __args)
         if not varkwargs:
             varkwargs = '__kwargs'
-        
+
         # unpack arguments
         buffer += 'var __args = Array.prototype.slice.call(arguments);\n'
         buffer += 'var {} = __args[__args.length - 1];\n'.format(varkwargs)
@@ -126,9 +134,9 @@ class PythoniumCore(NodeVisitor):
             buffer += 'var {} = __args.splice({});\n'.format(varargs, len(args))
             buffer += '{}.pop();\n'.format(varargs)
         # check for variable creation use var if not global
-        def retrieve_vars(body):
+        def retrieve_vars(body, vars=None):
             local_vars = set()
-            global_vars = set()
+            global_vars = vars if vars else set()
             for n in body:
                 if isinstance(n, Assign) and isinstance(n.targets[0], Name):
                     local_vars.add(n.targets[0].id)
@@ -148,7 +156,7 @@ class PythoniumCore(NodeVisitor):
                         global_vars.update(g)
             return local_vars, global_vars
 
-        local_vars, global_vars = retrieve_vars(node.body)
+        local_vars, global_vars = retrieve_vars(node.body, all_parameters)
 
         if local_vars - global_vars:
             a = ','.join(local_vars-global_vars)
