@@ -24,25 +24,25 @@ if __name__ == '__main__':
                     generate_js(filepath, output=f)
                 except Exception as exc:
                     print_exc()
-                    print('Translating {} failed with the above exception.'.format(test))
+                    print('< Translating {} failed with the above exception.'.format(test))
                     continue
-            r = run('nodejs %s' % exec_script)
-            if r.status_code != 0:
-                print(r.std_out)
-                print(r.std_err)
-                print('%s ERROR :(' % test)
+            result = run('nodejs %s' % exec_script)
+            if result.status_code != 0:
+                print(result.std_out)
+                print(result.std_err)
+                print('< %s ERROR :(' % test)
             else:
-                r = run('python3 {}'.format(filepath))
-                expected = r.std_out
-                if r.status_code != 0:
-                    print(r.std_out)
-                    print(r.std_err)
-                    print('%s PYTHON ERROR :(' % test)
-                if expected == r.std_out:
-                    print('%s PASS :)' % test)
+                expected = run('python3 {}'.format(filepath))
+                if expected.status_code != 0:
+                    print(expected.std_out)
+                    print(expected.std_err)
+                    print('< %s PYTHON ERROR :(' % test)
+                if expected.std_out == result.std_out:
+                    print('< %s PASS :)' % test)
                 else:
                     compare = Differ().compare
-                    diff = compare(expected.split('\n'), r.std_out.split('\n'))
+                    diff = compare(expected.std_out.split('\n'), result.std_out.split('\n'))
                     for line in diff:
                         print(line)
-                    print('%s FAILED :(' % test)
+                    print('< %s FAILED :(' % test)
+        print('\n')

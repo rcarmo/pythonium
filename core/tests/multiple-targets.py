@@ -3,7 +3,9 @@ def func():
 
 def main():
     a = func()
-    print(a)
+    print(a[0])
+    print(a[1])
+    print(a[2])
 
     a,b,c = func()
     print(a)

@@ -12,6 +12,7 @@ Options:
 """
 import os
 import sys
+from io import StringIO
 
 from ast import Str
 from ast import Name
@@ -27,6 +28,25 @@ from ast import NodeVisitor
 __version__ = '0.2.5'
 
 
+class Writer:
+
+    def __init__(self):
+        self.level = 0
+        self.output = StringIO()
+
+    def push(self):
+        self.level += 1
+
+    def pull(self):
+        self.level -= 1
+
+    def write(self, code):
+        self.output.write(' ' * 4 * self.level + code + '\n')
+
+    def value(self):
+        return self.output.getvalue()
+
+
 class PythoniumCore(NodeVisitor):
 
     def __init__(self):
@@ -35,6 +55,7 @@ class PythoniumCore(NodeVisitor):
         self.in_classdef = None
         self._function_stack = []
         self.__all__ = None
+        self.writer = Writer()
 
     def visit(self, node):
         if os.environ.get('DEBUG', False):
@@ -42,31 +63,34 @@ class PythoniumCore(NodeVisitor):
         return super().visit(node)
 
     def visit_Pass(self, node):
-        return ''
+        self.writer.write('/* pass */')
 
     def visit_Try(self, node):
-        out = 'try {\n'
-        out += '\n'.join(map(self.visit, node.body))
-        out += '\n}\n'
-        out += 'catch(__exception__) {\n'
-        out += '\n'.join(map(self.visit, node.handlers))
-        out += '\n}\n'
-        return out
+        self.writer.write('try {')
+        self.writer.push()
+        map(self.visit, node.body)
+        self.writer.pull()
+        self.writer.write('}')
+        self.writer.write('catch(__exception__) {')
+        self.writer.push()
+        map(self.visit, node.handlers)
+        self.writer.pull()
+        self.writer.write('}')
 
     def visit_Raise(self, node):
-        return 'throw {};'.format(self.visit(node.exc))
+        self.writer.write('throw {};'.format(self.visit(node.exc)))
 
     def visit_ExceptHandler(self, node):
-        return '\n'.join(map(self.visit, node.body)) + '\n'
+        list(map(self.visit, node.body))
 
     def visit_Yield(self, node):
-        return 'yield {};'.format(self.visit(node.value))
+        self.writer.write('yield {};'.format(self.visit(node.value)))
 
     def visit_In(self, node):
         return ' in '
 
     def visit_Module(self, node):
-        return '\n'.join(map(self.visit, node.body))
+        list(map(self.visit, node.body))
 
     def visit_Tuple(self, node):
         return '[{}]'.format(', '.join(map(self.visit, node.elts)))
@@ -87,14 +111,14 @@ class PythoniumCore(NodeVisitor):
         modules = '/'.join(node.module.split('.'))
         path = modules + '/' + name
         if node.level == 0:
-            out = 'var {} = require("{}");'.format(asname, path)
+            self.writer.write('var {} = require("{}");'.format(asname, path))
             self.dependencies.append('/' + path)  # relative to project root
         elif node.level == 1:
-            out = 'var {} = require.toUrl("./{}");'.format(asname, path)
+            self.writer.write('var {} = require.toUrl("./{}");'.format(asname, path))
             self.dependencies.append('./' + path)  # relative to current file
         else:
             path = '../' * node.level + path
-            out = 'var {} = require.toUrl("{}");'.format(asname, path)
+            self.writer.write('var {} = require.toUrl("{}");'.format(asname, path))
             self.dependencies.append(path)  # relative to current file
         return out
 
@@ -117,22 +141,23 @@ class PythoniumCore(NodeVisitor):
 
         if self.in_classdef and len(self._function_stack) == 1:
             __args = ', '.join(args[1:])
-            buffer = '{}: function({}) {{\n'.format(node.name, __args)
+            self.writer.write('{}: function({}) {{'.format(node.name, __args))
         else:
             __args = ', '.join(args)
-            buffer = 'var {} = function({}) {{\n'.format(node.name, __args)
+            self.writer.write('var {} = function({}) {{'.format(node.name, __args))
+        self.writer.push()
         if not varkwargs:
             varkwargs = '__kwargs'
 
         # unpack arguments
-        buffer += 'var __args = Array.prototype.slice.call(arguments);\n'
-        buffer += 'var {} = __args[__args.length - 1];\n'.format(varkwargs)
+        self.writer.write('var __args = Array.prototype.slice.call(arguments);')
+        self.writer.write('var {} = __args[__args.length - 1];'.format(varkwargs))
         for keyword in kwargs.keys():
-            buffer += '{} = {} || {}.{} || {};\n'.format(keyword, keyword, varkwargs, keyword, kwargs[keyword])
-            buffer += 'delete {}.{};\n'.format(varkwargs, keyword)
+            self.writer.write('{} = {} || {}.{} || {};'.format(keyword, keyword, varkwargs, keyword, kwargs[keyword]))
+            self.writer.write('delete {}.{};'.format(varkwargs, keyword))
         if varargs:
-            buffer += 'var {} = __args.splice({});\n'.format(varargs, len(args))
-            buffer += '{}.pop();\n'.format(varargs)
+            self.writer.write('var {} = __args.splice({});'.format(varargs, len(args)))
+            self.writer.write('{}.pop();'.format(varargs))
         # check for variable creation use var if not global
         def retrieve_vars(body, vars=None):
             local_vars = set()
@@ -160,18 +185,16 @@ class PythoniumCore(NodeVisitor):
 
         if local_vars - global_vars:
             a = ','.join(local_vars-global_vars)
-            buffer += 'var {};\n'.format(a)
+            self.writer.write('var {};'.format(a))
 
         # output function body
-        body = '\n'.join(map(self.visit, node.body))
-        buffer += body
+        list(map(self.visit, node.body))
+        self.writer.pull()
         if self.in_classdef and len(self._function_stack) == 1:
-            buffer += '\n},\n'
+            self.writer.write('},')
         else:
-            buffer += '\n};\n'
-
+            self.writer.write('};')
         self._function_stack.pop()
-        return buffer
 
     def visit_Subscript(self, node):
         return '{}[{}]'.format(self.visit(node.value), self.visit(node.slice.value))
@@ -261,12 +284,12 @@ class PythoniumCore(NodeVisitor):
             return '{}({})'.format(name, args)
 
     def visit_While(self, node):
-        body = '\n'.join(map(self.visit, node.body))
-        return 'while({}) {{\n{}\n}}'.format(self.visit(node.test), body)
+        self.writer.write('while({}) {{'.format(node.test))
+        list(map(self.visit, node.body))
 
     def visit_AugAssign(self, node):
         target = self.visit(node.target)
-        return '{} = {} {} {}'.format(target, target, self.visit(node.op), self.visit(node.value))
+        self.writer.write('{} = {} {} {};'.format(target, target, self.visit(node.op), self.visit(node.value)))
 
     def visit_Str(self, node):
         s = node.s.replace('\n', '\\n')
@@ -358,15 +381,14 @@ class PythoniumCore(NodeVisitor):
         if isinstance(target, Tuple):
             targets = map(self.visit, target.elts)
             value = self.visit(node.value)
-            code = 'var __targets = {};\n'.format(value)
+            self.writer.write('var __targets = {};\n'.format(value))
             for index, target in enumerate(targets):
-                code += '{} = __targets[{}];\n'.format(target, index)
-            return code
+                self.writer.write('{} = __targets[{}];\n'.format(target, index))
         else:
             target = self.visit(target)
             value = self.visit(node.value)
             if self.in_classdef and len(self._function_stack) == 0:
-                code = '{}: {},'.format(target, value)
+                self.writer.write('{}: {},'.format(target, value))
             else:
                 if target == '__all__':
                     if isinstance(node.value, Name):
@@ -380,21 +402,15 @@ class PythoniumCore(NodeVisitor):
                             self.__all__ = list(map(lambda x: x.s, node.value.elts))
                     else:
                         raise NotImplementedError
-                    code = ''
                 else:
-                    code = '{} = {};'.format(target, value)
-            return code
+                    self.writer.write('{} = {};'.format(target, value))
 
     def visit_Expr(self, node):
-        s = self.visit(node.value)
-        if not s.endswith(';'):
-            s += ';'
-        return s
+        self.writer.write(self.visit(node.value) + ';')
 
     def visit_Return(self, node):
         if node.value:
-            return 'return {};'.format(self.visit(node.value))
-        return 'return undefined;'
+            self.writer.write('return {};'.format(self.visit(node.value)))
 
     def visit_Compare(self, node):
         def merge(a, b, c):
@@ -418,12 +434,17 @@ class PythoniumCore(NodeVisitor):
 
     def visit_If(self, node):
         test = self.visit(node.test)
-        body = '\n'.join(map(self.visit, node.body)) + '\n'
+        self.writer.write('if({}) {{'.format(test))
+        self.writer.push()
+        list(map(self.visit, node.body))
+        self.writer.pull()
+        self.writer.write('}')
         if node.orelse:
-            orelse = '\n'.join(map(self.visit, node.orelse)) + '\n'
-            return 'if({}) {{\n{}}}\nelse {{\n{}}}\n'.format(test, body, orelse)
-        else:
-            return 'if({}) {{\n{}}}\n'.format(test, body)
+            self.writer.write('else {')
+            self.writer.push()
+            list(map(self.visit, node.orelse))
+            self.writer.pull()
+            self.write.write('}')
 
     def visit_Dict(self, node):
         a = []
@@ -440,13 +461,14 @@ class PythoniumCore(NodeVisitor):
         iterator_index = target + '_iterator_index'
         iterator = self.visit(node.iter) # iter is the python iterator
         iterator_name = 'iterator_{}'.format(target)
-        pre_for = 'var {} = {};\n'.format(iterator_name, iterator)
+        self.writer.write('var {} = {};'.format(iterator_name, iterator))
         # replace the replace target with the javascript iterator
-        body = 'var {} = {}[{}];\n'.format(target, iterator_name, iterator_index)
-        body += '\n'.join(map(self.visit, node.body)) + '\n'
-        for_block = pre_for 
-        for_block += 'for (var {}=0; {} < {}.length; {}++) {{\n{}}}\n'.format(iterator_index, iterator_index, iterator_name, iterator_index, body)
-        return for_block
+        self.writer.write('for (var {}=0; {} < {}.length; {}++) {{'.format(iterator_index, iterator_index, iterator_name, iterator_index))
+        self.writer.push()
+        self.writer.write('var {} = {}[{}];'.format(target, iterator_name, iterator_index))
+        list(map(self.visit, node.body))
+        self.writer.pull()
+        self.writer.write('}')
 
     def visit_Continue(self, node):
         return 'continue'
@@ -461,16 +483,18 @@ class PythoniumCore(NodeVisitor):
             raise NotImplemented
         name = node.name
         if len(node.bases) == 0:
-            out = 'var {} = Class.$extend({{\n'.format(name)
+            self.writer.write('var {} = Class.$extend({{'.format(name))
         else:
             base = self.visit(node.bases[0])
-            out = 'var {} = {}.$extend({{\n'.format(name, base)
+            self.writer.write('var {} = {}.$extend({{'.format(name, base))
+        self.writer.push()
+        self.writer.push()
         self.in_classdef = name
-        for node in node.body:
-            out += self.visit(node)
-        out += '});\n'
+        list(map(self.visit, node.body))
+        self.writer.pull()
+        self.writer.pull()
+        self.writer.write('});')
         self.in_classdef = None
-        return out
 
 
 def generate_js(filepath, requirejs=False, root_path=None, output=None, deep=None):
@@ -486,7 +510,8 @@ def generate_js(filepath, requirejs=False, root_path=None, output=None, deep=Non
         input = parse(f.read())
     tree = parse(input)
     python_core = PythoniumCore()
-    script = python_core.visit(tree)
+    python_core.visit(tree)
+    script = python_core.writer.value()
     if requirejs:
         out = 'define(function(require) {\n'
         out += script
