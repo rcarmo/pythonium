@@ -299,6 +299,29 @@ class PythoniumCore(NodeVisitor):
                 args.append(node.kwargs.id)
             return '{}({})'.format(name, ', '.join(args))
 
+    def visit_ListComp(self, node):
+        # 'elt', 'generators'
+        comprehension = '__comp{}__'.format(self.uuid())
+        self.writer.write('var {} = [];'.format(comprehension))
+        list(map(self.visit, node.generators))
+        value = self.visit(node.elt)
+        self.writer.write('{}.push({});'.format(comprehension, value))
+        for _ in node.generators:
+            self.writer.pull()
+            self.writer.write('}')
+        return comprehension
+
+    def visit_comprehension(self, node):
+        # 'target', 'iter', 'ifs'
+        iterator = '__iterator{}__'.format(self.uuid())
+        index = '__index{}__'.format(self.uuid())
+        self.writer.write('var {} = {};'.format(iterator, self.visit(node.iter)))
+        self.writer.write('for (var {} = 0; {}<{}.length; {}++) {{'.format(index, index, iterator, index))
+        self.writer.push()
+        self.writer.write('var {} = {}[{}];'.format(self.visit(node.target), iterator, index))
+        if node.ifs:
+            self.writer.write('if(!{}) {{ continue; }}'.format(' && '.join(map(self.visit, node.ifs))))
+
     def visit_While(self, node):
         self.writer.write('while({}) {{'.format(node.test))
         list(map(self.visit, node.body))
