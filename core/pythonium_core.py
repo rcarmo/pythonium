@@ -25,7 +25,7 @@ from ast import FunctionDef
 from ast import NodeVisitor
 
 
-__version__ = '0.2.5'
+__version__ = '0.3.0'
 
 
 class Writer:
@@ -527,10 +527,8 @@ class PythoniumCore(NodeVisitor):
             base = self.visit(node.bases[0])
             self.writer.write('var {} = {}.$extend({{'.format(name, base))
         self.writer.push()
-        self.writer.push()
         self.in_classdef = name
         list(map(self.visit, node.body))
-        self.writer.pull()
         self.writer.pull()
         self.writer.write('});')
         self.in_classdef = None
