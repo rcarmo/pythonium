@@ -60,9 +60,8 @@ Also there is `cookbook <https://github.com/pythonium/pythonium/wiki/Pythonium-C
 - Pythonium **Veloce** supports all the above features and adds the following: 
 
   - One dependency ``pythonium.veloce.js`` (estimated to be around 10KB)
-  - Full Python function signature support with ``*args`` and ``**kwargs``
   - Support of ``__getattribute__`` and ``__getattr__`` hooks
-  - Support for metaclasses
+  - Support for metaclasses as functions
   - Support for ``list``, ``dict``, ``set``, ``float``, ``int``, ``str``
   - Full support of ``for`` 
   - Full support of exceptions
