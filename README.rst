@@ -20,13 +20,14 @@ The above package installs a ``pythonium_core`` command that has the following o
 
   Usage::
 
-    pythonium_core [-h][-d][-r] FILE [FILE ...] [-o FILE]
+    pythonium [-h][-d][-r][-V] FILE [FILE ...] [-o FILE]
 
 
   Options::
   
     -h --help        show this
     -v --version     show version
+    -V --veloce      use veloce mode, generated code is faster but least compliant
     -o --output FILE specify output file [default: stdout]
     -d --deep        generate file dependencies. If --output is not provided, it will generate for each source file a coresponding .js file.
     -r --requirejs   generate requirejs compatible module
@@ -37,7 +38,7 @@ What? (2 minutes)
 
 Pythonium will exist in several flavors, each with their own strengths and performance characteristics. As you go down the list the more features you'll have, and performance will, of course, decrease with sophistication (but not much):
 
-- Pythonium **Core**
+- Pythonium **Veloce**
 
   - Fully portable
   - Native Javascript speed
@@ -57,7 +58,7 @@ Pythonium will exist in several flavors, each with their own strengths and perfo
 
 Also there is `cookbook <https://github.com/pythonium/pythonium/wiki/Pythonium-Core-Cookbook>`_.
 
-- Pythonium **Veloce** supports all the above features and adds the following: 
+- Pythonium **Light** supports all the above features and adds the following: 
 
   - One dependency ``pythonium.veloce.js`` (estimated to be around 10KB)
   - Support of ``__getattribute__`` and ``__getattr__`` hooks
