@@ -60,7 +60,7 @@ Also there is `cookbook <https://github.com/pythonium/pythonium/wiki/Pythonium-V
 
 - Pythonium **Light** supports all the above features and adds the following: 
 
-  - One dependency ``pythonium.veloce.js`` (estimated to be around 10KB)
+  - One dependency ``pythonium.light.js`` (estimated to be around 10KB)
   - Support of ``__getattribute__`` and ``__getattr__`` hooks
   - Support for metaclasses as functions
   - Support for ``list``, ``dict``, ``set``, ``float``, ``int``, ``str``
