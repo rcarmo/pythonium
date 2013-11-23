@@ -405,32 +405,32 @@ class Veloce(NodeVisitor):
 
     def visit_Assign(self, node):
         target = node.targets[0]
-        if isinstance(target, Tuple):
-            targets = map(self.visit, target.elts)
-            value = self.visit(node.value)
-            self.writer.write('var __targets = {};\n'.format(value))
-            for index, target in enumerate(targets):
-                self.writer.write('{} = __targets[{}];\n'.format(target, index))
-        else:
-            target = self.visit(target)
-            value = self.visit(node.value)
-            if self.in_classdef and len(self._function_stack) == 0:
-                self.writer.write('{}: {},'.format(target, value))
+        value = self.visit(node.value)
+        self.writer.write('var __assignement = {};'.format(value))
+        for target in node.targets:
+            if isinstance(target, Tuple):
+                targets = map(self.visit, target.elts)
+                for index, target in enumerate(targets):
+                    self.writer.write('{} = __assignement[{}];\n'.format(target, index))
             else:
-                if target == '__all__':
-                    if isinstance(node.value, Name):
-                        self.__all__ = value
-                    elif isinstance(node.value, Str):
-                        self.__all__ = node.value.s
-                    elif isinstance(node.value, List):
-                        if isinstance(node.value.elts[0], Name):
-                            self.__all__ = list(map(self.visit, node.value.elts))
-                        else:
-                            self.__all__ = list(map(lambda x: x.s, node.value.elts))
-                    else:
-                        raise NotImplementedError
+                target = self.visit(target)
+                if self.in_classdef and len(self._function_stack) == 0:
+                    self.writer.write('{}: {},'.format(target, value))
                 else:
-                    self.writer.write('{} = {};'.format(target, value))
+                    if target == '__all__':
+                        if isinstance(node.value, Name):
+                            self.__all__ = value
+                        elif isinstance(node.value, Str):
+                            self.__all__ = node.value.s
+                        elif isinstance(node.value, List):
+                            if isinstance(node.value.elts[0], Name):
+                                self.__all__ = list(map(self.visit, node.value.elts))
+                            else:
+                                self.__all__ = list(map(lambda x: x.s, node.value.elts))
+                        else:
+                            raise NotImplementedError
+                    else:
+                        self.writer.write('{} = __assignement;'.format(target))
 
     def visit_Expr(self, node):
         self.writer.write(self.visit(node.value) + ';')
