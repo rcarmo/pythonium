@@ -267,7 +267,7 @@ class Veloce(NodeVisitor):
             return node.args[0].s
         elif name == 'print':
             args = [self.visit(e) for e in node.args]
-            s = 'console.log({});'.format(', '.join(args))
+            s = 'console.log({})'.format(', '.join(args))
             return s
         else:
             if node.args:
