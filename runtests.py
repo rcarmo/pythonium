@@ -6,7 +6,7 @@ from traceback import print_exc
 
 from envoy import run
 
-from pythonium_core import generate_js
+from pythonium.veloce import veloce_generate_js
 
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
@@ -21,7 +21,7 @@ if __name__ == '__main__':
             exec_script = os.path.join('/tmp', exec_script)
             with open(exec_script, 'w') as f:
                 try:
-                    generate_js(filepath, output=f)
+                    veloce_generate_js(filepath, output=f)
                 except Exception as exc:
                     print_exc()
                     print('< Translating {} failed with the above exception.'.format(test))
