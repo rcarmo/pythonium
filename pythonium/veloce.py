@@ -218,7 +218,7 @@ class Veloce(NodeVisitor):
 
     def visit_Attribute(self, node):
         name = self.visit(node.value)
-        attr = node.attr
+        attr = node.attr.replace('__DOLLAR__', '$')
         return '{}.{}'.format(name, attr)
 
     def visit_keyword(self, node):
