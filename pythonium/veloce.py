@@ -140,8 +140,10 @@ class Veloce(NodeVisitor):
             varkwargs = '__kwargs'
 
         # unpack arguments
-        self.writer.write('var __args = Array.prototype.slice.call(arguments);')
-        self.writer.write('var {} = __args[__args.length - 1];'.format(varkwargs))
+        if varargs or varkwargs != '__kwargs':
+            self.writer.write('var __args = Array.prototype.slice.call(arguments);')
+        if varkwargs != '__kwargs':
+            self.writer.write('var {} = __args[__args.length - 1];'.format(varkwargs))
         for keyword in kwargs.keys():
             self.writer.write('{} = {} || {}.{} || {};'.format(keyword, keyword, varkwargs, keyword, kwargs[keyword]))
             self.writer.write('delete {}.{};'.format(varkwargs, keyword))
