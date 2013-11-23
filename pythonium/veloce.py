@@ -156,8 +156,9 @@ class Veloce(NodeVisitor):
                 if isinstance(n, Assign) and isinstance(n.targets[0], Name):
                     local_vars.add(n.targets[0].id)
                 elif isinstance(n, Assign) and isinstance(n.targets[0], Tuple):
-                    for target in n.targets[0].elts:
-                        local_vars.add(target.id)
+                    for target in n.targets:
+                        for target in target.elts:
+                            local_vars.add(target.id)
                 elif isinstance(n, Global):
                     global_vars.update(n.names)
                 elif hasattr(n, 'body') and not isinstance(n, FunctionDef):
