@@ -12,7 +12,8 @@ Options:
   -r --requirejs   generate requirejs compatible module
 """
 import sys
-from .veloce import veloce_generate_js
+
+from veloce import veloce_generate_js
 
 
 __version__ = '0.4.0'
