@@ -471,7 +471,7 @@ class Veloce(NodeVisitor):
             self.writer.push()
             list(map(self.visit, node.orelse))
             self.writer.pull()
-            self.write.write('}')
+            self.writer.write('}')
 
     def visit_Dict(self, node):
         a = []
