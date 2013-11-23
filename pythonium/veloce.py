@@ -184,6 +184,10 @@ class Veloce(NodeVisitor):
             self.writer.write('},')
         else:
             self.writer.write('};')
+
+        for decorator in node.decorator_list:
+            decorator = self.visit(decorator)
+            self.writer.write('{} = {}({});'.format(node.name, decorator, node.name))
         self._function_stack.pop()
 
     def visit_Subscript(self, node):
