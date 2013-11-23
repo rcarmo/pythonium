@@ -404,7 +404,6 @@ class Veloce(NodeVisitor):
         return '||'
 
     def visit_Assign(self, node):
-        # XXX: I'm not sure why it is a list since, mutiple targets are inside a tuple
         target = node.targets[0]
         if isinstance(target, Tuple):
             targets = map(self.visit, target.elts)
