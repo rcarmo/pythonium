@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from setuptools import setup
 
-from pythonium import __version__
+from pythonium.main import __version__
 
 
 setup(
@@ -12,10 +12,10 @@ setup(
     author_email='amirouche.boubekki@gmail.com',
     url='https://github.com/pythonium/pythonium',
     zip_safe=False,
-    py_modules=['pythonium'],
+    packages=['pythonium'],
     install_requires=['docopt'],
     entry_points="""
     [console_scripts]
-    pythonium=pythonium:main
+    pythonium=pythonium.main:main
     """,
 )

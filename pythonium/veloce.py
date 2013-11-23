@@ -1,15 +1,3 @@
-#!/usr/bin/env python3
-"""pythonium_core
-
-Usage: pythonium_core [-h][-d][-r] FILE [FILE ...] [-o FILE]
-
-Options:
-  -h --help        show this
-  -v --version     show version
-  -o --output FILE specify output file [default: stdout]
-  -d --deep        generate file dependencies. If --output is not provided, it will generate for each source file a coresponding .js file.
-  -r --requirejs   generate requirejs compatible module
-"""
 import os
 import sys
 from io import StringIO
@@ -23,9 +11,6 @@ from ast import Assign
 from ast import Global
 from ast import FunctionDef
 from ast import NodeVisitor
-
-
-__version__ = '0.3.1'
 
 
 class Writer:
@@ -47,7 +32,7 @@ class Writer:
         return self.output.getvalue()
 
 
-class PythoniumCore(NodeVisitor):
+class Veloce(NodeVisitor):
 
     def __init__(self):
         super().__init__()
@@ -534,7 +519,7 @@ class PythoniumCore(NodeVisitor):
         self.in_classdef = None
 
 
-def generate_js(filepath, requirejs=False, root_path=None, output=None, deep=None):
+def veloce_generate_js(filepath, requirejs=False, root_path=None, output=None, deep=None):
     dirname = os.path.abspath(os.path.dirname(filepath))
     if not root_path:
         root_path = dirname
@@ -546,7 +531,7 @@ def generate_js(filepath, requirejs=False, root_path=None, output=None, deep=Non
     with open(os.path.join(dirname, basename)) as f:
         input = parse(f.read())
     tree = parse(input)
-    python_core = PythoniumCore()
+    python_core = Veloce()
     python_core.visit(tree)
     script = python_core.writer.value()
     if requirejs:
@@ -568,23 +553,3 @@ def generate_js(filepath, requirejs=False, root_path=None, output=None, deep=Non
             else:
                 generate_js(os.path.join(root_path, dependency[1:] + '.py'), requirejs, root_path, output, deep)
     output.write(script)
-
-
-def main():
-    from docopt import docopt
-    args = docopt(__doc__, version='pythonium_core ' + __version__)
-    requirejs = args['--requirejs']
-    filepaths = args['FILE']
-    output = args['--output']
-    if output is None:
-        output = sys.stdout
-    else:
-        output = open(output, 'w')
-    deep = args['--deep']
-    for filepath in filepaths:
-        generate_js(filepath, requirejs, None, output, deep)
-    if output:
-        output.close()
-
-if __name__ == '__main__':
-    main()
