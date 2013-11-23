@@ -73,12 +73,12 @@ class PythoniumCore(NodeVisitor):
     def visit_Try(self, node):
         self.writer.write('try {')
         self.writer.push()
-        map(self.visit, node.body)
+        list(map(self.visit, node.body))
         self.writer.pull()
         self.writer.write('}')
         self.writer.write('catch(__exception__) {')
         self.writer.push()
-        map(self.visit, node.handlers)
+        list(map(self.visit, node.handlers))
         self.writer.pull()
         self.writer.write('}')
 
