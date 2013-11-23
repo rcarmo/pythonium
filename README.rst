@@ -12,11 +12,11 @@ You will need Python 3 to run the translator. Refer to your operating system doc
 
 Then you can use pip to install the stable translator:
 
-  pip install pythonium-core
+  pip install pythonium
 
-The above package installs a ``pythonium_core`` command that has the following options:
+The above package installs a ``pythonium`` command that has the following options:
 
-  pythonium_core
+  pythonium
 
   Usage::
 
@@ -56,7 +56,7 @@ Pythonium will exist in several flavors, each with their own strengths and perfo
   - Support of ``from ... import ...`` via `requirejs <http://requirejs.org/>`_
   - Support of single inheritance classes via `classy <http://classy.pocoo.org/>`_ [1][2]
 
-Also there is `cookbook <https://github.com/pythonium/pythonium/wiki/Pythonium-Core-Cookbook>`_.
+Also there is `cookbook <https://github.com/pythonium/pythonium/wiki/Pythonium-Veloce-Cookbook>`_.
 
 - Pythonium **Light** supports all the above features and adds the following: 
 
