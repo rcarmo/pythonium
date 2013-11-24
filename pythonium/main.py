@@ -16,7 +16,7 @@ import sys
 from veloce import veloce_generate_js
 
 
-__version__ = '0.4.0'
+__version__ = '0.4.1'
 
 
 def main():
