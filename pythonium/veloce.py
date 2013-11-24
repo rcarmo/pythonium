@@ -406,6 +406,11 @@ class Veloce(NodeVisitor):
     def visit_Or(self, node):
         return '||'
 
+    def visit_Delete(self, node):
+        for target in node.targets:
+            target = self.visit(target)
+            self.writer.write('delete {};'.format(target))
+
     def visit_Assign(self, node):
         value = self.visit(node.value)
         if len(node.targets) == 1 and not isinstance(node.targets[0], Tuple):
