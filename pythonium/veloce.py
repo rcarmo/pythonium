@@ -74,7 +74,7 @@ class Veloce(NodeVisitor):
         list(map(self.visit, node.body))
 
     def visit_Yield(self, node):
-        return 'yield {};'.format(self.visit(node.value))
+        return 'yield {}'.format(self.visit(node.value))
 
     def visit_In(self, node):
         return ' in '
