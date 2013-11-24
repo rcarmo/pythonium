@@ -20,7 +20,7 @@ The above package installs a ``pythonium`` command that has the following option
 
   Usage::
 
-    pythonium [-h][-d][-r][-V] FILE [FILE ...] [-o FILE]
+    pythonium [-h][-d][-r][-V][FILE ...] [-o FILE]|[-g]
 
 
   Options::
@@ -31,12 +31,14 @@ The above package installs a ``pythonium`` command that has the following option
     -o --output FILE specify output file [default: stdout]
     -d --deep        generate file dependencies. If --output is not provided, it will generate for each source file a coresponding .js file.
     -r --requirejs   generate requirejs compatible module
+    -V --veloce      use veloce mode, Python syntax with JavaScript semantic
+    -g --generate    generate pythonium library
 
 
 What? (2 minutes)
 =================
 
-Pythonium will exist in several flavors, each with their own strengths and performance characteristics. As you go down the list the more features you'll have, and performance will, of course, decrease with sophistication (but not much):
+Pythonium will exist in two flavors, each with their own strengths and performance characteristics. As you go down the list the more features you'll have, and performance will, of course, decrease with sophistication (but not much):
 
 - Pythonium **Veloce**
 
@@ -58,17 +60,6 @@ Pythonium will exist in several flavors, each with their own strengths and perfo
 
 Also there is `cookbook <https://github.com/pythonium/pythonium/wiki/Pythonium-Veloce-Cookbook>`_.
 
-- Pythonium **Light** supports all the above features and adds the following: 
-
-  - One dependency ``pythonium.light.js`` (estimated to be around 10KB)
-  - Support of ``__getattribute__`` and ``__getattr__`` hooks
-  - Support for metaclasses as functions
-  - Support for ``list``, ``dict``, ``set``, ``float``, ``int``, ``str``
-  - Full support of ``for`` 
-  - Full support of exceptions
-  - Support of ``with``
-  - Support of ``yield from``
-
 - Pythonium **Compliant** 100% compliant with CPython 3
 
 Why? (3 minutes)
@@ -83,10 +74,6 @@ For the industry, experienced programmers, and hobbyists, the best approach is t
 As things stand, APIs differ significantly between back-end and front-end environments, so there will always be differences. For instance, if you choose **pythonium core** you will need to learn to work with Javascript arrays and objects and work around their specificities. Working around specifities of the *language* can be boring, but it's the best that is available right now, and it's after all, not that bad.
 
 As a programmer that knows both Python and Javascript, I prefer to focus on what is the easiest for me to do and maximise what I will be able to do next. The immediate answer to this answer is what is already available in the repository.
-
-I understand, that in the long run it's nice to have fully compliant Python in the browser, for learning purposes, to avoid bugs that are not reported correctly and many things. That said, I prefer to focus on tooling, library support, demos and other things that can allow people like me to get things done.
-
-I've already done it in `PythonJS <https://github.com/PythonJS/PythonJS>`_, I know it's possible to even have 100% compliance. PythonJS code is poor, I though it was possible to improve the things so I started this new project.
 
 How? (1 minute)
 ===============
@@ -108,10 +95,7 @@ Documentation is available in the `wiki <https://github.com/pythonium/pythonium/
 Licensing
 =========
 
-The translator is licensed under the AGPLv3 but not the result of the compilation (of course). So if you do **not** use some library provided by Pythonium you can use it in whatever situations. If you are not sure send a mail on the mailling list.
-
-I intend to sell licenses for the libraries, but it's not ready yet.
-
+LGPL 2.1 or later
 
 - [1] Nested class definition are not supported
 - [2] Calling super method is done with ``super(arg0, arg1, arg2, ...)``
