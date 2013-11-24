@@ -407,14 +407,17 @@ class Veloce(NodeVisitor):
         return '||'
 
     def visit_Assign(self, node):
-        target = node.targets[0]
         value = self.visit(node.value)
+        if len(node.targets) == 1 and not isinstance(node.targets[0], Tuple):
+            target = self.visit(node.targets[0])
+            self.writer.write('{} = {};\n'.format(target, value))
+            return
         self.writer.write('var __assignement = {};'.format(value))
         for target in node.targets:
             if isinstance(target, Tuple):
                 targets = map(self.visit, target.elts)
                 for index, target in enumerate(targets):
-                    self.writer.write('{} = __assignement[{}];\n'.format(target, index))
+                    self.writer.write('{} = __assignement[{}];'.format(target, index))
             else:
                 target = self.visit(target)
                 if self.in_classdef and len(self._function_stack) == 0:
