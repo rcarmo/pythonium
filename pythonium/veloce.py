@@ -410,7 +410,7 @@ class Veloce(NodeVisitor):
         value = self.visit(node.value)
         if len(node.targets) == 1 and not isinstance(node.targets[0], Tuple):
             target = self.visit(node.targets[0])
-            self.writer.write('{} = {};\n'.format(target, value))
+            self.writer.write('{} = {};'.format(target, value))
             return
         self.writer.write('var __assignement = {};'.format(value))
         for target in node.targets:
