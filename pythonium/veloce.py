@@ -315,7 +315,7 @@ class Veloce(NodeVisitor):
             self.writer.write('if(!{}) {{ continue; }}'.format(' && '.join(map(self.visit, node.ifs))))
 
     def visit_While(self, node):
-        self.writer.write('while({}) {{'.format(node.test))
+        self.writer.write('while({}) {{'.format(self.visit(node.test)))
         list(map(self.visit, node.body))
 
     def visit_AugAssign(self, node):
