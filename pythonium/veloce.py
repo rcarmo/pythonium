@@ -316,7 +316,10 @@ class Veloce(NodeVisitor):
 
     def visit_While(self, node):
         self.writer.write('while({}) {{'.format(self.visit(node.test)))
+        self.writer.push()
         list(map(self.visit, node.body))
+        self.writer.pull()
+        self.writer.write('}')
 
     def visit_AugAssign(self, node):
         target = self.visit(node.target)
