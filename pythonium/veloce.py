@@ -538,7 +538,10 @@ class Veloce(NodeVisitor):
         self.writer.write('}')
 
     def visit_Continue(self, node):
-        return 'continue'
+        self.writer.write('continue;')
+
+    def visit_Break(self, node):
+        self.writer.write('break;')
 
     def visit_Lambda(self, node):
         args = ', '.join(map(self.visit, node.args.args))
