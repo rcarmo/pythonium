@@ -12,7 +12,7 @@ from ast import Global
 from ast import FunctionDef
 from ast import NodeVisitor
 
-from utils import YieldSearch
+from .utils import YieldSearch
 
 
 class Writer:
@@ -160,7 +160,7 @@ class Veloce(NodeVisitor):
         if varargs or varkwargs != '__kwargs' or kwargs:
             self.writer.write('var __args = Array.prototype.slice.call(arguments);')
         if varkwargs != '__kwargs' or kwargs:
-            self.writer.write('var {} = __args[__args.length - 1];'.format(varkwargs))
+            self.writer.write('var {} = __args[__args.length - 1] || {{}};'.format(varkwargs))
         for keyword in kwargs.keys():
             self.writer.write('{} = {} || {}.{} || {};'.format(keyword, keyword, varkwargs, keyword, kwargs[keyword]))
             self.writer.write('delete {}.{};'.format(varkwargs, keyword))
