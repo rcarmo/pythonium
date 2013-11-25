@@ -10,7 +10,11 @@ Options:
   -o --output FILE specify output file [default: stdout]
   -d --deep        generate file dependencies. If --output is not provided, it will generate for each source file a coresponding .js file.
   -r --requirejs   generate requirejs compatible module
-  -g --generate    generate pythonium runtime
+  -g --generate    generate pythonium runtime (exclusive option)
+
+The default mode, without -V or --veloce option is *experimental*.
+
+If you generate code without -V or --veloce you will need to use the library generated with -g or --generate option to run the code.
 """
 import os
 import sys
