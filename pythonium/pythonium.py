@@ -1,6 +1,7 @@
 import os
 import sys
 from io import StringIO
+from collections import namedtuple
 
 from ast import Str
 from ast import Name
@@ -9,10 +10,15 @@ from ast import Tuple
 from ast import parse
 from ast import Assign
 from ast import Global
+from ast import Attribute
 from ast import FunctionDef
 from ast import NodeVisitor
 
 from .utils import YieldSearch
+
+
+ClassDef = namedtuple('ClassDef', 'name')
+FunctionDef = namedtuple('FunctionDef', 'name')
 
 
 class Writer:
@@ -34,13 +40,12 @@ class Writer:
         return self.output.getvalue()
 
 
-class Veloce(NodeVisitor):
+class Pythonium(NodeVisitor):
 
     def __init__(self):
         super().__init__()
         self.dependencies = []
-        self.in_classdef = None
-        self._function_stack = []
+        self._def_stack = []
         self.__all__ = None
         self.writer = Writer()
         self._uuid = -1
@@ -70,14 +75,24 @@ class Veloce(NodeVisitor):
         self.writer.write('}')
 
     def visit_Raise(self, node):
+        
         self.writer.write('throw {};'.format(self.visit(node.exc)))
 
     def visit_ExceptHandler(self, node):
+        # 'type', 'name', 'body'
+        if node.type:
+            self.writer.write('if (pythonium_is_exception(__exception__, {}) {{'.format(self.visit(node.type)))
+            self.writer.push()
+        if node.name:
+            self.writer.write('var {} = __exception__'.format(node.name))
         list(map(self.visit, node.body))
+        if node.type:
+            self.writer.pull()
+            self.writer.write('}')
 
     def visit_Yield(self, node):
         return 'yield {}'.format(self.visit(node.value))
-
+        
     def visit_In(self, node):
         return ' in '
 
@@ -118,11 +133,21 @@ class Veloce(NodeVisitor):
         # handled in visit_FunctionDef
         return ''
 
+    def _is_inside_method_definition(self):
+        if len(self._def_stack) >= 2:
+            if isinstance(self._def_stack[-2], ClassDef):
+                if isinstance(self._def_stack[-1], FunctionDef):
+                    return True
+        return False
+
+    def _is_inside_class_definition(self):
+        return isinstance(self._def_stack[-1], ClassDef)
+
     def visit_FunctionDef(self, node):
         # 'name', 'args', 'body', 'decorator_list', 'returns'
-        self._function_stack.append(node.name)
+        self._def_stack.append(FunctionDef(node.name))
         args, kwargs, varargs, varkwargs = self.visit(node.args)
-
+        
         all_parameters = list(args)
         all_parameters.extend(kwargs.keys())
         if varargs:
@@ -131,7 +156,11 @@ class Veloce(NodeVisitor):
             all_parameters.append(varkwargs)
         all_parameters = set(all_parameters)
 
-        name = node.name
+        __args = ', '.join(args)
+        if self._is_inside_method_definition():
+            name = '__{}_{}'.format(self._def_stack[-2].name, node.name)
+        else:
+            name = node.name
         # handle yield
         has_yield = False
         for child in node.body:
@@ -140,18 +169,10 @@ class Veloce(NodeVisitor):
             if getattr(searcher, 'has_yield', False):
                 has_yield = True
                 break
-        if self.in_classdef and len(self._function_stack) == 1:
-            __args = ', '.join(args[1:])
-            if has_yield:
-                self.writer.write('{}: function*({}) {{'.format(name, __args))
-            else:
-                self.writer.write('{}: function({}) {{'.format(name, __args))
+        if has_yield:
+            self.writer.write('var {} = function*({}) {{'.format(name, __args))
         else:
-            __args = ', '.join(args)
-            if has_yield:
-                self.writer.write('var {} = function*({}) {{'.format(name, __args))
-            else:
-                self.writer.write('var {} = function({}) {{'.format(name, __args))
+            self.writer.write('var {} = function({}) {{'.format(name, __args))
         self.writer.push()
         if not varkwargs:
             varkwargs = '__kwargs'
@@ -160,7 +181,7 @@ class Veloce(NodeVisitor):
         if varargs or varkwargs != '__kwargs' or kwargs:
             self.writer.write('var __args = Array.prototype.slice.call(arguments);')
         if varkwargs != '__kwargs' or kwargs:
-            self.writer.write('var {} = __args[__args.length - 1] || {{}};'.format(varkwargs))
+            self.writer.write('var {} = __args[__args.length - 1];'.format(varkwargs))
         for keyword in kwargs.keys():
             self.writer.write('{} = {} || {}.{} || {};'.format(keyword, keyword, varkwargs, keyword, kwargs[keyword]))
             self.writer.write('delete {}.{};'.format(varkwargs, keyword))
@@ -175,9 +196,8 @@ class Veloce(NodeVisitor):
                 if isinstance(n, Assign) and isinstance(n.targets[0], Name):
                     local_vars.add(n.targets[0].id)
                 elif isinstance(n, Assign) and isinstance(n.targets[0], Tuple):
-                    for target in n.targets:
-                        for target in target.elts:
-                            local_vars.add(target.id)
+                    for target in n.targets[0].elts:
+                        local_vars.add(target.id)
                 elif isinstance(n, Global):
                     global_vars.update(n.names)
                 elif hasattr(n, 'body') and not isinstance(n, FunctionDef):
@@ -200,15 +220,13 @@ class Veloce(NodeVisitor):
         # output function body
         list(map(self.visit, node.body))
         self.writer.pull()
-        if self.in_classdef and len(self._function_stack) == 1:
-            self.writer.write('},')
-        else:
-            self.writer.write('};')
+        self.writer.write('};')
 
         for decorator in node.decorator_list:
             decorator = self.visit(decorator)
-            self.writer.write('{} = {}({});'.format(node.name, decorator, node.name))
-        self._function_stack.pop()
+            self.writer.write('{} = {}({});'.format(name, decorator, name))
+        self._def_stack.pop()
+        return node.name, name 
 
     def visit_Slice(self, node):
         start = self.visit(node.lower) if node.lower else 'undefined'
@@ -220,7 +238,7 @@ class Veloce(NodeVisitor):
         return self.visit(node.value)
 
     def visit_Subscript(self, node):
-        return '{}[{}]'.format(self.visit(node.value), self.visit(node.slice))
+        return "call({}, '__getitem__')({})".format(self.visit(node.value), self.visit(node.slice))
 
     def visit_arguments(self, node):
         # 'args', 'vararg', 'varargannotation', 'kwonlyargs', 'kwarg', 'kwargannotation', 'defaults', 'kw_defaults'
@@ -235,8 +253,6 @@ class Veloce(NodeVisitor):
     def visit_Name(self, node):
         if node.id == 'None':
             return 'undefined'
-        elif node.id == 'self':
-            return 'this'
         elif node.id == 'True':
             return 'true'
         elif node.id == 'False':
@@ -248,7 +264,7 @@ class Veloce(NodeVisitor):
     def visit_Attribute(self, node):
         name = self.visit(node.value)
         attr = node.attr.replace('__DOLLAR__', '$')
-        return '{}.{}'.format(name, attr)
+        return 'pythonium_get_attribute({}, "{}")'.format(name, attr)
 
     def visit_keyword(self, node):
         if isinstance(node.arg, str):
@@ -282,9 +298,6 @@ class Veloce(NodeVisitor):
             object = args[0]
             args = ', '.join(args[1:])
             return 'new {}({})'.format(object, args)
-        elif name == 'super':
-            args = ', '.join(map(self.visit, node.args))
-            return 'this.$super({})'.format(args)
         elif name == 'JSArray':
             if node.args:
                 args = map(self.visit, node.args)
@@ -315,7 +328,10 @@ class Veloce(NodeVisitor):
                 for key, value in map(self.visit, node.keywords):
                     self.writer.write('{}.{} = {}'.format(node.kwargs.id, key, value))
                 args.append(node.kwargs.id)
-            return '{}({})'.format(name, ', '.join(args))
+            if args:
+                return 'pythonium_call({}, {})'.format(name, ', '.join(args))
+            else:
+                return 'pythonium_call({})'.format(name)
 
     def visit_ListComp(self, node):
         # 'elt', 'generators'
@@ -349,70 +365,70 @@ class Veloce(NodeVisitor):
 
     def visit_AugAssign(self, node):
         target = self.visit(node.target)
-        self.writer.write('{} = {} {} {};'.format(target, target, self.visit(node.op), self.visit(node.value)))
+        self.writer.write('{} = {}.{}({});'.format(target, target, self.visit(node.op), self.visit(node.value)))
 
     def visit_Str(self, node):
         s = node.s.replace('\n', '\\n')
         if '"' in s:
-            return "'{}'".format(s)
-        return '"{}"'.format(s)
+            return "pythonium_call(str, '{}')".format(s)
+        return 'pythonium_call(str, "{}")'.format(s)
 
     def visit_BinOp(self, node):
         left = self.visit(node.left)
         op = self.visit(node.op)
         right = self.visit(node.right)
-        return '({} {} {})'.format(left, op, right)
+        return '({}.{}({}))'.format(left, op, right)
 
     def visit_Mult(self, node):
-        return '*'
+        return '__mul__'
 
     def visit_Add(self, node):
-        return '+'
+        return '__add__'
 
     def visit_Sub(self, node):
-        return '-'
+        return '__sub__'
 
     def visit_USub(self, node):
         return '-'
 
     def visit_Div(self, node):
-        return '/'
+        return '__div__'
 
     def visit_Mod(self, node):
-        return '%'
+        return '__mod__'
 
     def visit_Lt(self, node):
-        return '<'
+        return '__lt__'
 
     def visit_Gt(self, node):
-        return '>'
+        return '__gt__'
 
     def visit_GtE(self, node):
-        return '>='
+        return '__gte__'
 
     def visit_LtE(self, node):
-        return '<='
+        return '__lte__'
 
     def visit_LShift(self, node):
-        return '<<'
+        return '__lshift__'
 
     def visit_RShift(self, node):
-        return '>>'
+        return '__rshift__'
 
     def visit_BitXor(self, node):
-        return '^'
+        return '__xor__'
 
     def visit_BitOr(self, node):
-        return '|'
+        return '__or__'
 
     def visit_BitAnd(self, node):
-        return '&'
+        return '__and__'
 
     def visit_Eq(self, node):
-        return '=='
+        return '__eq__'
 
     def visit_NotEq(self, node):
-        return '!='
+        return '__neq__'
 
     def visit_Num(self, node):
         return str(node.n)
@@ -430,33 +446,47 @@ class Veloce(NodeVisitor):
         return self.visit(node.op) + self.visit(node.operand)
 
     def visit_And(self, node):
-        return '&&'
+        return '__and__'
 
     def visit_Or(self, node):
-        return '||'
+        return '__or__'
 
     def visit_Delete(self, node):
-        for target in node.targets:
-            target = self.visit(target)
-            self.writer.write('delete {};'.format(target))
+        raise NotImplementedError
 
     def visit_Assign(self, node):
         value = self.visit(node.value)
         if len(node.targets) == 1 and not isinstance(node.targets[0], Tuple):
-            target = self.visit(node.targets[0])
-            self.writer.write('{} = {};'.format(target, value))
-            return
+            target = node.targets[0]
+            if isinstance(target, Attribute):
+                self.writer.write('pythonium_set_attribute({}, "{}", {});'.format(
+                    self.visit(target.value),
+                    target.attr.replace('__DOLLAR__', '$'),
+                    value
+                ))
+                return
+            else:
+                target = self.visit(target)
+                self.writer.write('{} = {};'.format(target, value))
+                return
+
         self.writer.write('var __assignement = {};'.format(value))
         for target in node.targets:
             if isinstance(target, Tuple):
                 targets = map(self.visit, target.elts)
                 for index, target in enumerate(targets):
-                    self.writer.write('{} = __assignement[{}];'.format(target, index))
+                    self.writer.write('{} = __assignement[{}];\n'.format(target, index))
             else:
-                target = self.visit(target)
-                if self.in_classdef and len(self._function_stack) == 0:
-                    self.writer.write('{}: {},'.format(target, value))
+                if isinstance(target, Attribute):
+                    name = self.visit(target.value)
+                    attr = target.attr.replace('__DOLLAR__', '$')
+                    self.writer.write('pythonium_set_attribute({}, "{}", {});'.format(
+                        name,
+                        attr,
+                        value,
+                    ))
                 else:
+                    target = self.visit(target)
                     if target == '__all__':
                         if isinstance(node.value, Name):
                             self.__all__ = value
@@ -470,7 +500,13 @@ class Veloce(NodeVisitor):
                         else:
                             raise NotImplementedError
                     else:
-                        self.writer.write('{} = __assignement;'.format(target))
+                        if isinstance(self._def_stack[-1], ClassDef):
+                            name = '__{}_{}'.format(self._def_stack[-1].name, target)
+                        else:
+                            name = target
+                        self.writer.write('{} = __assignement;'.format(name))
+                if isinstance(self._def_stack[-1], ClassDef):
+                    return target, name
 
     def visit_Expr(self, node):
         self.writer.write(self.visit(node.value) + ';')
@@ -492,7 +528,7 @@ class Veloce(NodeVisitor):
         iter = reversed(ops)
         c = next(iter)
         for op in iter:
-            c = '({} {} {})'.format(next(iter), op, c)
+            c = '(pythonium_get_attribute({}, {})({}))'.format(next(iter), op, c)
         return c
 
     def visit_BoolOp(self, node):
@@ -546,23 +582,30 @@ class Veloce(NodeVisitor):
 
     def visit_ClassDef(self, node):
         # 'name', 'bases', 'keywords', 'starargs', 'kwargs', 'body', 'decorator_lis't
-        if len(node.bases) > 1:
-            raise NotImplemented
-        name = node.name
         if len(node.bases) == 0:
-            self.writer.write('var {} = Class.$extend({{'.format(name))
+            bases = ['object']
         else:
-            base = self.visit(node.bases[0])
-            self.writer.write('var {} = {}.$extend({{'.format(name, base))
+            bases = map(self.visit, node.bases)
+        bases = '[{}]'.format(', '.join(bases))
+
+        self._def_stack.append(ClassDef(node.name))
+        self.writer.write('/* class definition {} */'.format(node.name))
+        definitions = []
+        for child in node.body:
+            definitions.append(self.visit(child))
+
+        self.writer.write('var {} = pythonium_create_class("{}", {}, {{'.format(node.name, node.name, bases))
         self.writer.push()
-        self.in_classdef = name
-        list(map(self.visit, node.body))
+        for o in definitions:
+            if not o:
+                continue
+            name, definition = o
+            self.writer.write('{}: {},'.format(name, definition))
         self.writer.pull()
         self.writer.write('});')
-        self.in_classdef = None
+        self._def_stack.pop()
 
-
-def veloce_generate_js(filepath, requirejs=False, root_path=None, output=None, deep=None):
+def pythonium_generate_js(filepath, requirejs=False, root_path=None, output=None, deep=None):
     dirname = os.path.abspath(os.path.dirname(filepath))
     if not root_path:
         root_path = dirname
@@ -574,7 +617,7 @@ def veloce_generate_js(filepath, requirejs=False, root_path=None, output=None, d
     with open(os.path.join(dirname, basename)) as f:
         input = parse(f.read())
     tree = parse(input)
-    python_core = Veloce()
+    python_core = Pythonium()
     python_core.visit(tree)
     script = python_core.writer.value()
     if requirejs:
