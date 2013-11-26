@@ -1,14 +1,14 @@
 class list:
     
     def __init__(self, jsobject=None):
-        if isinstance(jsobject, Generator):
+        if not jsobject:
+            self.jsobject = JSArray()
+        elif isinstance(jsobject, Generator):
             self.jsobject = JSArray()
             for item in jsobject:
                 self.jsobject.push(item)
-        elif jsobject:
-            self.jsobject = jsobject
         else:
-            self.jsobject = JSArray()
+            self.jsobject = jsobject()
 
     def append(self, item):
         self.jsobject.push(item)

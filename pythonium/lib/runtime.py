@@ -1,9 +1,13 @@
-object = {__bases__: [], __name__: 'object'}
-object.__mro__ = [object]
+__object = {__bases__: [], __name__: 'object'}
+__object.__mro__ = [__object]
 
-type = {__bases__: [object], __mro__: [object], __name__:'type'}
+__type = {__bases__: [__object], __mro__: [__object], __name__: 'type'}
 
-object.__metaclass__ = type
+__object.__metaclass__ = __type
+
+__NONE = {}
+__TRUE = {}
+__FALSE = {}
 
 
 def issubclass(klass, other):  
@@ -17,6 +21,14 @@ def issubclass(klass, other):
     return False
 
 
+def pythonium_is_true(v):
+    if v is __TRUE:
+        return True
+    elif v:
+        return True
+    return False
+
+
 def isinstance(object, klass):
     if object.__class__:
         return issubclass(object.__class__, klass)
@@ -27,8 +39,9 @@ def pythonium_call(object):
     args = Array.prototype.slice.call(arguments, 1)
     if object.__metaclass__:
         instance = {__class__: object}
-        init = pythonium_get_attribute(instance, '__init__')
-        init(args)
+        init = lookup(instance, '__init__')
+        if init:
+            init.apply(instance, args)
         return instance
     else:
         return object.apply(object, args)
@@ -83,7 +96,7 @@ def pythonium_mro(bases):
 
 def pythonium_create_class(name, bases, attrs):
     attrs.__name__ = name
-    attrs.__metaclass__ = type
+    attrs.__metaclass__ = __type
     attrs.__bases__ = bases
     mro = pythonium_mro(bases)
     mro.splice(0, 0, attrs)
@@ -91,28 +104,49 @@ def pythonium_create_class(name, bases, attrs):
     return attrs
 
 
-def pythonium_get_attribute(object, attr, look_for_getattr=True):
-    if object.__class__:
-        object_attr = object[attr]
-        if object_attr:
-            if object_attr and {}.toString.call(object_attr) == '[object Function]':
-                def method_wrapper():
-                    args = Array.prototype.slice.call(arguments)
-                    args.splice(0, 0, object)
-                    return object_attr.apply(None, args)
-                return method_wrapper
-            return object_attr
+def lookup(object, attr):
+    object_attr = object[attr]
+    if object_attr:
+        if object_attr and {}.toString.call(object_attr) == '[object Function]':
+            def method_wrapper():
+                args = Array.prototype.slice.call(arguments)
+                args.splice(0, 0, object)
+                return object_attr.apply(None, args)
+            return method_wrapper
+        return object_attr
+    else:
+        for base in object.__class__.__mro__:
+            class_attr = base[attr]
+            if class_attr:
+                if {}.toString.call(class_attr) == '[object Function]':
+                    def method_wrapper():
+                        args = Array.prototype.slice.call(arguments)
+                        args.splice(0, 0, object)
+                        return class_attr.apply(None, args)
+                    return method_wrapper
+                return class_attr
+
+
+def pythonium_object_get_attribute(object, attr):
+    r = lookup(object, attr)
+    if r:
+        return r
+    else:
+        getattr = lookup(object, '__getattr__')
+        if getattr:
+            return getattr(attr)
         else:
-            for base in object.__class__.__mro__:
-                class_attr = base[attr]
-                if class_attr:
-                    if {}.toString.call(class_attr) == '[object Function]':
-                        def method_wrapper():
-                            args = Array.prototype.slice.call(arguments)
-                            args.splice(0, 0, object)
-                            return class_attr.apply(None, args)
-                        return method_wrapper
-                    return class_attr
+            console.log('__get_attribute__', object, attr)
+            console.trace()
+            raise AttributeError
+
+__object.__getattribute__ = pythonium_object_get_attribute
+
+
+def pythonium_get_attribute(object, attr):
+    if object.__class__:
+        getattribute = lookup(object, '__getattribute__')
+        return getattribute(attr)
     attr = object[attr]
     if attr:
         if {}.toString.call(attr) == '[object Function]':
@@ -121,7 +155,6 @@ def pythonium_get_attribute(object, attr, look_for_getattr=True):
             return method_wrapper
         else:
             return attr
-    raise AttributeError
 
 
 def pythonium_set_attribute(object, attr, value):

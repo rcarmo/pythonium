@@ -14,7 +14,7 @@ from ast import Attribute
 from ast import FunctionDef
 from ast import NodeVisitor
 
-from .utils import YieldSearch
+from utils import YieldSearch
 
 
 ClassDef = namedtuple('ClassDef', 'name')
@@ -252,11 +252,11 @@ class Pythonium(NodeVisitor):
 
     def visit_Name(self, node):
         if node.id == 'None':
-            return 'undefined'
+            return '__NONE'
         elif node.id == 'True':
-            return 'true'
+            return '__TRUE'
         elif node.id == 'False':
-            return 'false'
+            return '__FALSE'
         elif node.id == 'null':
             return 'null'
         return node.id.replace('__DOLLAR__', '$')
@@ -365,7 +365,7 @@ class Pythonium(NodeVisitor):
 
     def visit_AugAssign(self, node):
         target = self.visit(node.target)
-        self.writer.write('{} = {}.{}({});'.format(target, target, self.visit(node.op), self.visit(node.value)))
+        self.writer.write('{} = pythonium_call(pythonium_get_attribute({}, "{}"), {});'.format(target, target, self.visit(node.op), self.visit(node.value)))
 
     def visit_Str(self, node):
         s = node.s.replace('\n', '\\n')
@@ -377,7 +377,7 @@ class Pythonium(NodeVisitor):
         left = self.visit(node.left)
         op = self.visit(node.op)
         right = self.visit(node.right)
-        return '({}.{}({}))'.format(left, op, right)
+        return '(pythonium_call(pythonium_get_attribute({}, "{}"), {}))'.format(left, op, right)
 
     def visit_Mult(self, node):
         return '__mul__'
@@ -431,16 +431,19 @@ class Pythonium(NodeVisitor):
         return '__neq__'
 
     def visit_Num(self, node):
-        return str(node.n)
+        if isinstance(node.n, float):
+            return 'pythonium_call(float, {})'.format(str(node.n))
+        else:
+            return 'pythonium_call(int, {})'.format(str(node.n))
 
     def visit_Is(self, node):
-        return '==='
+        return '__is__'
 
     def visit_Not(self, node):
         return '!'
 
     def visit_IsNot(self, node):
-        return '!=='
+        return '__isnot__'
 
     def visit_UnaryOp(self, node):
         return self.visit(node.op) + self.visit(node.operand)
@@ -528,16 +531,20 @@ class Pythonium(NodeVisitor):
         iter = reversed(ops)
         c = next(iter)
         for op in iter:
-            c = '(pythonium_get_attribute({}, {})({}))'.format(next(iter), op, c)
+            c = '(pythonium_get_attribute({}, "{}")({}))'.format(next(iter), op, c)
         return c
 
     def visit_BoolOp(self, node):
         op = self.visit(node.op)
-        return '({})'.format(op.join([self.visit(v) for v in node.values]))
+        out = self.visit(node.values[0])
+        for value in node.values[1:]:
+            v = self.visit(value)
+            out = 'pythonium_call(pythonium_getattribute({}, {}), {})'.format(v, op, out)
+        return out
 
     def visit_If(self, node):
         test = self.visit(node.test)
-        self.writer.write('if({}) {{'.format(test))
+        self.writer.write('if (pythonium_is_true({})) {{'.format(test))
         self.writer.push()
         list(map(self.visit, node.body))
         self.writer.pull()
@@ -586,7 +593,7 @@ class Pythonium(NodeVisitor):
     def visit_ClassDef(self, node):
         # 'name', 'bases', 'keywords', 'starargs', 'kwargs', 'body', 'decorator_lis't
         if len(node.bases) == 0:
-            bases = ['object']
+            bases = ['__object']
         else:
             bases = map(self.visit, node.bases)
         bases = '[{}]'.format(', '.join(bases))
