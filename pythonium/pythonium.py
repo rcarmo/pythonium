@@ -94,7 +94,7 @@ class Pythonium(NodeVisitor):
         return 'yield {}'.format(self.visit(node.value))
         
     def visit_In(self, node):
-        return ' in '
+        return '__in__'
 
     def visit_Module(self, node):
         list(map(self.visit, node.body))
