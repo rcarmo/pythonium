@@ -17,8 +17,8 @@ from ast import NodeVisitor
 from utils import YieldSearch
 
 
-ClassDef = namedtuple('ClassDef', 'name')
-FunctionDef = namedtuple('FunctionDef', 'name')
+ClassDefNode = namedtuple('ClassDef', 'name')
+FunctionDefNode = namedtuple('FunctionDef', 'name')
 
 
 class Writer:
@@ -135,17 +135,17 @@ class Pythonium(NodeVisitor):
 
     def _is_inside_method_definition(self):
         if len(self._def_stack) >= 2:
-            if isinstance(self._def_stack[-2], ClassDef):
+            if isinstance(self._def_stack[-2], ClassDefNode):
                 if isinstance(self._def_stack[-1], FunctionDef):
                     return True
         return False
 
     def _is_inside_class_definition(self):
-        return isinstance(self._def_stack[-1], ClassDef)
+        return isinstance(self._def_stack[-1], ClassDefNode)
 
     def visit_FunctionDef(self, node):
         # 'name', 'args', 'body', 'decorator_list', 'returns'
-        self._def_stack.append(FunctionDef(node.name))
+        self._def_stack.append(FunctionDefNode(node.name))
         args, kwargs, varargs, varkwargs = self.visit(node.args)
         
         all_parameters = list(args)
@@ -503,12 +503,12 @@ class Pythonium(NodeVisitor):
                         else:
                             raise NotImplementedError
                     else:
-                        if isinstance(self._def_stack[-1], ClassDef):
+                        if isinstance(self._def_stack[-1], ClassDefNode):
                             name = '__{}_{}'.format(self._def_stack[-1].name, target)
                         else:
                             name = target
                         self.writer.write('{} = __assignement;'.format(name))
-                if isinstance(self._def_stack[-1], ClassDef):
+                if isinstance(self._def_stack[-1], ClassDefNode):
                     return target, name
 
     def visit_Expr(self, node):
@@ -598,7 +598,7 @@ class Pythonium(NodeVisitor):
             bases = map(self.visit, node.bases)
         bases = '[{}]'.format(', '.join(bases))
 
-        self._def_stack.append(ClassDef(node.name))
+        self._def_stack.append(ClassDefNode(node.name))
         self.writer.write('/* class definition {} */'.format(node.name))
         definitions = []
         for child in node.body:
