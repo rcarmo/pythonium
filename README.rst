@@ -27,7 +27,6 @@ The above package installs a ``pythonium`` command that has the following option
   
     -h --help        show this
     -v --version     show version
-    -V --veloce      use veloce mode, generated code is faster but least compliant
     -o --output FILE specify output file [default: stdout]
     -d --deep        generate file dependencies. If --output is not provided, it will generate for each source file a coresponding .js file.
     -r --requirejs   generate requirejs compatible module
