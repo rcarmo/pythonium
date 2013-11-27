@@ -389,7 +389,7 @@ class Pythonium(NodeVisitor):
         return '__sub__'
 
     def visit_USub(self, node):
-        return '-'
+        return '__neg__'
 
     def visit_Div(self, node):
         return '__div__'
@@ -440,13 +440,13 @@ class Pythonium(NodeVisitor):
         return '__is__'
 
     def visit_Not(self, node):
-        return '!'
+        return '__neg__'
 
     def visit_IsNot(self, node):
         return '__isnot__'
 
     def visit_UnaryOp(self, node):
-        return self.visit(node.op) + self.visit(node.operand)
+        return 'pythonium_call(pythonium_get_attribute({}, "{}"))'.format(self.visit(node.operand), self.visit(node.op))
 
     def visit_And(self, node):
         return '__and__'
