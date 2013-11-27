@@ -68,11 +68,7 @@ class Pythonium(NodeVisitor):
         list(map(self.visit, node.body))
         self.writer.pull()
         self.writer.write('}')
-        self.writer.write('catch(__exception__) {')
-        self.writer.push()
         list(map(self.visit, node.handlers))
-        self.writer.pull()
-        self.writer.write('}')
 
     def visit_Raise(self, node):
         
@@ -81,14 +77,19 @@ class Pythonium(NodeVisitor):
     def visit_ExceptHandler(self, node):
         # 'type', 'name', 'body'
         if node.type:
-            self.writer.write('if (pythonium_is_exception(__exception__, {}) {{'.format(self.visit(node.type)))
-            self.writer.push()
-        if node.name:
-            self.writer.write('var {} = __exception__'.format(node.name))
+            if node.name:
+                catch = '{} if (pythonium_is_exception({}, {}))'.format(node.name, node.name, self.visit(node.type))
+            else:
+                catch = '__exception__ if (pythonium_is_exception(__exception__, {}))'.format(self.visit(node.type))
+        elif node.name:
+            catch = node.name
+        else:
+            catch = '__exception__'
+        self.writer.write('catch ({}) {{'.format(catch))
+        self.writer.push()
         list(map(self.visit, node.body))
-        if node.type:
-            self.writer.pull()
-            self.writer.write('}')
+        self.writer.pull()
+        self.writer.write('}')
 
     def visit_Yield(self, node):
         return 'yield {}'.format(self.visit(node.value))
