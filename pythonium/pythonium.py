@@ -14,7 +14,7 @@ from ast import Attribute
 from ast import FunctionDef
 from ast import NodeVisitor
 
-from utils import YieldSearch
+from .utils import YieldSearch
 
 
 ClassDefNode = namedtuple('ClassDef', 'name')
