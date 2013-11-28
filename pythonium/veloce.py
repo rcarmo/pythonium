@@ -12,7 +12,7 @@ from ast import Global
 from ast import FunctionDef
 from ast import NodeVisitor
 
-from utils import YieldSearch
+from .utils import YieldSearch
 
 
 class Writer:

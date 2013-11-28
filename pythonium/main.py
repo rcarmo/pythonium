@@ -19,8 +19,8 @@ If you generate code without -V or --veloce you will need to use the library gen
 import os
 import sys
 
-from veloce import veloce_generate_js
-from pythonium import pythonium_generate_js
+from .veloce import veloce_generate_js
+from .pythonium import pythonium_generate_js
 
 
 __version__ = '0.4.3'
