@@ -6,8 +6,6 @@ __type = {__bases__: [__object], __mro__: [__object], __name__: 'type'}
 __object.__metaclass__ = __type
 
 __NONE = {}
-__TRUE = {}
-__FALSE = {}
 
 
 def issubclass(klass, other):  
