@@ -504,12 +504,12 @@ class Pythonium(NodeVisitor):
                         else:
                             raise NotImplementedError
                     else:
-                        if isinstance(self._def_stack[-1], ClassDefNode):
+                        if self._def_stack and isinstance(self._def_stack[-1], ClassDefNode):
                             name = '__{}_{}'.format(self._def_stack[-1].name, target)
                         else:
                             name = target
                         self.writer.write('{} = __assignement;'.format(name))
-                if isinstance(self._def_stack[-1], ClassDefNode):
+                if self._def_stack and isinstance(self._def_stack[-1], ClassDefNode):
                     return target, name
 
     def visit_Expr(self, node):
@@ -540,7 +540,7 @@ class Pythonium(NodeVisitor):
         out = self.visit(node.values[0])
         for value in node.values[1:]:
             v = self.visit(value)
-            out = 'pythonium_call(pythonium_getattribute({}, {}), {})'.format(v, op, out)
+            out = 'pythonium_call(pythonium_getattribute({}, "{}"), {})'.format(v, op, out)
         return out
 
     def visit_If(self, node):
