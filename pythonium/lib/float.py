@@ -7,3 +7,15 @@ class float:
         a = self.jsobject
         b = other.jsobject
         return float(JS('a / b'))
+
+    def __sub__(self, other):
+        a = self.jsobject
+        b = other.jsobject
+        return float(JS('a - b'))
+
+    def __eq__(self, other):
+        a = self.jsobject
+        b = other.jsobject
+        if JS('a == b'):
+            return True
+        return False

@@ -5,8 +5,6 @@ __type = {__bases__: [__object], __mro__: [__object], __name__: 'type'}
 
 __object.__metaclass__ = __type
 
-__NONE = {}
-
 
 def issubclass(klass, other):  
     if klass is other:
@@ -20,9 +18,7 @@ def issubclass(klass, other):
 
 
 def pythonium_is_true(v):
-    if v is __TRUE:
-        return True
-    elif v:
+    if v is __TRUE or JS('v == true'):
         return True
     return False
 
@@ -104,7 +100,7 @@ def pythonium_create_class(name, bases, attrs):
 
 def lookup(object, attr):
     object_attr = object[attr]
-    if object_attr:
+    if object_attr != None:
         if object_attr and {}.toString.call(object_attr) == '[object Function]':
             def method_wrapper():
                 args = Array.prototype.slice.call(arguments)
@@ -115,7 +111,7 @@ def lookup(object, attr):
     else:
         for base in object.__class__.__mro__:
             class_attr = base[attr]
-            if class_attr:
+            if class_attr != None:
                 if {}.toString.call(class_attr) == '[object Function]':
                     def method_wrapper():
                         args = Array.prototype.slice.call(arguments)
@@ -127,7 +123,7 @@ def lookup(object, attr):
 
 def pythonium_object_get_attribute(object, attr):
     r = lookup(object, attr)
-    if r:
+    if r != None:
         return r
     else:
         getattr = lookup(object, '__getattr__')

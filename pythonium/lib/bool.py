@@ -13,6 +13,9 @@ class _True:
             return True
         return False
 
+    def __neg__(self):
+        return False
+
 
 class _False:
 
@@ -29,6 +32,8 @@ class _False:
             return True
         return False
 
+    def __neg__(self):
+        return True
 
 
 __TRUE = _True()

@@ -2,6 +2,7 @@
 *.py[cod]
 tmp/
 core/tmp/
+pystone/build/
 
 # C extensions
 *.so

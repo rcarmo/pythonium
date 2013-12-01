@@ -12,7 +12,7 @@ setup(
     author_email='amirouche.boubekki@gmail.com',
     url='https://github.com/pythonium/pythonium',
     zip_safe=False,
-    packages=['pythonium'],
+    packages=['pythonium', 'pythonium.lib'],
     install_requires=['docopt'],
     entry_points="""
     [console_scripts]

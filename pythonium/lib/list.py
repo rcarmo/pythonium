@@ -1,14 +1,10 @@
 class list:
     
     def __init__(self, jsobject=None):
-        if not jsobject:
+        if None is jsobject:
             self.jsobject = JSArray()
-        elif isinstance(jsobject, Generator):
-            self.jsobject = JSArray()
-            for item in jsobject:
-                self.jsobject.push(item)
         else:
-            self.jsobject = jsobject()
+            self.jsobject = jsobject
 
     def append(self, item):
         self.jsobject.push(item)
@@ -19,22 +15,13 @@ class list:
     def __len__(self):
         return self.jsobject.length
 
+    def __setitem__(self, index, value):
+        jsobject = self.jsobject
+        index = index.jsobject
+        JS('jsobject[index] = value')
+
     def __getitem__(self, s):
-        if isinstance(s, slice):
-            out = list()
-            index = slice.start
-            if slice.end:
-                end = slice.end
-            else:
-                end = len(self)
-            if slice.step:
-                step = slice.step
-            else:
-                step = 1
-            while index <= end:
-                out.append(self[index])
-                index += step
-            return out
-        else:
-            return self.jsobject[s]
+        jsobject = self.jsobject
+        index = s.jsobject
+        return JS('jsobject[index]')
         

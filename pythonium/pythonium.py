@@ -11,6 +11,7 @@ from ast import parse
 from ast import Assign
 from ast import Global
 from ast import Attribute
+from ast import Subscript
 from ast import FunctionDef
 from ast import NodeVisitor
 
@@ -56,7 +57,7 @@ class Pythonium(NodeVisitor):
 
     def visit(self, node):
         if os.environ.get('DEBUG', False):
-            print(">>>", node.__class__.__name__, node._fields)
+            sys.stderr.write(">>> {} {}\n".format(node.__class__.__name__, node._fields))
         return super().visit(node)
 
     def visit_Pass(self, node):
@@ -101,10 +102,18 @@ class Pythonium(NodeVisitor):
         list(map(self.visit, node.body))
 
     def visit_Tuple(self, node):
-        return '[{}]'.format(', '.join(map(self.visit, node.elts)))
+        args = ', '.join(map(self.visit, node.elts))
+        if args:
+            return 'pythonium_call(list, [{}])'.format(args)
+        else:
+            return 'pythonium_call(list)'
 
     def visit_List(self, node):
-        return '[{}]'.format(', '.join(map(self.visit, node.elts)))
+        args = ', '.join(map(self.visit, node.elts))
+        if args:
+            return 'pythonium_call(list, [{}])'.format(args)
+        else:
+            return 'pythonium_call(list)'
 
     def visit_ImportFrom(self, node):
         if len(node.names) > 1:
@@ -239,7 +248,7 @@ class Pythonium(NodeVisitor):
         return self.visit(node.value)
 
     def visit_Subscript(self, node):
-        return "call({}, '__getitem__')({})".format(self.visit(node.value), self.visit(node.slice))
+        return "pythonium_call(pythonium_get_attribute({}, '__getitem__'), {})".format(self.visit(node.value), self.visit(node.slice))
 
     def visit_arguments(self, node):
         # 'args', 'vararg', 'varargannotation', 'kwonlyargs', 'kwarg', 'kwargannotation', 'defaults', 'kw_defaults'
@@ -469,6 +478,13 @@ class Pythonium(NodeVisitor):
                     value
                 ))
                 return
+            elif isinstance(target, Subscript):
+                self.writer.write('pythonium_call(pythonium_get_attribute({}, "__setitem__"), {}, {});'.format(
+                    self.visit(target.value),
+                    self.visit(target.slice),
+                    value,
+                ))
+                return
             else:
                 target = self.visit(target)
                 self.writer.write('{} = {};'.format(target, value))
@@ -540,7 +556,7 @@ class Pythonium(NodeVisitor):
         out = self.visit(node.values[0])
         for value in node.values[1:]:
             v = self.visit(value)
-            out = 'pythonium_call(pythonium_getattribute({}, "{}"), {})'.format(v, op, out)
+            out = 'pythonium_call(pythonium_get_attribute({}, "{}"), {})'.format(v, op, out)
         return out
 
     def visit_If(self, node):

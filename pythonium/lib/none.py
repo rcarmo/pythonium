@@ -14,3 +14,9 @@ class _None:
         if JS('other === self'):
             return True
         return False
+
+    def __neg__(self):
+        return True
+
+
+__NONE = _None()

@@ -51,7 +51,7 @@ class Veloce(NodeVisitor):
 
     def visit(self, node):
         if os.environ.get('DEBUG', False):
-            print(">>>", node.__class__.__name__, node._fields)
+            sys.stderr.write(">>> {} {}\n".format(node.__class__.__name__, node._fields))
         return super().visit(node)
 
     def visit_Pass(self, node):

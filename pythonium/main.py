@@ -30,13 +30,15 @@ def main():
     from docopt import docopt
     args = docopt(__doc__, version='pythonium ' + __version__)
     if args['--generate']:
-        import lib
-        path = lib.__path__._path[0]
+        from pythonium import lib
+        path = lib.__path__[0]
         output = sys.stdout
         for name in ['runtime.py', 'builtins.py']:
             sys.stderr.write('Processing {}\n'.format(name))
             veloce_generate_js(os.path.join(path, name), False, None, output, False)
         for name in os.listdir(path):
+            if name == '__pycache__':
+                continue
             sys.stderr.write('Processing {}\n'.format(name))
             if name in ['runtime.py', 'builtins.py']:
                 continue
