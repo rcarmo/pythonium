@@ -239,4 +239,4 @@ def Func3(EnumParIn):
     return FALSE
 
 
-main(1000000)
+main(100000)

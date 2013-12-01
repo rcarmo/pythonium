@@ -1,5 +1,8 @@
 class _True:
 
+    def __init__(self):
+        self.jsobject = JS('true')
+
     def __and__(self, other):
         if JS('other === self'):
             return True
@@ -18,6 +21,9 @@ class _True:
 
 
 class _False:
+
+    def __init__(self):
+        self.jsobject = JS('false')
 
     def __and__(self, other):
         return False

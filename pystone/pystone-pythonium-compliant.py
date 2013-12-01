@@ -1,8 +1,8 @@
 def ord(char):
-    return str(char.charCodeAt(0))
+    return int(char.jsobject.charCodeAt(0))
 
-def chr(integer):
-    return int(String.fromCharCode(integer))
+def chr(num):
+    return str(String.fromCharCode(num.jsobject))
 
 
 def clock():
@@ -23,12 +23,15 @@ def range(a, b=None):
     return out
 
 
-LOOPS = 50000
-
-
 __version__ = "1.1"
 
-Ident1, Ident2, Ident3, Ident4, Ident5 = [1,2,3,4,5]
+
+Ident1 = 1
+Ident2 = 2
+Ident3 = 3
+Ident4 = 4
+Ident5 = 5
+
 
 class Record:
 
@@ -47,7 +50,7 @@ class Record:
 TRUE = 1
 FALSE = 0
 
-def main(loops=LOOPS):
+def main(loops):
     x = pystones(loops)
     benchtime = x[0]
     stones = x[1]
@@ -57,7 +60,7 @@ def main(loops=LOOPS):
     print(stones.jsobject)
 
 
-def pystones(loops=LOOPS):
+def pystones(loops):
     return Proc0(loops)
 
 IntGlob = 0
@@ -69,7 +72,7 @@ Array2Glob = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 PtrGlb = None
 PtrGlbNext = None
 
-def Proc0(loops=LOOPS):
+def Proc0(loops):
     global IntGlob
     global BoolGlob
     global Char1Glob
@@ -79,8 +82,9 @@ def Proc0(loops=LOOPS):
     global PtrGlb
     global PtrGlbNext
 
+    LOOPS = range(loops)
     starttime = clock()
-    for i in range(loops):
+    for i in LOOPS:
         pass
     nulltime = clock() - starttime
 
@@ -97,7 +101,7 @@ def Proc0(loops=LOOPS):
 
     starttime = clock()
 
-    for i in range(loops):
+    for i in LOOPS:
         Proc5()
         Proc4()
         IntLoc1 = 2
@@ -227,7 +231,9 @@ def Func1(CharPar1, CharPar2):
 def Func2(StrParI1, StrParI2):
     IntLoc = 1
     while IntLoc <= 1:
-        if Func1(StrParI1[IntLoc], StrParI2[IntLoc+1]) == Ident1:
+        a = StrParI1[IntLoc]
+        b = StrParI2[IntLoc+1]
+        if Func1(a, b) == Ident1:
             CharLoc = 'A'
             IntLoc = IntLoc + 1
     if CharLoc >= 'W' and CharLoc <= 'Z':
@@ -247,4 +253,4 @@ def Func3(EnumParIn):
     return FALSE
 
 
-main(1000000)
+main(100000)

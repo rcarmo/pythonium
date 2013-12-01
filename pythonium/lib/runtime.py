@@ -6,6 +6,12 @@ __type = {__bases__: [__object], __mro__: [__object], __name__: 'type'}
 __object.__metaclass__ = __type
 
 
+def __isnot__(self, other):
+    return not (self is other)
+
+__object.__isnot__ = __isnot__
+
+
 def issubclass(klass, other):  
     if klass is other:
         return True
@@ -18,7 +24,13 @@ def issubclass(klass, other):
 
 
 def pythonium_is_true(v):
-    if v is __TRUE or JS('v == true'):
+    if v is __FALSE or v is False:
+        return False
+    if v is __TRUE or (JS('v !== undefined') and v != __NONE):
+        return True
+    if isinstance(v, int):
+        if pythonium_get_attribute(v, 'jsobject') == 0:
+            return False
         return True
     return False
 
@@ -27,6 +39,17 @@ def isinstance(object, klass):
     if object.__class__:
         return issubclass(object.__class__, klass)
     return False
+
+def pythonium_obj_to_js_exception(obj):
+    def exception():
+        this.exception = obj
+    return exception
+
+
+def pythonium_is_exception(obj, exc):
+    if obj is exc:
+        return True
+    return isinstance(obj, exc)
 
 
 def pythonium_call(object):

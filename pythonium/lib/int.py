@@ -8,10 +8,43 @@ class int:
         b = other.jsobject
         return int(JS('a + b'))
 
+    def __sub__(self, other):
+        a = self.jsobject
+        b = other.jsobject
+        return int(JS('a - b'))
+
     def __lt__(self, other):
         a = self.jsobject
         b = other.jsobject
-        return JS('a < b')
+        if JS('a < b'):
+            return True
+        return False
+
+    def __lte__(self, other):
+        a = self.jsobject
+        b = other.jsobject
+        if JS('a <= b'):
+            return True
+        return False
+
+    def __mul__(self, other):
+        a = self.jsobject
+        b = other.jsobject
+        c = JS('a * b')
+        return int(c)
+
+    def __or__(self, other):
+        a = self.jsobject
+        b = other.jsobject
+        c = JS('a || b')
+        return int(c)
+
+    def __eq__(self, other):
+        a = self.jsobject
+        b = other.jsobject
+        if JS('a == b'):
+            return True
+        return False
 
     def __neg__(self):
         jsobject = self.jsobject

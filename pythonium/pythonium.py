@@ -367,7 +367,7 @@ class Pythonium(NodeVisitor):
             self.writer.write('if(!{}) {{ continue; }}'.format(' && '.join(map(self.visit, node.ifs))))
 
     def visit_While(self, node):
-        self.writer.write('while({}) {{'.format(self.visit(node.test)))
+        self.writer.write('while(pythonium_is_true({})) {{'.format(self.visit(node.test)))
         self.writer.push()
         list(map(self.visit, node.body))
         self.writer.pull()
@@ -585,17 +585,18 @@ class Pythonium(NodeVisitor):
     def visit_For(self, node):
         # support only arrays
         target = node.target.id 
-        iterator_index = target + '_iterator_index'
         iterator = self.visit(node.iter) # iter is the python iterator
-        iterator_name = 'iterator_{}'.format(target)
-        self.writer.write('var {} = {};'.format(iterator_name, iterator))
-        # replace the replace target with the javascript iterator
-        self.writer.write('for (var {}=0; {} < {}.length; {}++) {{'.format(iterator_index, iterator_index, iterator_name, iterator_index))
+        self.writer.write('try {')
         self.writer.push()
-        self.writer.write('var {} = {}[{}];'.format(target, iterator_name, iterator_index))
+        self.writer.write('var __next__ = pythonium_get_attribute(iter({}), "__next__");'.format(iterator))
+        self.writer.write('while(true) {')
+        self.writer.push()
+        self.writer.write('var {} = pythonium_call(__next__);'.format(target))
         list(map(self.visit, node.body))
         self.writer.pull()
         self.writer.write('}')
+        self.writer.pull()
+        self.writer.write('} catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}')
 
     def visit_Continue(self, node):
         self.writer.write('continue;')
