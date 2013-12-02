@@ -23,7 +23,7 @@ from .veloce import veloce_generate_js
 from .pythonium import pythonium_generate_js
 
 
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
 
 def main():
