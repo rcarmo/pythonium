@@ -36,6 +36,10 @@ class list:
         else:
             self.jsobject = JSArray()
 
+    def __repr__(self):
+        s = "[" + ", ".join(self) + "]"
+        return s
+
     def append(self, item):
         jsobject = self.jsobject
         JS('jsobject.push(item)')

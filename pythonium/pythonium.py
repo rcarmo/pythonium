@@ -184,20 +184,49 @@ class Pythonium(NodeVisitor):
         else:
             self.writer.write('var {} = function({}) {{'.format(name, __args))
         self.writer.push()
-        if not varkwargs:
+        if not varkwargs and kwargs:
             varkwargs = '__kwargs'
 
         # unpack arguments
+        self.writer.write('/* BEGIN unpacking arguments */')
         if varargs or varkwargs != '__kwargs' or kwargs:
             self.writer.write('var __args = Array.prototype.slice.call(arguments);')
-        if varkwargs != '__kwargs' or kwargs:
+        if varkwargs and (varkwargs != '__kwargs' or kwargs):
+            self.writer.write('if (__args[__args.length - 2] === __ARGUMENTS_PADDING__) {')
+            self.writer.push()
             self.writer.write('var {} = __args[__args.length - 1];'.format(varkwargs))
-        for keyword in kwargs.keys():
+            self.writer.write('var varkwargs_start = __args.length - 2;')
+            self.writer.pull()
+            self.writer.write('} else {')  # no variable keywords was provided so it's empty
+            self.writer.push()
+            self.writer.write('var {} = {{}};'.format(varkwargs))
+            self.writer.write('var varkwargs_start = undefined;')
+            self.writer.pull()
+            self.writer.write('}')
+        num_args = len(args)
+        for index, keyword in enumerate(kwargs.keys()):
+            position = num_args + index - 1
+            self.writer.write('if (varkwargs_start !== undefined && {} > varkwargs_start) {{'.format(position))
+            self.writer.push()
+ 
+            self.writer.write('{} = {}.{} || {};'.format(keyword, varkwargs, keyword, kwargs[keyword])) 
+            self.writer.pull()
+            self.writer.write('} else {')
+            self.writer.push()
             self.writer.write('{} = {} || {}.{} || {};'.format(keyword, keyword, varkwargs, keyword, kwargs[keyword]))
-            self.writer.write('delete {}.{};'.format(varkwargs, keyword))
+            self.writer.pull()
+            self.writer.write('}')
+            if varkwargs != '__kwargs':
+                self.writer.write('delete {}.{};'.format(varkwargs, keyword))
         if varargs:
             self.writer.write('var {} = __args.splice({});'.format(varargs, len(args)))
-            self.writer.write('{}.pop();'.format(varargs))
+            if varkwargs and (varkwargs != '__kwargs' or kwargs):
+                self.writer.write('if (varkwargs_start) {{ {}.splice(varkwargs_start - {}) }}'.format(varargs, len(args)))
+            self.writer.write('{} = pythonium_call(list, {});'.format(varargs, varargs))
+        if varkwargs and varkwargs != '__kwargs':
+            self.writer.write('{} = pythonium_call(dict, {});'.format(varkwargs, varkwargs))
+        self.writer.write('/* END unpacking arguments */')
+
         # check for variable creation use var if not global
         def retrieve_vars(body, vars=None):
             local_vars = set()
@@ -226,7 +255,7 @@ class Pythonium(NodeVisitor):
         if local_vars - global_vars:
             a = ','.join(local_vars-global_vars)
             self.writer.write('var {};'.format(a))
-
+        self.writer.write('/* BEGIN function */')
         # output function body
         list(map(self.visit, node.body))
         self.writer.pull()
@@ -317,10 +346,6 @@ class Pythonium(NodeVisitor):
             return '[{}]'.format(out)
         elif name == 'JS':
             return node.args[0].s
-        elif name == 'print':
-            args = [self.visit(e) for e in node.args]
-            s = 'console.log({})'.format(', '.join(args))
-            return s
         else:
             if node.args:
                 args = [self.visit(e) for e in node.args]
@@ -330,18 +355,19 @@ class Pythonium(NodeVisitor):
             if node.keywords and not node.kwargs:
                 keywords = '__kwargs{}__'.format(self.uuid())
                 _ = ', '.join(map(lambda x: '{}: {}'.format(x[0], x[1]), map(self.visit, node.keywords)))
-                self.writer.write('var {} = {{{}}}'.format(keywords, _))
+                self.writer.write('var {} = {{{}}};'.format(keywords, _))
+                args.append('__ARGUMENTS_PADDING__')
                 args.append(keywords)
             elif node.kwargs and not node.keywords:
+                args.append('__ARGUMENTS_PADDING__')
                 args.append(node.kwargs.id)
             elif node.kwargs and node.keywords:
                 for key, value in map(self.visit, node.keywords):
-                    self.writer.write('{}.{} = {}'.format(node.kwargs.id, key, value))
+                    self.writer.write('{}.{} = {};'.format(node.kwargs.id, key, value))
+                args.append('__ARGUMENTS_PADDING__')
                 args.append(node.kwargs.id)
-            if args:
-                return 'pythonium_call({}, {})'.format(name, ', '.join(args))
-            else:
-                return 'pythonium_call({})'.format(name)
+            args.insert(0, name)
+            return 'pythonium_call({})'.format(', '.join(args))
 
     def visit_ListComp(self, node):
         # 'elt', 'generators'
@@ -574,13 +600,19 @@ class Pythonium(NodeVisitor):
             self.writer.write('}')
 
     def visit_Dict(self, node):
-        a = []
+        keys = []
+        values = []
         for i in range(len(node.keys)):
             k = self.visit(node.keys[i])
+            keys.append(k)
             v = self.visit(node.values[i])
-            a.append('{}:{}'.format(k, v))
-        b = ','.join(a)
-        return '{{{}}}'.format(b)
+            values.append(v)
+        keys = "[{}]".format(", ".join(keys))
+        values = "[{}]".format(", ".join(values))
+        if node.keys:
+            return "pythonium_create_dict({}, {})".format(keys, values)
+        else:
+            return "pythonium_create_dict()"
 
     def visit_For(self, node):
         # support only arrays

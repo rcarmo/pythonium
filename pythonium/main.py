@@ -23,7 +23,7 @@ from .veloce import veloce_generate_js
 from .pythonium import pythonium_generate_js
 
 
-__version__ = '0.4.5'
+__version__ = '0.4.6'
 
 
 def main():
@@ -33,16 +33,16 @@ def main():
         from pythonium import lib
         path = lib.__path__[0]
         output = sys.stdout
-        for name in ['runtime.py', 'builtins.py']:
+        for name in ['runtime.py']:
             sys.stderr.write('Processing {}\n'.format(name))
             veloce_generate_js(os.path.join(path, name), False, None, output, False)
         for name in os.listdir(path):
             if name == '__pycache__':
                 continue
-            sys.stderr.write('Processing {}\n'.format(name))
-            if name in ['runtime.py', 'builtins.py']:
+            if name in ['runtime.py']:
                 continue
             else:
+                sys.stderr.write('Processing {}\n'.format(name))
                 pythonium_generate_js(os.path.join(path, name), False, None, output, False)
         output.close()
     else:

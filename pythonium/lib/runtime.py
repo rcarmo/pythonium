@@ -6,6 +6,9 @@ __type = {__bases__: [__object], __mro__: [__object], __name__: 'type'}
 __object.__metaclass__ = __type
 
 
+__ARGUMENTS_PADDING__ = {ARGUMENTS_PADDING:"YES IT IS!"}
+
+
 def __isnot__(self, other):
     return not (self is other)
 
@@ -21,6 +24,18 @@ def issubclass(klass, other):
         if issubclass(base, other):
             return True
     return False
+
+
+def pythonium_create_dict(keys, values):
+    out = {}
+    max = keys.length
+    index = 0
+    while index < max:
+        key = keys[index].jsobject
+        value = values[index]
+        out[key] = value
+        index += 1
+    return pythonium_call(dict, out, None)
 
 
 def pythonium_is_true(v):
@@ -153,8 +168,6 @@ def pythonium_object_get_attribute(object, attr):
         if getattr:
             return getattr(attr)
         else:
-            console.log('__get_attribute__', object, attr)
-            console.trace()
             raise AttributeError
 
 __object.__getattribute__ = pythonium_object_get_attribute

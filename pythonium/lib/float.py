@@ -2,6 +2,9 @@ class float:
 
     def __init__(self, jsobject):
         self.jsobject = jsobject
+
+    def __repr__(self):
+        return self
     
     def __div__(self, other):
         a = self.jsobject

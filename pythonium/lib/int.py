@@ -3,6 +3,9 @@ class int:
     def __init__(self, jsobject):
         self.jsobject = jsobject
 
+    def __repr__(self):
+        return self
+
     def __add__(self, other):
         a = self.jsobject
         b = other.jsobject
