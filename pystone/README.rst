@@ -1,3 +1,5 @@
+Tested with 0.4.6 release
+
 Veloce mode::
 
   Pystone(1.1) time for 100000 passes = 0.3130004405975342
