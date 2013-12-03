@@ -29,3 +29,7 @@ def map(func, objects):
     for obj in objects:
         out.append(func(obj))
     return out
+
+def jstype(obj):
+    # XXX: fallback to __jstype__ method when it doesn't exist
+    return obj.jsobject
