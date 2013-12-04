@@ -24,7 +24,7 @@ var issubclass = function(klass, other) {
     return false;
 };
 var pythonium_create_dict = function(keys, values) {
-    var key,out,index,value,max;
+    var max,index,value,out,key;
     out = {};
     max = keys.length;
     index = 0;
@@ -70,7 +70,7 @@ var pythonium_is_exception = function(obj, exc) {
     return isinstance(obj, exc);
 };
 var pythonium_call = function(object) {
-    var instance,init,args;
+    var instance,args,init;
     args = Array.prototype.slice.call(arguments, 1);
     if(object.__metaclass__) {
         instance = {__class__:object};
@@ -85,7 +85,7 @@ var pythonium_call = function(object) {
     }
 };
 var pythonium_mro = function(bases) {
-    var not_head,candidate,non_empty,res,empty,index,seqs;
+    var res,seqs,non_empty,candidate,index,not_head,empty;
     "Calculate the Method Resolution Order of bases using the C3 algorithm.\n\n    Suppose you intended creating a class K with the given base classes. This\n    function returns the MRO which K would have, *excluding* K itself (since\n    it doesn't yet exist), as if you had actually created the class.\n\n    Another way of looking at this, if you pass a single class K, this will\n    return the linearization of K (the MRO of K, *including* itself).\n    ";
     var __comp0__ = [];
     var __iterator1__ = bases;
@@ -161,7 +161,7 @@ var pythonium_create_class = function(name, bases, attrs) {
     return attrs;
 };
 var lookup = function(object, attr) {
-    var object_attr,class_attr;
+    var class_attr,object_attr;
     object_attr = object[attr];
     if((object_attr != undefined)) {
         if((object_attr&&({}.toString.call(object_attr) == "[object Function]"))) {
@@ -196,7 +196,7 @@ var lookup = function(object, attr) {
     }
 };
 var pythonium_object_get_attribute = function(object, attr) {
-    var getattr,r;
+    var r,getattr;
     r = lookup(object, attr);
     if((r != undefined)) {
         return r;
@@ -250,7 +250,7 @@ var range = function(a, b) {
         b = b || __kwargs.b || __NONE;
     }
     /* END unpacking arguments */
-    var out,end,index;
+    var index,end,out;
     /* BEGIN function */
     if (pythonium_is_true(b)) {
         index = a;
@@ -309,35 +309,13 @@ var map = function(func, objects) {
     } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
     return out;
 };
-/* class definition Generator */
-var __init__ = function(self, generator) {
+var jstype = function(obj) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
     /* BEGIN function */
-    pythonium_set_attribute(self, "generator", generator);
+    return pythonium_get_attribute(obj, "jsobject");
 };
-var next = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    try {
-        return pythonium_call(pythonium_get_attribute(pythonium_get_attribute(self, "generator"), "next"));
-    }
-    catch (__exception__) {
-        if (pythonium_is_true((pythonium_get_attribute(pythonium_call(pythonium_get_attribute(pythonium_get_attribute(pythonium_create_dict(), "toString"), "call"), __exception__), "__eq__")(pythonium_call(str, "[object StopIteration]"))))) {
-            throw StopIteration;
-        }
-        else {
-            throw pythonium_call(Exception, __exception__);
-        }
-    }
-};
-var Generator = pythonium_create_class("Generator", [__object], {
-    __init__: __init__,
-    next: next,
-});
 /* class definition _True */
 var __init__ = function(self) {
     /* BEGIN unpacking arguments */
@@ -562,7 +540,7 @@ var __len__ = function(self) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var jsobject,length;
+    var length,jsobject;
     /* BEGIN function */
     jsobject = pythonium_get_attribute(self, "jsobject");
     length = jsobject.length;
@@ -604,7 +582,7 @@ var __div__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var b,a;
+    var a,b;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -614,7 +592,7 @@ var __sub__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var b,a;
+    var a,b;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -624,7 +602,7 @@ var __eq__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var b,a;
+    var a,b;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -747,7 +725,7 @@ var __add__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var b,a;
+    var a,b;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -757,7 +735,7 @@ var __sub__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var b,a;
+    var a,b;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -767,7 +745,7 @@ var __lt__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var b,a;
+    var a,b;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -780,7 +758,7 @@ var __lte__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var b,a;
+    var a,b;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -793,7 +771,7 @@ var __mul__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var c,b,a;
+    var a,b,c;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -804,7 +782,7 @@ var __or__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var c,b,a;
+    var a,b,c;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -815,7 +793,7 @@ var __eq__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var b,a;
+    var a,b;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -837,7 +815,7 @@ var __div__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var b,a;
+    var a,b;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -868,7 +846,7 @@ var __repr__ = function(self) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var out,value_repr,key_repr;
+    var key_repr,value_repr,out;
     /* BEGIN function */
     out = pythonium_call(list);
     try {
@@ -898,7 +876,7 @@ var get = function(self, key, d) {
         d = d || __kwargs.d || __NONE;
     }
     /* END unpacking arguments */
-    var jsobject,attr;
+    var attr,jsobject;
     /* BEGIN function */
     jsobject = pythonium_get_attribute(self, "jsobject");
     key = pythonium_get_attribute(key, "jsobject");
@@ -967,7 +945,7 @@ var join = function(self, objects) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var out,obj,index,L;
+    var L,index,out,obj;
     /* BEGIN function */
     L = pythonium_call(len, objects);
     if (pythonium_is_true(pythonium_call(pythonium_get_attribute(L, "__neg__")))) {
@@ -986,7 +964,7 @@ var __add__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var b,a;
+    var a,b;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -996,7 +974,7 @@ var __lte__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var b,a;
+    var a,b;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -1009,7 +987,7 @@ var __gte__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var b,a;
+    var a,b;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -1022,7 +1000,7 @@ var __gt__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var b,a;
+    var a,b;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -1035,7 +1013,7 @@ var __eq__ = function(self, other) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var b,a;
+    var a,b;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
@@ -1048,7 +1026,7 @@ var __getitem__ = function(self, index) {
     /* BEGIN unpacking arguments */
     var __args = Array.prototype.slice.call(arguments);
     /* END unpacking arguments */
-    var c,jsobject;
+    var jsobject,c;
     /* BEGIN function */
     jsobject = pythonium_get_attribute(self, "jsobject");
     index = pythonium_get_attribute(index, "jsobject");
