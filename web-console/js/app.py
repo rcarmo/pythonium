@@ -9,9 +9,9 @@ def compile():
     jQuery.ajax({
         url: '/compile',
         type: 'POST',
-        data: {css=editors["css"].getValue(), html=editors["html"].getValue(), python=editors["python"].getValue()},
-    }
-    jQuery("iframe").
+        data: {css: editors["css"].getValue(), html: editors["html"].getValue(), python:editors["python"].getValue()},
+    })
+    jQuery("iframe").src = '/compiled'
 
 
 jQuery('[value="compile"]').click(compile)
