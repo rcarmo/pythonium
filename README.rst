@@ -7,6 +7,28 @@ Python 3 to Javascript translator written in Python that produces fast portable 
 
 **tldr**: read the `tutorial <https://github.com/pythonium/pythonium/tree/master/examples/todo-list#todo-list>`_
 
+Quick examples
+==============
+
+Hello, World!::
+
+    $ echo "print('Hello, world')" >> hello.py
+    $ pythonium -V hello.py
+    console.log("Hello, world");
+
+A loop. ::
+
+    $ echo "for i in range(10): print(i)" >> loop.py
+    $ pythonium -V loop.py
+    var iterator_i = range(10);
+    for (var i_iterator_index=0; i_iterator_index < iterator_i.length; i_iterator_index++) {
+        var i = iterator_i[i_iterator_index];
+        console.log(i);
+    }
+
+
+
+
 Getting started (2 minutes)
 ===========================
 
