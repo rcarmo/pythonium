@@ -1,0 +1,3 @@
+[submodule "web-console/js/ace"]
+	path = web-console/js/ace
+	url = https://github.com/ajaxorg/ace-builds.git
