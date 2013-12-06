@@ -26,13 +26,15 @@ def compare_output(expected, result):
 
 if __name__ == '__main__':
     ok_ctr = test_ctr = 0
+    TMPDIR = os.path.join(TESTS_ROOT, 'tmp')
+    try: os.mkdir(TMPDIR)
+    except OSError: pass
 
     for test in os.listdir(TESTS_ROOT):
         if test.endswith('.py'):
             test_ctr += 1
             filepath = os.path.join(TESTS_ROOT, test)
-            exec_script = test + 'exec.js'
-            exec_script = os.path.join('/tmp', exec_script)
+            exec_script = os.path.join(TMPDIR, test + 'exec.js')
             with open(exec_script, 'w') as f:
                 try:
                     veloce_generate_js(filepath, output=f)
