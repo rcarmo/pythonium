@@ -7,8 +7,8 @@ Read the `tutorial <https://github.com/pythonium/pythonium/tree/master/examples/
 
 (8 minutes)
 
-Quick examples
-==============
+Quick examples (2 minutes)
+==========================
 
 Hello, World!::
 
@@ -27,10 +27,10 @@ A loop. ::
     }
 
 
-
-
 Getting started (2 minutes)
 ===========================
+
+You can try Pythonium in the `online web console <http://hypermove.net/pythonium-web-console/>`_
 
 You will need Python 3 to run the translator. Refer to your operating system documentation to know how to do it (most Linux distributions have Python 3 readily available).
 
@@ -61,7 +61,7 @@ The above package installs a ``pythonium`` command that has the following option
 What? (2 minutes)
 =================
 
-Pythonium will exist in two flavors, each with their own strengths and performance characteristics. As you go down the list the more features you'll have, and performance will, of course, decrease with sophistication (but not much):
+Pythonium exists in two flavors, each with their own strengths and performance characteristics. As you go down the list the more features you'll have, and performance will, of course, decrease with sophistication (but not much):
 
 - Pythonium **Veloce**
 
@@ -84,19 +84,6 @@ Pythonium will exist in two flavors, each with their own strengths and performan
 Also there is `cookbook <https://github.com/pythonium/pythonium/wiki/Pythonium-Veloce-Cookbook>`_.
 
 - Pythonium **Compliant** 100% compliant with CPython 3
-
-Why? (3 minutes)
-================
-
-Is 100% compliance of any interest right **now**? Do you need to build anything that uses **all the features** of CPython right now? **No**. 
-
-Can you trade some features for speed? **Yes**.
-
-For the industry, experienced programmers, and hobbyists, the best approach is to have something tailored to get things done in the browser with the syntax they prefer.
-
-As things stand, APIs differ significantly between back-end and front-end environments, so there will always be differences. For instance, if you choose **pythonium core** you will need to learn to work with Javascript arrays and objects and work around their specificities. Working around specifities of the *language* can be boring, but it's the best that is available right now, and it's after all, not that bad.
-
-As a programmer that knows both Python and Javascript, I prefer to focus on what is the easiest for me to do and maximise what I will be able to do next. The immediate answer to this answer is what is already available in the repository.
 
 How? (1 minute)
 ===============
