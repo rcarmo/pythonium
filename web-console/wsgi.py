@@ -11,8 +11,6 @@ from xml.etree.ElementTree import tostring
 import html5lib
 from webob import Request
 from webob import Response
-from jinja2 import Environment
-from jinja2 import FileSystemLoader
 from fileserver import file_response
 
 from pythonium.veloce import Veloce
