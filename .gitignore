@@ -3,6 +3,7 @@
 tmp/
 core/tmp/
 pystone/build/
+web-console/settings.py
 
 # C extensions
 *.so
