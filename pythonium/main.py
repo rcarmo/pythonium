@@ -32,14 +32,20 @@ def main(argv=None):
     args = docopt(__doc__, argv, version='pythonium ' + __version__)
     if args['--generate']:
         # call ourself for each file in pythonium.lib:
-        veloce_libfiles = ['runtime.py']
         from pythonium import lib
+
+        # runtime is built separatly
+        # it must appear first in the file
+        # and it must be built using veloce mode
+        path = lib.__path__[0]
+        argv = ['--veloce', os.path.join(path, 'runtime.py')]
+        main(argv)
         for path in lib.__path__:
             for name in os.listdir(path):
                 if name.endswith('.py'):
+                    if name == 'runtime.py':
+                        continue
                     argv = [os.path.join(path, name)]
-                    if name in veloce_libfiles:
-                        argv.insert(0, '--veloce')
                     main(argv)
         return
 
