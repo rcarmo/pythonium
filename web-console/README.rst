@@ -1,12 +1,18 @@
-Pythonium Core Template Project
-###############################
+Pythonium Web Console
+#####################
 
-Get started with pythonium-core right away.
+Fetch this repository with the following command::
 
-Fetch this repository and install pythonium-core::
+  git clone --recursive https://github.com/pythonium/pythonium
 
-  pip install pythonium
+And install requirements::
 
-Edit ``./js/app.py`` and use ``make`` to rebuild.
+  pip install -r requirements.txt
+
+You will need **python 3** environment!
+
+Run the server with the following command::
+
+  python3 wsgi.py
 
 Enjoy!

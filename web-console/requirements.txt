@@ -1,2 +1,4 @@
-rororo
+webob
+server-reloader
 pythonium
+html5lib
