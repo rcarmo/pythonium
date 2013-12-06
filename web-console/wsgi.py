@@ -113,7 +113,7 @@ def compile(app, request):
     if mode == 'compliant':
         script = Element("script")
         script.set('type', 'text/javascript')
-        script.set('src', '/js/pythonium.js')
+        script.set('src', 'js/pythonium.js')
         script.text = "/* nothing */"
         body.insert(0, script)
     page = tostring(html)

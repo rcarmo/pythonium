@@ -11,7 +11,7 @@ def reload_iframe():
 def compile():
     mode = jQuery("select").val()
     jQuery.ajax({
-        url: '/compile',
+        url: 'compile',
         type: 'POST',
         data: {css: editors["css"].getValue(), html: editors["html"].getValue(), python:editors["python"].getValue(), mode: mode},
     }).done(reload_iframe)
