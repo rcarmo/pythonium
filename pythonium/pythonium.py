@@ -47,7 +47,7 @@ class Pythonium(NodeVisitor):
         super().__init__()
         self.dependencies = []
         self._def_stack = []
-        self.__all__ = None
+        self.__all__ = []
         self.writer = Writer()
         self._uuid = -1
 
@@ -115,6 +115,26 @@ class Pythonium(NodeVisitor):
         else:
             return 'pythonium_call(list)'
 
+    def visit_alias(self, node):
+        out = ''
+        name = node.name
+        asname = node.asname
+        if not asname:
+            asname = name
+        path = []
+        for module in name.split('.')[:-1]:
+            path.append(module)
+            path_to_module = '.'.join(path)
+            self.writer.write("var {} = typeof({}) == 'undefined' ? {{}} : {}".format(path_to_module, path_to_module, path_to_module))
+        path.append(asname.split('.')[-1])
+        path = '/'.join(path)
+        self.writer.write('var {} = require("{}");'.format(asname, path))
+
+        path = '/'.join(name.split('.'))
+        self.dependencies.append('/' + path)  # relative to project root
+
+
+
     def visit_ImportFrom(self, node):
         if len(node.names) > 1:
             raise NotImplemented
@@ -126,16 +146,16 @@ class Pythonium(NodeVisitor):
         if not asname:
             asname = name
         modules = '/'.join(node.module.split('.'))
-        path = modules + '/' + name
+        path = modules
         if node.level == 0:
-            self.writer.write('var {} = require("{}");'.format(asname, path))
+            self.writer.write('var {} = require("{}").{};'.format(asname, path, name))
             self.dependencies.append('/' + path)  # relative to project root
         elif node.level == 1:
-            self.writer.write('var {} = require.toUrl("./{}");'.format(asname, path))
+            self.writer.write('var {} = require.toUrl("./{}").{};'.format(asname, path, name))
             self.dependencies.append('./' + path)  # relative to current file
         else:
             path = '../' * node.level + path
-            self.writer.write('var {} = require.toUrl("{}");'.format(asname, path))
+            self.writer.write('var {} = require.toUrl("{}").{};'.format(asname, path, name))
             self.dependencies.append(path)  # relative to current file
         return out
 
@@ -155,6 +175,8 @@ class Pythonium(NodeVisitor):
 
     def visit_FunctionDef(self, node):
         # 'name', 'args', 'body', 'decorator_list', 'returns'
+        if len(self._def_stack) == 0:  # module level definition must be exported
+            self.__all__.append(node.name)
         self._def_stack.append(FunctionDefNode(node.name))
         args, kwargs, varargs, varkwargs = self.visit(node.args)
         
@@ -495,9 +517,13 @@ class Pythonium(NodeVisitor):
 
     def visit_Assign(self, node):
         value = self.visit(node.value)
+        if len(self._def_stack) == 0:  # module level definition must be exported
+            export = True
+        else:
+            export = False
         if len(node.targets) == 1 and not isinstance(node.targets[0], Tuple):
-            target = node.targets[0]
             if isinstance(target, Attribute):
+                target = node.targets[0]
                 self.writer.write('pythonium_set_attribute({}, "{}", {});'.format(
                     self.visit(target.value),
                     target.attr.replace('__DOLLAR__', '$'),
@@ -513,6 +539,8 @@ class Pythonium(NodeVisitor):
                 return
             else:
                 target = self.visit(target)
+                if export:
+                    self.__all__.append(target)
                 self.writer.write('{} = {};'.format(target, value))
                 return
 
@@ -520,6 +548,8 @@ class Pythonium(NodeVisitor):
         for target in node.targets:
             if isinstance(target, Tuple):
                 targets = map(self.visit, target.elts)
+                if export:
+                    self.__all__.extends(targets)
                 for index, target in enumerate(targets):
                     self.writer.write('{} = __assignement[{}];\n'.format(target, index))
             else:
@@ -533,24 +563,13 @@ class Pythonium(NodeVisitor):
                     ))
                 else:
                     target = self.visit(target)
-                    if target == '__all__':
-                        if isinstance(node.value, Name):
-                            self.__all__ = value
-                        elif isinstance(node.value, Str):
-                            self.__all__ = node.value.s
-                        elif isinstance(node.value, List):
-                            if isinstance(node.value.elts[0], Name):
-                                self.__all__ = list(map(self.visit, node.value.elts))
-                            else:
-                                self.__all__ = list(map(lambda x: x.s, node.value.elts))
-                        else:
-                            raise NotImplementedError
+                    if self._def_stack and isinstance(self._def_stack[-1], ClassDefNode):
+                        name = '__{}_{}'.format(self._def_stack[-1].name, target)
                     else:
-                        if self._def_stack and isinstance(self._def_stack[-1], ClassDefNode):
-                            name = '__{}_{}'.format(self._def_stack[-1].name, target)
-                        else:
-                            name = target
-                        self.writer.write('{} = __assignement;'.format(name))
+                        name = target
+                        if export:
+                            self.__all__.extends(name)
+                    self.writer.write('{} = __assignement;'.format(name))
                 if self._def_stack and isinstance(self._def_stack[-1], ClassDefNode):
                     return target, name
 
@@ -642,6 +661,8 @@ class Pythonium(NodeVisitor):
 
     def visit_ClassDef(self, node):
         # 'name', 'bases', 'keywords', 'starargs', 'kwargs', 'body', 'decorator_lis't
+        if len(self._def_stack) == 0:  # module level definition must be exported
+            self.__all__.append(node.name)
         if len(node.bases) == 0:
             bases = ['__object']
         else:
@@ -677,19 +698,15 @@ def pythonium_generate_js(filepath, requirejs=False, root_path=None, output=None
     with open(os.path.join(dirname, basename)) as f:
         input = parse(f.read())
     tree = parse(input)
-    python_core = Pythonium()
-    python_core.visit(tree)
-    script = python_core.writer.value()
+    pythonium = Pythonium()
+    pythonium.visit(tree)
+    script = pythonium.writer.value()
     if requirejs:
         out = 'define(function(require) {\n'
         out += script
-        if isinstance(python_core.__all__, str):
-            out += '\nreturn {};\n'.format(python_core.__all__)
-        elif python_core.__all__:
-            public = '{{{}}}'.format(', '.join(map(lambda x: '{}: {}'.format(x[0], x[1]), zip(python_core.__all__, python_core.__all__))))
-            out += '\nreturn {};\n'.format(public)
-        else:
-            raise Exception('__all__ is not defined!')
+        all = map(lambda x: "'{}': {}".format(x, x), pythonium.__all__)
+        all = '{{{}}}'.format(', '.join(all))
+        out += 'return {}'.format(all)
         out += '\n})\n'
         script = out
     if deep:
