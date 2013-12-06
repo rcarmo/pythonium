@@ -17,7 +17,13 @@ from fileserver import file_response
 
 from pythonium.veloce import Veloce
 from pythonium.pythonium import Pythonium
-        
+
+
+import resource
+
+
+resource.setrlimit(resource.RLIMIT_AS, (1000 * 1048576, -1))
+
 
 class Nerfed(object):
 
@@ -28,18 +34,24 @@ class Nerfed(object):
         self.handlers[path] = view
 
     def __call__(self, environ, start_response):
-        request = Request(environ)
-        # first match the domain if any try to match the path
-        view = self.handlers.get(request.path, None)
-        if view is None:
-            response = Response('<h1>Not found</h1>', 404)
-        else:
-            try:
-                response = view(self, request)
-            except Exception:
-                print_exc()
-                response = Response('<h1>Internal Server Error</h1>', 500)
-        return response(environ, start_response)
+        try:
+            request = Request(environ)
+            # first match the domain if any try to match the path
+            view = self.handlers.get(request.path, None)
+            if view is None:
+                response = Response('<h1>Not found</h1>', 404)
+            else:
+                try:
+                    response = view(self, request)
+                except Exception:
+                    print_exc()
+                    response = Response('<h1>Internal Server Error</h1>', 500)
+            return response(environ, start_response)
+        except MemoryError:
+            global cache
+            del cache
+            cache = dict()
+            return self(environ, start_response)
 
     def redirect(self, url):
         return Response(status=302, location=url)
