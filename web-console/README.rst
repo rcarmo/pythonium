@@ -9,7 +9,11 @@ And install requirements::
 
   pip install -r requirements.txt
 
-You will need **python 3** environment!
+You will need **python 3**!
+
+Use the following command to generate the default settings file::
+
+  echo "ROOT_URL = ''" > settings.py
 
 Run the server with the following command::
 
