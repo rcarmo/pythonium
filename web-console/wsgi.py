@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+import json
 import random
 import string
-import json
+import resource
 from ast import parse
 from logging import getLogger
 from traceback import print_exc
@@ -16,8 +17,7 @@ from fileserver import file_response
 from pythonium.veloce import Veloce
 from pythonium.pythonium import Pythonium
 
-
-import resource
+from settings import ROOT_URL
 
 
 resource.setrlimit(resource.RLIMIT_AS, (1000 * 1048576, -1))
@@ -29,7 +29,7 @@ class Nerfed(object):
         self.handlers = dict()
 
     def register(self, view, path):
-        self.handlers[path] = view
+        self.handlers[ROOT_URL + path] = view
 
     def __call__(self, environ, start_response):
         try:
