@@ -9,7 +9,7 @@ And install requirements::
 
   pip install -r requirements.txt
 
-You will need **python 3**!
+You will need **python 3.3** or superior!
 
 Run the server with the following command::
 
