@@ -11,10 +11,6 @@ And install requirements::
 
 You will need **python 3**!
 
-Use the following command to generate the default settings file::
-
-  echo "ROOT_URL = ''" > settings.py
-
 Run the server with the following command::
 
   python3 wsgi.py
