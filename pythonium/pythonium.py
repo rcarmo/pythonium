@@ -144,7 +144,6 @@ class Pythonium(NodeVisitor):
         return ''
 
     def _is_inside_method_definition(self):
-        sys.stderr.write("{}\n".format(self._def_stack))
         if len(self._def_stack) >= 2:
             if isinstance(self._def_stack[-2], ClassDefNode):
                 if isinstance(self._def_stack[-1], FunctionDefNode):
@@ -190,7 +189,7 @@ class Pythonium(NodeVisitor):
 
         # unpack arguments
         self.writer.write('/* BEGIN unpacking arguments */')
-        if varargs or varkwargs != '__kwargs' or kwargs:
+        if varargs or (varkwargs and varkwargs == '__kwargs') or kwargs:
             self.writer.write('var __args = Array.prototype.slice.call(arguments);')
         if varkwargs and (varkwargs != '__kwargs' or kwargs):
             self.writer.write('if (__args[__args.length - 2] === __ARGUMENTS_PADDING__) {')
