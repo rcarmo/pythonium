@@ -144,9 +144,10 @@ class Pythonium(NodeVisitor):
         return ''
 
     def _is_inside_method_definition(self):
+        sys.stderr.write("{}\n".format(self._def_stack))
         if len(self._def_stack) >= 2:
             if isinstance(self._def_stack[-2], ClassDefNode):
-                if isinstance(self._def_stack[-1], FunctionDef):
+                if isinstance(self._def_stack[-1], FunctionDefNode):
                     return True
         return False
 
