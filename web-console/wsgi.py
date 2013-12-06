@@ -79,7 +79,7 @@ def compile(app, request):
     mode = POST['mode']
     python = POST['python']
     tree = parse(python)
-    if mode == 'compliant':
+    if mode == 'veloce':
         veloce = Veloce()
         veloce.visit(tree)
         js = veloce.writer.value()
@@ -90,14 +90,22 @@ def compile(app, request):
     css = POST['css']
     html = POST['html']
     html = html5lib.parse(html, namespaceHTMLElements=False)
-    style = Element("style")
-    style.text = css if css else '/* nothing */'
-    script = Element("script")
-    script.set('type', "text/javascript")
-    script.text = js if js else '/* nothing yet */'
     body = html.find('body')
-    body.insert(0, script)
-    body.insert(0, style)
+    if js:
+        script = Element("script")
+        script.set('type', 'text/javascript')
+        script.text = js        
+        body.insert(0, script)
+    if css:
+        style = Element("style")
+        style.text = css
+        body.insert(0, style)
+    if mode == 'compliant':
+        script = Element("script")
+        script.set('type', 'text/javascript')
+        script.set('src', '/js/pythonium.js')
+        script.text = "/* nothing */"
+        body.insert(0, script)
     page = tostring(html)
     cache[token] = page
     return response
@@ -132,6 +140,7 @@ if __name__ == '__main__':
     app.register(static('js/classy.js'), '/js/classy.js')
     app.register(static('js/jquery.js'), '/js/jquery.js')
     app.register(static('js/app.py.js'), '/js/app.py.js')
+    app.register(static('js/pythonium.js'), '/js/pythonium.js')
     app.register(static('css/app.css'), '/css/app.css')
     def run_server():
         server = make_server('localhost', 8000, app)
