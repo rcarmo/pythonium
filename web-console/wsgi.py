@@ -17,7 +17,7 @@ from fileserver import file_response
 from pythonium.veloce import Veloce
 from pythonium.pythonium import Pythonium
 
-from settings import ROOT_URL
+import settings
 
 
 resource.setrlimit(resource.RLIMIT_AS, (1000 * 1048576, -1))
@@ -29,7 +29,7 @@ class Nerfed(object):
         self.handlers = dict()
 
     def register(self, view, path):
-        self.handlers[ROOT_URL + path] = view
+        self.handlers[getattr(settings, 'ROOT_URL', '') + path] = view
 
     def __call__(self, environ, start_response):
         try:
@@ -84,7 +84,7 @@ def compile(app, request):
     token = request.cookies.get('token', None)
     if token is None:
         token = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(512))
-        response.set_cookie('token', token)
+        response.set_cookie('token', token, domain=getattr(settings, 'COOKIE_DOMAIN', None))
     POST = request.POST
     mode = POST['mode']
     python = POST['python']
@@ -132,7 +132,7 @@ def compiled(app, request):
         page = cache[token]
     except:
         response = static('howto.html')(app, request)
-        response.delete_cookie('token')
+        response.delete_cookie('token', domain==getattr(settings, 'COOKIE_DOMAIN', None))
         return response
     return Response(page, 200)
 
