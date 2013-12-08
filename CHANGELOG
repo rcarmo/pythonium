@@ -1,0 +1,8 @@
+0.5.0
+	- Web Console available online @ http://hypermove.net/pythonium-web-console/
+	- Fix runtests.py: avoid envoy, made it work on Windows (Peter Ljunglöf)
+	- Clean up main function (Peter Ljunglöf)
+	- Fixed namespaced method definitions. Previously defining a method FOO would override any previous definition of function FOO.
+	- Rework from ... import ... and import ...
+	- Renamed ``JS`` function to ``jscode``
+	- ``new`` function as a new syntax ``new(Date)(1, 2, 3)`` cf. https://github.com/pythonium/pythonium/commit/a423709102338b084d669075b0ffa439beb0abfa
