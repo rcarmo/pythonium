@@ -20,8 +20,9 @@ def print(*args):
     out = list()
     for arg in args:
         r = repr(arg)  # returns a str object
-        out.append(r.jsobject)
-    console.log.apply(console, out.jsobject)
+        out.append(jstype(r))
+    out = jstype(out)
+    JS('console.log.apply(console, out)')
 
 
 def map(func, objects):
@@ -31,5 +32,22 @@ def map(func, objects):
     return out
 
 def jstype(obj):
-    # XXX: fallback to __jstype__ method when it doesn't exist
-    return obj.jsobject
+    return obj.__jstype__()
+
+
+def hash(obj):
+    return obj.__hash__()
+
+def iter(obj):
+    return obj.__iter__()
+
+
+def next(obj):
+    return obj.__next__()
+
+
+def len(obj):
+    return obj.__len__()
+
+
+

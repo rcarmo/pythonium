@@ -6,13 +6,30 @@ __type = {__bases__: [__object], __mro__: [__object], __name__: 'type'}
 __object.__metaclass__ = __type
 
 
-__ARGUMENTS_PADDING__ = {ARGUMENTS_PADDING:"YES IT IS!"}
+__ARGUMENTS_PADDING__ = {ARGUMENTS_PADDING: "YES IT IS!"}
 
 
 def __isnot__(self, other):
     return not (self is other)
 
 __object.__isnot__ = __isnot__
+
+
+def __hash__(me):
+    uid = lookup(me, 'uid')
+    if not uid:
+        uid = __object._uid
+        __object._uid += 1
+        self.__uid__ = uid
+    return pythonium_call(str, '{' + uid)
+__object._uid = 1
+__object.__hash__ = __hash__
+
+
+def __rcontains__(me, other):
+    contains = lookup(other, '__contains__')
+    return contains(me)
+__object.__rcontains__ = __rcontains__;
 
 
 def issubclass(klass, other):  
@@ -168,6 +185,7 @@ def pythonium_object_get_attribute(object, attr):
         if getattr:
             return getattr(attr)
         else:
+            console.trace(object, attr)
             raise AttributeError
 
 __object.__getattribute__ = pythonium_object_get_attribute

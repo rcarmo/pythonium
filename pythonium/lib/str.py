@@ -4,7 +4,20 @@ class str:
         self.jsobject = jsobject
 
     def __repr__(self):
-        return self
+        if "'" in self:
+            return '"' + self + '"'
+        return "'" + self + "'"
+
+    def __jstype__(self):
+        return self.jsobject
+
+    def __hash__(self):
+        return '"' + self
+
+    def __contains__(self, s):
+        if int(self.jsobject.indexOf(jstype(s))) != -1:
+            return True
+        return False
 
     def join(self, objects):
         L = len(objects)

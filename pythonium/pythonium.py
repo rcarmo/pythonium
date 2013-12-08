@@ -96,7 +96,7 @@ class Pythonium(NodeVisitor):
         return 'yield {}'.format(self.visit(node.value))
         
     def visit_In(self, node):
-        return '__in__'
+        return '__rcontains__'
 
     def visit_Module(self, node):
         list(map(self.visit, node.body))
@@ -246,7 +246,7 @@ class Pythonium(NodeVisitor):
                 self.writer.write('if (varkwargs_start) {{ {}.splice(varkwargs_start - {}) }}'.format(varargs, len(args)))
             self.writer.write('{} = pythonium_call(list, {});'.format(varargs, varargs))
         if varkwargs and varkwargs != '__kwargs':
-            self.writer.write('{} = pythonium_call(dict, {});'.format(varkwargs, varkwargs))
+            self.writer.write('{} = pythonium_call(dict, __ARGUMENTS_PADDING__, {});'.format(varkwargs, varkwargs))
         self.writer.write('/* END unpacking arguments */')
 
         # check for variable creation use var if not global
@@ -522,8 +522,8 @@ class Pythonium(NodeVisitor):
         else:
             export = False
         if len(node.targets) == 1 and not isinstance(node.targets[0], Tuple):
+            target = node.targets[0]
             if isinstance(target, Attribute):
-                target = node.targets[0]
                 self.writer.write('pythonium_set_attribute({}, "{}", {});'.format(
                     self.visit(target.value),
                     target.attr.replace('__DOLLAR__', '$'),

@@ -3,6 +3,12 @@ class _True:
     def __init__(self):
         self.jsobject = JS('true')
 
+    def __jstype__(self):
+        return self.jsobject
+
+    def __repr__(self):
+        return "True"
+
     def __and__(self, other):
         if JS('other === self'):
             return True
@@ -24,6 +30,12 @@ class _False:
 
     def __init__(self):
         self.jsobject = JS('false')
+
+    def __jstype__(self):
+        return self.jsobject
+
+    def __repr__(self):
+        return "False"
 
     def __and__(self, other):
         return False

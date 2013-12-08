@@ -3,6 +3,12 @@ class int:
     def __init__(self, jsobject):
         self.jsobject = jsobject
 
+    def __hash__(self):
+        return str(self.jsobject)
+
+    def __jstype__(self):
+        return self.jsobject
+
     def __repr__(self):
         return self
 

@@ -10,3 +10,15 @@ class TypeError(Exception):
 
 class AttributeError(Exception):
     pass
+
+
+class KeyError(Exception):
+    pass
+
+
+class StopIteration(Exception):
+    pass
+
+
+class NotImplementedError(Exception):
+    pass

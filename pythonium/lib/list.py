@@ -1,19 +1,3 @@
-class StopIteration:
-    pass
-
-
-def iter(obj):
-    return obj.__iter__()
-
-
-def next(obj):
-    return obj.__next__()
-
-
-def len(obj):
-    return obj.__len__()
-
-
 class ListIterator:
 
     def __init__(self, obj):
@@ -36,9 +20,14 @@ class list:
         else:
             self.jsobject = JSArray()
 
+    def __hash__(self):
+        raise TypeError("unhashable type: 'list'")
+
     def __repr__(self):
-        s = "[" + ", ".join(self) + "]"
-        return s
+        return "[" + ", ".join(map(repr, self)) + "]"
+
+    def __jstype__(self):
+        return NotImplementedError
 
     def append(self, item):
         jsobject = self.jsobject
@@ -54,7 +43,7 @@ class list:
 
     def __getitem__(self, s):
         jsobject = self.jsobject
-        index = s.jsobject
+        index = jstype(s)
         return JS('jsobject[index]')
 
     def __len__(self):
@@ -64,3 +53,10 @@ class list:
 
     def __iter__(self):
         return ListIterator(self)
+
+    def __contains__(self, obj):
+        for item in self:
+            if obj == item:
+                return True
+        return False
+            
