@@ -44,7 +44,7 @@ def issubclass(klass, other):
 
 
 def pythonium_is_true(v):
-    if not v:
+    if v is False:
         return False
     if v is True:
         return True

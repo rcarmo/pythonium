@@ -35,6 +35,20 @@ class int:
             return True
         return False
 
+    def __gt__(self, other):
+        a = self.jsobject
+        b = other.jsobject
+        if jscode('a > b'):
+            return True
+        return False        
+
+    def __gte__(self, other):
+        a = self.jsobject
+        b = other.jsobject
+        if jscode('a >= b'):
+            return True
+        return False        
+
     def __lte__(self, other):
         a = self.jsobject
         b = other.jsobject

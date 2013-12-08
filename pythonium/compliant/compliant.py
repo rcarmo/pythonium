@@ -191,9 +191,10 @@ class Compliant(NodeVisitor):
     def visit_List(self, node):
         args = ', '.join(map(self.visit, node.elts))
         if args:
-            self.writer.write('var __a_list = pythonium_call(list);')
-            self.writer.write('__a_list.jsobject = [{}];'.format(args))
-            return '__a_list'
+            name = '__a_list{}'.format(self.uuid())
+            self.writer.write('var {} = pythonium_call(list);'.format(name))
+            self.writer.write('{}.jsobject = [{}];'.format(name, args))
+            return name
         else:
             return 'pythonium_call(list)'
 
@@ -796,10 +797,11 @@ class Compliant(NodeVisitor):
             v = self.visit(node.values[i])
             values.append(v)
         if node.keys:
-            self.writer.write('var __a_dict = pythonium_call(dict)')
+            name = '__a_dict{}'.format(self.uuid())
+            self.writer.write('var {} = pythonium_call(dict);'.format(name))
             for key, value in zip(keys, values):
-                self.writer.write('__a_dict.__setitem__(__a_dict, key, value);')
-            return '__a_dict'
+                self.writer.write('{}.__setitem__({}, key, value);'.format(name))
+            return name
         else:
             return 'pythonium_call(dict)'
 
@@ -816,10 +818,11 @@ class Compliant(NodeVisitor):
         iterator = self.visit(node.iter) # iter is the python iterator
         self.writer.write('try {')
         self.writer.push()
-        self.writer.write('var __next__ = pythonium_get_attribute(iter({}), "__next__");'.format(iterator))
+        nextname = '__next{}__'.format(self.uuid())
+        self.writer.write('var {} = pythonium_get_attribute(iter({}), "__next__");'.format(nextname, iterator))
         self.writer.write('while(true) {')
         self.writer.push()
-        self.writer.write('var {} = __next__();'.format(target))
+        self.writer.write('var {} = {}();'.format(target, nextname))
         list(map(self.visit, node.body))
         self.writer.pull()
         self.writer.write('}')
