@@ -9,3 +9,4 @@
 	- added ``jstype`` function which returns a javascript objects equivalent to Python object (missing implementation for list and dict)
 	- ``print`` was defined in ``lib/builtins.py`` and must be used to log Python objects. ``console.log(fuuuu)`` must be used to log JavaScript objects.
 	- rework ``dict`` so that it works more like CPython one.
+	- fixed a bug where if two functions were nested and the nested function was a generator both functions were dubbed generators
