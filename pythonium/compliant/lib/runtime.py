@@ -44,15 +44,21 @@ def issubclass(klass, other):
 
 
 def pythonium_is_true(v):
-    if v is __FALSE or v is False:
+    if not v:
         return False
-    if v is __TRUE or (jscode('v !== undefined') and v != __NONE):
+    if v is True:
         return True
-    if isinstance(v, int):
-        if pythonium_get_attribute(v, 'jsobject') == 0:
+    if v is __NONE:
+        return False
+    if v is __FALSE:
+        return False
+    if isinstance(v, int) or isinstance(v, float):
+        if v.jsobject == 0:
             return False
-        return True
-    return False
+    length = lookup(v, '__length__')
+    if length and length() == 0:
+        return False
+    return True
 
 
 def isinstance(object, klass):
@@ -195,3 +201,8 @@ def pythonium_get_attribute(object, attr):
 
 def pythonium_set_attribute(object, attr, value):
     object[attr] = value
+
+
+def ASSERT(condition, message):
+    if not condition:
+        raise message or pythonium_call(str, 'Assertion failed')

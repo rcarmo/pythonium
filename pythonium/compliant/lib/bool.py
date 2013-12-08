@@ -1,58 +1,44 @@
-class _True:
+class bool:
 
-    def __init__(self):
-        self.jsobject = jscode('true')
-
-    def __jstype__(self):
-        return self.jsobject
-
-    def __repr__(self):
-        return "True"
-
-    def __and__(self, other):
-        if jscode('other === self'):
-            return True
-        return False
-
-    def __or__(self, other):
-        return True
-
-    def __is__(self, other):
-        if jscode('other === self'):
-            return True
-        return False
-
-    def __neg__(self):
-        return False
-
-
-class _False:
-
-    def __init__(self):
-        self.jsobject = jscode('false')
+    def __init__(self, obj):
+        self.jsobject = pythonium_is_true(obj)
 
     def __jstype__(self):
         return self.jsobject
 
     def __repr__(self):
-        return "False"
+        if self.jsobject:
+            return 'True'
+        return False
 
     def __and__(self, other):
+        if self:
+            if other:
+                return True
         return False
 
     def __or__(self, other):
-        if jscode('other === __TRUE'):
+        if self:
+            return True
+        if other:
             return True
         return False
 
     def __is__(self, other):
-        if jscode('other === self'):
+        if jscode('self === other'):
             return True
         return False
 
     def __neg__(self):
+        if self:
+            return False
+        return True
+
+    def __not__(self):
+        if self:
+            return False
         return True
 
 
-__TRUE = _True()
-__FALSE = _False()
+__TRUE = bool(jscode('true'))
+__FALSE = bool(jscode('false'))

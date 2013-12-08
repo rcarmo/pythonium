@@ -136,8 +136,11 @@ class Pythonium(NodeVisitor):
         self.writer.push()
         list(map(self.visit, node.body))
         self.writer.pull()
-        self.writer.write('}')
+        self.writer.write('} catch (__exception__) {')
+        self.writer.push()
         list(map(self.visit, node.handlers))
+        self.writer.pull()
+        self.writer.write('}')
 
     # Raise(expr? exc, expr? cause)
     def visit_Raise(self, node):
@@ -145,21 +148,18 @@ class Pythonium(NodeVisitor):
 
     # ExceptHandler(expr? type, identifier? name, stmt* body)
     def visit_ExceptHandler(self, node):
-        # 'type', 'name', 'body'
         if node.type:
             if node.name:
-                catch = '{} if (pythonium_is_exception({}, {}))'.format(node.name, node.name, self.visit(node.type))
+                self.writer.write('var {} = __exception__;'.format(node.name))
+                name = node.name
             else:
-                catch = '__exception__ if (pythonium_is_exception(__exception__, {}))'.format(self.visit(node.type))
-        elif node.name:
-            catch = node.name
-        else:
-            catch = '__exception__'
-        self.writer.write('catch ({}) {{'.format(catch))
-        self.writer.push()
+                name = '__exception__'
+            self.writer.write('if (pythonium_is_exception({}, {})) {{'.format(name, self.visit(node.type)))
+            self.writer.push()
         list(map(self.visit, node.body))
-        self.writer.pull()
-        self.writer.write('}')
+        if node.type:
+            self.writer.pull()
+            self.writer.write('}')
 
     # Yield(expr? value)
     def visit_Yield(self, node):
@@ -757,7 +757,10 @@ class Pythonium(NodeVisitor):
         return out
 
     # Assert(expr test, expr? msg)
-    visit_Assert = NotImplemented
+    def visit_Assert(self, node):
+        test = self.visit(node.test)
+        msg = self.visit(node.msg) if node.msg else 'undefined'
+        self.writer.write('ASSERT({}, {});'.format(test, msg))
 
     # If(expr test, stmt* body, stmt* orelse)
     def visit_If(self, node):

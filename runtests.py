@@ -12,8 +12,8 @@ from subprocess import CalledProcessError
 
 
 from pythonium.main import main
-from pythonium.veloce import veloce_generate_js
-from pythonium.pythonium import pythonium_generate_js
+from pythonium.veloce.veloce import veloce_generate_js
+from pythonium.compliant.compliant import pythonium_generate_js
 
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
@@ -62,14 +62,14 @@ if __name__ == '__main__':
                             pythonium_generate_js(filepath, output=f)
                     except Exception as exc:
                         print_exc()
-                        print('< Translating {} in mode {} failed with the above exception.'.format(test, mode))
+                        print('< Translating {} in {} mode failed with the above exception.'.format(test, mode))
                         continue
 
                 try:
                     result = check_output(['nodejs', exec_script], stderr=STDOUT)
                 except CalledProcessError as err:
                     print(err.output.decode(errors='replace'))
-                    print('< {} ERROR in mode {} :('.format(test, mode))
+                    print('< {} ERROR in {} mode :('.format(test, mode))
                     continue
 
                 expected_file = os.path.join(TESTS_ROOT, test+'.expected')
@@ -88,9 +88,9 @@ if __name__ == '__main__':
                 if diffs:
                     for line in diffs:
                         print(line)
-                    print('< {} FAILED in mode {} :('.format(test, mode))
+                    print('< {} FAILED in {} mode :('.format(test, mode))
                 else:
                     ok_ctr += 1
-                    print('< {} PASS in mode {} :)'.format(test, mode))
+                    print('< {} PASS in {} mode :)'.format(test, mode))
 
     print("= Passed {}/{} tests".format(ok_ctr, test_ctr))
