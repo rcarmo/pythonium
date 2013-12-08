@@ -25,7 +25,7 @@ from docopt import docopt
 from .veloce import veloce_generate_js
 from .pythonium import pythonium_generate_js
 
-__version__ = '0.4.7'
+__version__ = '0.5.0'
 
 
 def main(argv=None):
