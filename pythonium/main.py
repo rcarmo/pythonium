@@ -22,8 +22,8 @@ import os
 import sys
 from docopt import docopt
 
-from .veloce import veloce_generate_js
-from .pythonium import pythonium_generate_js
+from .veloce.veloce import veloce_generate_js
+from .compliant.compliant import pythonium_generate_js
 
 __version__ = '0.5.0'
 
@@ -32,7 +32,7 @@ def main(argv=None):
     args = docopt(__doc__, argv, version='pythonium ' + __version__)
     if args['--generate']:
         # call ourself for each file in pythonium.lib:
-        from pythonium import lib
+        from pythonium.compliant import lib
 
         # runtime is built separatly
         # it must appear first in the file

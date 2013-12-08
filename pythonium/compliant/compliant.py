@@ -15,8 +15,8 @@ from ast import Subscript
 from ast import FunctionDef
 from ast import NodeVisitor
 
-from .utils import YieldSearch
-from .veloce import Veloce
+from ..utils import YieldSearch
+from ..veloce.veloce import Veloce
 
 ClassDefNode = namedtuple('ClassDef', 'name')
 FunctionDefNode = namedtuple('FunctionDef', 'name')
