@@ -54,9 +54,70 @@ class Veloce(NodeVisitor):
             sys.stderr.write(">>> {} {}\n".format(node.__class__.__name__, node._fields))
         return super().visit(node)
 
+    ######################################################################
+    # mod = Module | Interactive | Expression | Suite
+    #
+    # stmt = FunctionDef | ClassDef | Return | Delete | Assign | AugAssign
+    #      | For | While | If | With | Raise | Try | Assert | Import | ImportFrom
+    #      | Global | Nonlocal | Expr | Pass | Break | Continue
+    #
+    # expr = BoolOp | BinOp | UnaryOp | Lambda | IfExp | Dict | Set 
+    #      | ListComp | SetComp | DictComp | GeneratorExp | Yield | YieldFrom
+    #      | Compare | Call | Num | Str | Bytes | Ellipsis | Attribute
+    #      | Subscript | Starred | Name | List | Tuple
+    #
+    # expr_context = Load | Store | Del | AugLoad | AugStore | Param
+    #
+    # slice = Slice | ExtSlice | Index
+    #
+    # boolop = And | Or
+    #
+    # operator = Add | Sub | Mult | Div | Mod | Pow | LShift | RShift
+    #          | BitOr | BitXor | BitAnd | FloorDiv
+    #
+    # unaryop = Invert | Not | UAdd | USub
+    #
+    # cmpop = Eq | NotEq | Lt | LtE | Gt | GtE | Is | IsNot | In | NotIn
+    #
+    # comprehension = (expr target, expr iter, expr* ifs)
+    #
+    # excepthandler = ExceptHandler(expr? type, identifier? name, stmt* body)
+    #
+    # arguments = (arg* args, identifier? vararg, expr? varargannotation,
+    #              arg* kwonlyargs, identifier? kwarg, expr? kwargannotation, 
+    #              expr* defaults, expr* kw_defaults)
+    #
+    # arg = (identifier arg, expr? annotation)
+    #
+    # keyword = (identifier arg, expr value)
+    #
+    # alias = (identifier name, identifier? asname)
+    #
+    # withitem = (expr context_expr, expr? optional_vars)
+    ######################################################################
+
+    # Interactive(stmt* body)
+    visit_Interactive = NotImplemented
+
+    # Expression(expr body)
+    visit_Expression = NotImplemented
+
+    # Suite(stmt* body)
+    visit_Suite = NotImplemented
+
+    # expr_context = Load | Store | Del | AugLoad | AugStore | Param
+    visit_Load = NotImplemented
+    visit_Store = NotImplemented
+    visit_Del = NotImplemented
+    visit_AugLoad = NotImplemented
+    visit_AugStore = NotImplemented
+    visit_Param = NotImplemented
+
+    # Pass
     def visit_Pass(self, node):
         self.writer.write('/* pass */')
 
+    # Try(stmt* body, excepthandler* handlers, stmt* orelse, stmt* finalbody)
     def visit_Try(self, node):
         self.writer.write('try {')
         self.writer.push()
@@ -69,27 +130,50 @@ class Veloce(NodeVisitor):
         self.writer.pull()
         self.writer.write('}')
 
+    # Raise(expr? exc, expr? cause)
     def visit_Raise(self, node):
         self.writer.write('throw {};'.format(self.visit(node.exc)))
 
+    # ExceptHandler(expr? type, identifier? name, stmt* body)
     def visit_ExceptHandler(self, node):
         list(map(self.visit, node.body))
 
+    # Yield(expr? value)
     def visit_Yield(self, node):
         return 'yield {}'.format(self.visit(node.value))
 
+    # YieldFrom(expr value)
+    visit_YieldFrom = NotImplemented
+
+    # In
     def visit_In(self, node):
         return ' in '
 
+    # NotIn
+    visit_NotIn = NotImplemented
+
+    # Module(stmt* body)
     def visit_Module(self, node):
         list(map(self.visit, node.body))
 
+    # Tuple(expr* elts, expr_context ctx)
     def visit_Tuple(self, node):
         return '[{}]'.format(', '.join(map(self.visit, node.elts)))
 
+    # List(expr* elts, expr_context ctx) 
     def visit_List(self, node):
         return '[{}]'.format(', '.join(map(self.visit, node.elts)))
 
+    # Set(expr* elts)
+    visit_Set = NotImplemented
+
+    # alias = (identifier name, identifier? asname)
+    visit_alias = NotImplemented
+
+    # Import(alias* names)
+    visit_Import = NotImplemented
+
+    # ImportFrom(identifier? module, alias* names, int? level)
     def visit_ImportFrom(self, node):
         if len(node.names) > 1:
             raise NotImplemented
@@ -114,10 +198,15 @@ class Veloce(NodeVisitor):
             self.dependencies.append(path)  # relative to current file
         return out
 
+    # Global(identifier* names)
     def visit_Global(self, node):
         # handled in visit_FunctionDef
         return ''
 
+    # Nonlocal(identifier* names)
+    visit_Nonlocal = NotImplemented
+
+    # FunctionDef(identifier name, arguments args, stmt* body, expr* decorator_list, expr? returns)
     def visit_FunctionDef(self, node):
         # 'name', 'args', 'body', 'decorator_list', 'returns'
         self._function_stack.append(node.name)
@@ -210,18 +299,27 @@ class Veloce(NodeVisitor):
             self.writer.write('{} = {}({});'.format(node.name, decorator, node.name))
         self._function_stack.pop()
 
+    # Slice(expr? lower, expr? upper, expr? step) 
     def visit_Slice(self, node):
         start = self.visit(node.lower) if node.lower else 'undefined'
         end = self.visit(node.upper) if node.upper else 'undefined'
         step = self.visit(node.step) if node.step else 'undefined'
         return 'slice({}, {}, {})'.format(start, step, end)
 
+    # Index(expr value)
     def visit_Index(self, node):
         return self.visit(node.value)
 
+    # ExtSlice(slice* dims) 
+    visit_ExtSlice = NotImplemented
+
+    # Subscript(expr value, slice slice, expr_context ctx)
     def visit_Subscript(self, node):
         return '{}[{}]'.format(self.visit(node.value), self.visit(node.slice))
 
+    # arguments = (arg* args, identifier? vararg, expr? varargannotation,
+    #              arg* kwonlyargs, identifier? kwarg, expr? kwargannotation, 
+    #              expr* defaults, expr* kw_defaults)
     def visit_arguments(self, node):
         # 'args', 'vararg', 'varargannotation', 'kwonlyargs', 'kwarg', 'kwargannotation', 'defaults', 'kw_defaults'
         args = list(map(lambda x: x.arg, node.args))
@@ -232,6 +330,10 @@ class Veloce(NodeVisitor):
         kwargs = dict(zip(args[-len(defaults):], defaults))
         return args, kwargs, vararg, varkwargs
 
+    # arg = (identifier arg, expr? annotation)
+    visit_arg = NotImplemented
+
+    # Name(identifier id, expr_context ctx)
     def visit_Name(self, node):
         if node.id == 'None':
             return 'undefined'
@@ -245,16 +347,19 @@ class Veloce(NodeVisitor):
             return 'null'
         return node.id.replace('__DOLLAR__', '$')
 
+    # Attribute(expr value, identifier attr, expr_context ctx)
     def visit_Attribute(self, node):
         name = self.visit(node.value)
         attr = node.attr.replace('__DOLLAR__', '$')
         return '{}.{}'.format(name, attr)
 
+    # keyword = (identifier arg, expr value)
     def visit_keyword(self, node):
         if isinstance(node.arg, str):
             return node.arg, self.visit(node.value)
         return self.visit(node.arg), self.visit(node.value)
 
+    # Call(expr func, expr* args, keyword* keywords, expr? starargs, expr? kwargs)
     def visit_Call(self, node):
         name = self.visit(node.func)
         if name == 'instanceof':
@@ -317,6 +422,7 @@ class Veloce(NodeVisitor):
                 args.append(node.kwargs.id)
             return '{}({})'.format(name, ', '.join(args))
 
+    # ListComp(expr elt, comprehension* generators)
     def visit_ListComp(self, node):
         # 'elt', 'generators'
         comprehension = '__comp{}__'.format(self.uuid())
@@ -329,6 +435,16 @@ class Veloce(NodeVisitor):
             self.writer.write('}')
         return comprehension
 
+    # SetComp(expr elt, comprehension* generators)
+    visit_SetComp = NotImplemented
+
+    # DictComp(expr key, expr value, comprehension* generators)
+    visit_DictComp = NotImplemented
+
+    # GeneratorExp(expr elt, comprehension* generators)
+    visit_GeneratorExp = NotImplemented
+
+    # comprehension = (expr target, expr iter, expr* ifs)
     def visit_comprehension(self, node):
         # 'target', 'iter', 'ifs'
         iterator = '__iterator{}__'.format(self.uuid())
@@ -340,6 +456,7 @@ class Veloce(NodeVisitor):
         if node.ifs:
             self.writer.write('if(!{}) {{ continue; }}'.format(' && '.join(map(self.visit, node.ifs))))
 
+    # While(expr test, stmt* body, stmt* orelse)
     def visit_While(self, node):
         self.writer.write('while({}) {{'.format(self.visit(node.test)))
         self.writer.push()
@@ -347,16 +464,22 @@ class Veloce(NodeVisitor):
         self.writer.pull()
         self.writer.write('}')
 
+    # AugAssign(expr target, operator op, expr value)
     def visit_AugAssign(self, node):
         target = self.visit(node.target)
         self.writer.write('{} = {} {} {};'.format(target, target, self.visit(node.op), self.visit(node.value)))
 
+    # Str(string s)
     def visit_Str(self, node):
         s = node.s.replace('\n', '\\n')
         if '"' in s:
             return "'{}'".format(s)
         return '"{}"'.format(s)
 
+    # Bytes(bytes s)
+    visit_Bytes = NotImplemented
+
+    # BinOp(expr left, operator op, expr right)
     def visit_BinOp(self, node):
         left = self.visit(node.left)
         op = self.visit(node.op)
@@ -369,6 +492,8 @@ class Veloce(NodeVisitor):
     def visit_Add(self, node):
         return '+'
 
+    visit_UAdd = NotImplemented
+
     def visit_Sub(self, node):
         return '-'
 
@@ -377,6 +502,10 @@ class Veloce(NodeVisitor):
 
     def visit_Div(self, node):
         return '/'
+
+    visit_FloorDiv = NotImplemented
+    visit_Pow      = NotImplemented
+    visit_Invert   = NotImplemented
 
     def visit_Mod(self, node):
         return '%'
@@ -414,6 +543,7 @@ class Veloce(NodeVisitor):
     def visit_NotEq(self, node):
         return '!='
 
+    # Num(object n)
     def visit_Num(self, node):
         return str(node.n)
 
@@ -426,6 +556,7 @@ class Veloce(NodeVisitor):
     def visit_IsNot(self, node):
         return '!=='
 
+    # UnaryOp(unaryop op, expr operand)
     def visit_UnaryOp(self, node):
         return self.visit(node.op) + self.visit(node.operand)
 
@@ -435,11 +566,13 @@ class Veloce(NodeVisitor):
     def visit_Or(self, node):
         return '||'
 
+    # Delete(expr* targets)
     def visit_Delete(self, node):
         for target in node.targets:
             target = self.visit(target)
             self.writer.write('delete {};'.format(target))
 
+    # Assign(expr* targets, expr value)
     def visit_Assign(self, node):
         value = self.visit(node.value)
         if len(node.targets) == 1 and not isinstance(node.targets[0], Tuple):
@@ -472,13 +605,16 @@ class Veloce(NodeVisitor):
                     else:
                         self.writer.write('{} = __assignement;'.format(target))
 
+    # Expr(expr value)
     def visit_Expr(self, node):
         self.writer.write(self.visit(node.value) + ';')
 
+    # Return(expr? value)
     def visit_Return(self, node):
         if node.value:
             self.writer.write('return {};'.format(self.visit(node.value)))
 
+    # Compare(expr left, cmpop* ops, expr* comparators)
     def visit_Compare(self, node):
         def merge(a, b, c):
             if a and b:
@@ -495,10 +631,15 @@ class Veloce(NodeVisitor):
             c = '({} {} {})'.format(next(iter), op, c)
         return c
 
+    # BoolOp(boolop op, expr* values)
     def visit_BoolOp(self, node):
         op = self.visit(node.op)
         return '({})'.format(op.join([self.visit(v) for v in node.values]))
 
+    # Assert(expr test, expr? msg)
+    visit_Assert = NotImplemented
+
+    # If(expr test, stmt* body, stmt* orelse)
     def visit_If(self, node):
         test = self.visit(node.test)
         self.writer.write('if({}) {{'.format(test))
@@ -513,6 +654,16 @@ class Veloce(NodeVisitor):
             self.writer.pull()
             self.writer.write('}')
 
+    # IfExp(expr test, expr body, expr orelse)
+    visit_IfExp = NotImplemented
+
+    # Ellipsis
+    visit_Ellipsis = NotImplemented
+
+    # Starred(expr value, expr_context ctx)
+    visit_Starred = NotImplemented
+
+    # Dict(expr* keys, expr* values)
     def visit_Dict(self, node):
         a = []
         for i in range(len(node.keys)):
@@ -522,6 +673,13 @@ class Veloce(NodeVisitor):
         b = ','.join(a)
         return '{{{}}}'.format(b)
 
+    # With(withitem* items, stmt* body)
+    visit_With = NotImplemented
+
+    # withitem = (expr context_expr, expr? optional_vars)
+    visit_withitem = NotImplemented
+
+    # For(expr target, expr iter, stmt* body, stmt* orelse)
     def visit_For(self, node):
         # support only arrays
         target = node.target.id 
@@ -537,16 +695,21 @@ class Veloce(NodeVisitor):
         self.writer.pull()
         self.writer.write('}')
 
+    # Continue
     def visit_Continue(self, node):
         self.writer.write('continue;')
 
+    # Break
     def visit_Break(self, node):
         self.writer.write('break;')
 
+    # Lambda(arguments args, expr body)
     def visit_Lambda(self, node):
         args = ', '.join(map(self.visit, node.args.args))
         return '(function ({}) {{{}}})'.format(args, self.visit(node.body))
 
+    # ClassDef(identifier name, expr* bases, keyword* keywords, 
+    #          expr? starargs, expr? kwargs, stmt* body, expr* decorator_list)
     def visit_ClassDef(self, node):
         # 'name', 'bases', 'keywords', 'starargs', 'kwargs', 'body', 'decorator_lis't
         if len(node.bases) > 1:
