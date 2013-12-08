@@ -7,4 +7,8 @@ all: build
 build:
 	mkdir build
 
+veloce:
+	pythonium -V test.py > build/test.py.js
+	nodejs --harmony build/test.py.js
+
 
