@@ -41,7 +41,7 @@ class _False:
         return False
 
     def __or__(self, other):
-        if jscode('other === True'):
+        if jscode('other === __TRUE'):
             return True
         return False
 

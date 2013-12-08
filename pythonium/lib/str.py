@@ -4,9 +4,7 @@ class str:
         self.jsobject = jsobject
 
     def __repr__(self):
-        if "'" in self:
-            return '"' + self + '"'
-        return "'" + self + "'"
+        return self
 
     def __jstype__(self):
         return self.jsobject
@@ -18,6 +16,9 @@ class str:
         if int(self.jsobject.indexOf(jstype(s))) != -1:
             return True
         return False
+
+    def __iter__(self):
+        return ListIterator(self)
 
     def join(self, objects):
         L = len(objects)
@@ -35,6 +36,9 @@ class str:
         a = self.jsobject
         b = other.jsobject
         return str(jscode('a + b'))
+
+    def __len__(self):
+        return int(self.jsobject.length)
 
     def __lte__(self, other):
         a = self.jsobject

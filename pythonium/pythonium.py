@@ -42,6 +42,13 @@ class Writer:
 
 
 class Pythonium(NodeVisitor):
+    
+    @classmethod
+    def translate(cls, code):
+        translator = cls()
+        ast = parse(code)
+        translator.visit(ast)
+        return translator.writer.value()
 
     def __init__(self):
         super().__init__()
@@ -184,7 +191,9 @@ class Pythonium(NodeVisitor):
     def visit_List(self, node):
         args = ', '.join(map(self.visit, node.elts))
         if args:
-            return 'pythonium_call(list, [{}])'.format(args)
+            self.writer.write('var __a_list = pythonium_call(list);')
+            self.writer.write('__a_list.jsobject = [{}];'.format(args))
+            return '__a_list'
         else:
             return 'pythonium_call(list)'
 
@@ -271,7 +280,6 @@ class Pythonium(NodeVisitor):
             all_parameters.append(varkwargs)
         all_parameters = set(all_parameters)
 
-        __args = ', '.join(args)
         if self._is_inside_method_definition():
             name = '__{}_{}'.format(self._def_stack[-2].name, node.name)
         else:
@@ -284,6 +292,8 @@ class Pythonium(NodeVisitor):
             if getattr(searcher, 'has_yield', False):
                 has_yield = True
                 break
+
+        __args = ', '.join(args)
         if has_yield:
             self.writer.write('var {} = function*({}) {{'.format(name, __args))
         else:
@@ -324,10 +334,11 @@ class Pythonium(NodeVisitor):
             if varkwargs != '__kwargs':
                 self.writer.write('delete {}.{};'.format(varkwargs, keyword))
         if varargs:
-            self.writer.write('var {} = __args.splice({});'.format(varargs, len(args)))
+            self.writer.write('__args = __args.splice({});'.format(len(args)))
             if varkwargs and (varkwargs != '__kwargs' or kwargs):
-                self.writer.write('if (varkwargs_start) {{ {}.splice(varkwargs_start - {}) }}'.format(varargs, len(args)))
-            self.writer.write('{} = pythonium_call(list, {});'.format(varargs, varargs))
+                self.writer.write('if (varkwargs_start) {{ __args.splice(varkwargs_start - {}) }}'.format(len(args)))
+            self.writer.write('var {} = pythonium_call(list);'.format(varargs))
+            self.writer.write('{}.jsobject = __args;'.format(varargs))
         if varkwargs and varkwargs != '__kwargs':
             self.writer.write('{} = pythonium_call(dict, {});'.format(varkwargs, varkwargs))
         self.writer.write('/* END unpacking arguments */')
@@ -482,28 +493,23 @@ class Pythonium(NodeVisitor):
             except AttributeError:
                 # it is not
                 pass
-
+            
+            # positional args
             if node.args:
                 args = [self.visit(e) for e in node.args]
                 args = [e for e in args if e]
             else:
                 args = []
-            if node.keywords and not node.kwargs:
-                keywords = '__kwargs{}__'.format(self.uuid())
-                _ = ', '.join(map(lambda x: '{}: {}'.format(x[0], x[1]), map(self.visit, node.keywords)))
-                self.writer.write('var {} = {{{}}};'.format(keywords, _))
-                args.append('__ARGUMENTS_PADDING__')
-                args.append(keywords)
-            elif node.kwargs and not node.keywords:
-                args.append('__ARGUMENTS_PADDING__')
-                args.append(node.kwargs.id)
-            elif node.kwargs and node.keywords:
-                for key, value in map(self.visit, node.keywords):
-                    self.writer.write('{}.{} = {};'.format(node.kwargs.id, key, value))
-                args.append('__ARGUMENTS_PADDING__')
-                args.append(node.kwargs.id)
             args.insert(0, name)
-            return 'pythonium_call({})'.format(', '.join(args))
+            call_arguments = 'call_arguments{}'.format(self.uuid())
+            self.writer.write('var {} = [{}];'.format(call_arguments, ', '.join(args)))
+            # variable arguments aka. starargs
+            if node.starargs:
+                varargs = self.visit(node.starargs)
+                code = "for i in {}: jscode('{}.push(i)')".format(varargs, call_arguments)
+                self.writer.write(self.translate(code))
+            # keywords and variable keywords arguments aka. starkwargs 
+            return 'pythonium_call.apply(undefined, {})'.format(call_arguments)
 
     # ListComp(expr elt, comprehension* generators)
     def visit_ListComp(self, node):
@@ -637,7 +643,7 @@ class Pythonium(NodeVisitor):
         return '__is__'
 
     def visit_Not(self, node):
-        return '__neg__'
+        return '__not__'
 
     def visit_IsNot(self, node):
         return '__isnot__'
@@ -786,12 +792,13 @@ class Pythonium(NodeVisitor):
             keys.append(k)
             v = self.visit(node.values[i])
             values.append(v)
-        keys = "[{}]".format(", ".join(keys))
-        values = "[{}]".format(", ".join(values))
         if node.keys:
-            return "pythonium_create_dict({}, {})".format(keys, values)
+            self.writer.write('var __a_dict = pythonium_call(dict)')
+            for key, value in zip(keys, values):
+                self.writer.write('__a_dict.__setitem__(__a_dict, key, value);')
+            return '__a_dict'
         else:
-            return "pythonium_create_dict()"
+            return 'pythonium_call(dict)'
 
     # With(withitem* items, stmt* body)
     visit_With = NotImplemented
@@ -809,7 +816,7 @@ class Pythonium(NodeVisitor):
         self.writer.write('var __next__ = pythonium_get_attribute(iter({}), "__next__");'.format(iterator))
         self.writer.write('while(true) {')
         self.writer.push()
-        self.writer.write('var {} = pythonium_call(__next__);'.format(target))
+        self.writer.write('var {} = __next__();'.format(target))
         list(map(self.visit, node.body))
         self.writer.pull()
         self.writer.write('}')

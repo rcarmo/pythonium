@@ -14,11 +14,8 @@ class ListIterator:
 
 class list:
     
-    def __init__(self, jsobject=None):
-        if jsobject:
-            self.jsobject = jsobject
-        else:
-            self.jsobject = JSArray()
+    def __init__(self):
+        self.jsobject = JSArray()
 
     def __hash__(self):
         raise TypeError("unhashable type: 'list'")
@@ -27,7 +24,11 @@ class list:
         return "[" + ", ".join(map(repr, self)) + "]"
 
     def __jstype__(self):
-        return NotImplementedError
+        out = JSArray()
+        for item in self:
+            item = jstype(item)
+            jscode('out.push(item)')
+        return out
 
     def append(self, item):
         jsobject = self.jsobject

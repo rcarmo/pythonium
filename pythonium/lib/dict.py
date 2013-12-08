@@ -1,15 +1,10 @@
 class dict:
 
-    def __init__(self, jsobject=None):
-        # Since JavaScript objects can only have string as keys
-        # storing the original object keys is needed
-        # to be able to answer the ``dict.keys`` and other methods
-        if jsobject:
-            self.keys = map(str, list(Object.keys(self.jsobject)))
-            self.jsobject = JSObject()
-        else:
-            self.keys = list()
-            self.jsobject = JSObject()
+    def __init__(self, **kwargs):
+        self._keys = list()
+        self._jsobject = JSObject()
+        for key in kwargs.keys():
+            self[key] = kwargs[key]
 
     def __hash__(self):
         raise TypeError("unhashable type: 'dict'")

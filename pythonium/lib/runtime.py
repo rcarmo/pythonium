@@ -43,18 +43,6 @@ def issubclass(klass, other):
     return False
 
 
-def pythonium_create_dict(keys, values):
-    out = {}
-    max = keys.length
-    index = 0
-    while index < max:
-        key = keys[index].jsobject
-        value = values[index]
-        out[key] = value
-        index += 1
-    return pythonium_call(dict, out, None)
-
-
 def pythonium_is_true(v):
     if v is __FALSE or v is False:
         return False
@@ -185,7 +173,7 @@ def pythonium_object_get_attribute(object, attr):
         if getattr:
             return getattr(attr)
         else:
-            console.trace(object, attr)
+            console.trace('AttributeError', attr, object)
             raise AttributeError
 
 __object.__getattribute__ = pythonium_object_get_attribute

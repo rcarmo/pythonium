@@ -19,10 +19,8 @@ def repr(obj):
 def print(*args):
     out = list()
     for arg in args:
-        r = repr(arg)  # returns a str object
-        out.append(jstype(r))
-    out = jstype(out)
-    jscode('console.log.apply(console, out)')
+        out.append(repr(arg))
+    jscode('console.log.apply(console, jstype(out))')
 
 
 def map(func, objects):

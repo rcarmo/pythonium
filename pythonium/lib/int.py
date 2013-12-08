@@ -3,6 +3,12 @@ class int:
     def __init__(self, jsobject):
         self.jsobject = jsobject
 
+    def __not__(self):
+        jsobject = self.jsobject
+        if jscode('jsobject == 0'):
+            return True
+        return False
+
     def __hash__(self):
         return str(self.jsobject)
 
@@ -54,6 +60,9 @@ class int:
         if jscode('a == b'):
             return True
         return False
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
 
     def __neg__(self):
         jsobject = self.jsobject
