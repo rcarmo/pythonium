@@ -16,7 +16,7 @@ from ast import FunctionDef
 from ast import NodeVisitor
 
 from .utils import YieldSearch
-
+from .veloce import Veloce
 
 ClassDefNode = namedtuple('ClassDef', 'name')
 FunctionDefNode = namedtuple('FunctionDef', 'name')
@@ -354,8 +354,7 @@ class Pythonium(NodeVisitor):
         elif name == 'new':
             args = list(map(self.visit, node.args))
             object = args[0]
-            args = ', '.join(args[1:])
-            return 'new {}({})'.format(object, args)
+            return 'new {}'.format(object, args)
         elif name == 'JSArray':
             if node.args:
                 args = map(self.visit, node.args)
@@ -366,6 +365,22 @@ class Pythonium(NodeVisitor):
         elif name == 'jscode':
             return node.args[0].s
         else:
+            # is it a call to new?
+            try:
+                if node.func.func.id == 'new':
+                    # Do not convert arguments to Python
+                    if node.args:
+                        veloce = Veloce()
+                        args = [veloce.visit(e) for e in node.args]
+                        args = [e for e in args if e]
+                    else:
+                        args = []
+                    # use native call since constructors don't have apply method
+                    return '{}({})'.format(name, ', '.join(args))
+            except AttributeError:
+                # it is not
+                pass
+
             if node.args:
                 args = [self.visit(e) for e in node.args]
                 args = [e for e in args if e]
