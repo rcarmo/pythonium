@@ -4,6 +4,7 @@ tmp/
 core/tmp/
 pystone/build/
 web-console/settings.py
+monkey-tests/test.py
 
 # C extensions
 *.so
