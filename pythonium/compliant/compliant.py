@@ -41,7 +41,7 @@ class Writer:
         return self.output.getvalue()
 
 
-class Pythonium(NodeVisitor):
+class Compliant(NodeVisitor):
     
     @classmethod
     def translate(cls, code):
@@ -869,7 +869,7 @@ class Pythonium(NodeVisitor):
         self._def_stack.pop()
 
 
-def pythonium_generate_js(filepath, requirejs=False, root_path=None, output=None, deep=None):
+def compliant_generate_js(filepath, requirejs=False, root_path=None, output=None, deep=None):
     dirname = os.path.abspath(os.path.dirname(filepath))
     if not root_path:
         root_path = dirname
@@ -881,13 +881,13 @@ def pythonium_generate_js(filepath, requirejs=False, root_path=None, output=None
     with open(os.path.join(dirname, basename)) as f:
         input = parse(f.read())
     tree = parse(input)
-    pythonium = Pythonium()
-    pythonium.visit(tree)
-    script = pythonium.writer.value()
+    compliant = Compliant()
+    compliant.visit(tree)
+    script = compliant.writer.value()
     if requirejs:
         out = 'define(function(require) {\n'
         out += script
-        all = map(lambda x: "'{}': {}".format(x, x), pythonium.__all__)
+        all = map(lambda x: "'{}': {}".format(x, x), compliant.__all__)
         all = '{{{}}}'.format(', '.join(all))
         out += 'return {}'.format(all)
         out += '\n})\n'

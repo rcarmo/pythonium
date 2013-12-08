@@ -13,7 +13,7 @@ from subprocess import CalledProcessError
 
 from pythonium.main import main
 from pythonium.veloce.veloce import veloce_generate_js
-from pythonium.compliant.compliant import pythonium_generate_js
+from pythonium.compliant.compliant import compliant_generate_js
 
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     
 
     # XXX: this force to install pythonium before running tests
-    PYTHONIUMJS = Popen(["pythonium", "--generate"], stdout=PIPE).communicate()[0].decode('utf-8')
+    COMPLIANTJS = Popen(["pythonium", "--generate"], stdout=PIPE).communicate()[0].decode('utf-8')
 
     for mode in ('veloce', 'compliant'):
         print('* running tests for {} mode'.format(mode))
@@ -58,8 +58,8 @@ if __name__ == '__main__':
                         if mode =='veloce':
                             veloce_generate_js(filepath, output=f)
                         else:
-                            f.write(PYTHONIUMJS)
-                            pythonium_generate_js(filepath, output=f)
+                            f.write(COMPLIANTJS)
+                            compliant_generate_js(filepath, output=f)
                     except Exception as exc:
                         print_exc()
                         print('< Translating {} in {} mode failed with the above exception.'.format(test, mode))

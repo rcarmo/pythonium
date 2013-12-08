@@ -23,7 +23,7 @@ import sys
 from docopt import docopt
 
 from .veloce.veloce import veloce_generate_js
-from .compliant.compliant import pythonium_generate_js
+from .compliant.compliant import compliant_generate_js
 
 __version__ = '0.5.0'
 
@@ -54,7 +54,7 @@ def main(argv=None):
         main(['--help'])
         return
 
-    generator = veloce_generate_js if args['--veloce'] else pythonium_generate_js
+    generator = veloce_generate_js if args['--veloce'] else compliant_generate_js
     options = {'requirejs': args['--requirejs'],
                'deep': args['--deep'],
                }
