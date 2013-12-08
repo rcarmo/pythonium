@@ -2,7 +2,7 @@ class dict:
 
     def __init__(self, **kwargs):
         self._keys = list()
-        self._jsobject = JSObject()
+        self.jsobject = JSObject()
         for key in kwargs.keys():
             self[key] = kwargs[key]
 
@@ -14,24 +14,24 @@ class dict:
 
     def __repr__(self):
         out = []
-        for key in self.keys():
+        for key in self._keys:
             key_repr = repr(key)
             value_repr = repr(self[key])
             out.append(key_repr + ': ' + value_repr)
         return "{" + ", ".join(out) + "}"
 
     def get(self, key, d=None):
-        if key in self.keys:
+        if key in self._keys:
             h = jstype(hash(key))
             jsobject = self.jsobject
             return jscode('jsobject[h]')
         return d
 
     def __iter__(self):
-        return ListIterator(self.keys())
+        return ListIterator(self._keys)
 
     def __getitem__(self, key):
-        if key in self.keys:
+        if key in self._keys:
             h = jstype(hash(key))
             jsobject = self.jsobject
             return jscode('jsobject[h]')
@@ -41,13 +41,23 @@ class dict:
         h = jstype(hash(key))
         jsobject = self.jsobject
         jscode('jsobject[h] = value')
-        self.keys.append(key)
+        self._keys.append(key)
 
     def keys(self):
-        return self.keys
+        return self._keys
 
     def items(self):
         out = list()
-        for key in self.keys():
+        for key in self._keys:
             out.append([key, self[key]])
         return out
+
+    def __delitem__(self, key):
+        if key in self._keys:
+            self._keys.remove(key)
+            h = jstype(hash(key))
+            jsobject = self.jsobject
+            jscode('delete jsobject[h]')
+        else:
+            raise KeyError
+        

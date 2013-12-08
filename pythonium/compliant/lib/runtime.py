@@ -9,9 +9,12 @@ __object.__metaclass__ = __type
 __ARGUMENTS_PADDING__ = {ARGUMENTS_PADDING: "YES IT IS!"}
 
 
+def __is__(self, other):
+    return (self is other)
+__object.__is__ = __is__
+
 def __isnot__(self, other):
     return not (self is other)
-
 __object.__isnot__ = __isnot__
 
 
@@ -89,6 +92,11 @@ def pythonium_call(object):
     else:
         return object.apply(object, args)
 
+def pythonium_create_empty_dict():
+    instance = {__class__: dict}
+    instance._keys = pythonium_call(list)
+    instance.jsobject = JSObject()
+    return instance
 
 
 def pythonium_mro(bases):

@@ -61,3 +61,21 @@ class list:
                 return True
         return False
             
+    def pop(self):
+        return self.jsobject.pop()
+
+    def index(self, obj):
+        index = 0
+        for item in self:
+            if item == obj:
+                return index
+            index += 1
+        raise ValueError
+
+    def remove(self, obj):
+        index = self.index(obj)
+        jsobject = self.jsobject
+        jscode('jsobject.splice(jstype(index), 1)')
+
+    def __delitem__(self, index):
+        self.jsobject.splice(jstype(index), 1)

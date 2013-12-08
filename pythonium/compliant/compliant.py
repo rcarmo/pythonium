@@ -305,9 +305,9 @@ class Compliant(NodeVisitor):
 
         # unpack arguments
         self.writer.write('/* BEGIN unpacking arguments */')
-        if varargs or (varkwargs and varkwargs == '__kwargs') or kwargs:
+        if varargs or (varkwargs and varkwargs != '__kwargs') or kwargs:
             self.writer.write('var __args = Array.prototype.slice.call(arguments);')
-        if varkwargs and (varkwargs != '__kwargs' or kwargs):
+        if (varkwargs and varkwargs != '__kwargs') or kwargs:
             self.writer.write('if (__args[__args.length - 2] === __ARGUMENTS_PADDING__) {')
             self.writer.push()
             self.writer.write('var {} = __args[__args.length - 1];'.format(varkwargs))
@@ -315,7 +315,7 @@ class Compliant(NodeVisitor):
             self.writer.pull()
             self.writer.write('} else {')  # no variable keywords was provided so it's empty
             self.writer.push()
-            self.writer.write('var {} = {{}};'.format(varkwargs))
+            self.writer.write('var {} = pythonium_create_empty_dict();'.format(varkwargs))
             self.writer.write('var varkwargs_start = undefined;')
             self.writer.pull()
             self.writer.write('}')
@@ -340,8 +340,6 @@ class Compliant(NodeVisitor):
                 self.writer.write('if (varkwargs_start) {{ __args.splice(varkwargs_start - {}) }}'.format(len(args)))
             self.writer.write('var {} = pythonium_call(list);'.format(varargs))
             self.writer.write('{}.jsobject = __args;'.format(varargs))
-        if varkwargs and varkwargs != '__kwargs':
-            self.writer.write('{} = pythonium_call(dict, {});'.format(varkwargs, varkwargs))
         self.writer.write('/* END unpacking arguments */')
 
         # check for variable creation use var if not global
@@ -661,7 +659,14 @@ class Compliant(NodeVisitor):
 
     # Delete(expr* targets)
     def visit_Delete(self, node):
-        raise NotImplementedError
+        for target in node.targets:
+            if isinstance(target, Subscript):
+                slice = self.visit(target.slice)
+                target = self.visit(target.value)
+                self.writer.write("pythonium_get_attribute({}, '__delitem__')({});".format(target, slice))
+            else:
+                target = self.visit(target)
+                self.writer.write('delete {};'.format(target))
 
     # Assign(expr* targets, expr value)
     def visit_Assign(self, node):
@@ -800,7 +805,7 @@ class Compliant(NodeVisitor):
             name = '__a_dict{}'.format(self.uuid())
             self.writer.write('var {} = pythonium_call(dict);'.format(name))
             for key, value in zip(keys, values):
-                self.writer.write('{}.__setitem__({}, key, value);'.format(name))
+                self.writer.write('{}.__class__.__setitem__({}, {}, {});'.format(name, name, key, value))
             return name
         else:
             return 'pythonium_call(dict)'

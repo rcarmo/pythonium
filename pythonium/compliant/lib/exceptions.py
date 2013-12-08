@@ -22,3 +22,7 @@ class StopIteration(Exception):
 
 class NotImplementedError(Exception):
     pass
+
+
+class ValueError(Exception):
+    pass
