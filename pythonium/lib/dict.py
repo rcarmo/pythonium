@@ -32,6 +32,9 @@ class dict:
             return jscode('jsobject[h]')
         return d
 
+    def __iter__(self):
+        return ListIterator(self.keys())
+
     def __getitem__(self, key):
         if key in self.keys:
             h = jstype(hash(key))
