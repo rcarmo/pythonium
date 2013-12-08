@@ -129,11 +129,8 @@ class Pythonium(NodeVisitor):
         path.append(asname.split('.')[-1])
         path = '/'.join(path)
         self.writer.write('var {} = require("{}");'.format(asname, path))
-
         path = '/'.join(name.split('.'))
         self.dependencies.append('/' + path)  # relative to project root
-
-
 
     def visit_ImportFrom(self, node):
         if len(node.names) > 1:
@@ -366,7 +363,7 @@ class Pythonium(NodeVisitor):
             else:
                 out = ''
             return '[{}]'.format(out)
-        elif name == 'JS':
+        elif name == 'jscode':
             return node.args[0].s
         else:
             if node.args:
