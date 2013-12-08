@@ -58,7 +58,7 @@ def pythonium_create_dict(keys, values):
 def pythonium_is_true(v):
     if v is __FALSE or v is False:
         return False
-    if v is __TRUE or (JS('v !== undefined') and v != __NONE):
+    if v is __TRUE or (jscode('v !== undefined') and v != __NONE):
         return True
     if isinstance(v, int):
         if pythonium_get_attribute(v, 'jsobject') == 0:

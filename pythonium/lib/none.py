@@ -11,7 +11,7 @@ class _None:
         return False        
 
     def __is__(self, other):
-        if JS('other === self'):
+        if jscode('other === self'):
             return True
         return False
 

@@ -29,20 +29,20 @@ class dict:
         if key in self.keys:
             h = jstype(hash(key))
             jsobject = self.jsobject
-            return JS('jsobject[h]')
+            return jscode('jsobject[h]')
         return d
 
     def __getitem__(self, key):
         if key in self.keys:
             h = jstype(hash(key))
             jsobject = self.jsobject
-            return JS('jsobject[h]')
+            return jscode('jsobject[h]')
         raise KeyError(key)
 
     def __setitem__(self, key, value):
         h = jstype(hash(key))
         jsobject = self.jsobject
-        JS('jsobject[h] = value')
+        jscode('jsobject[h] = value')
         self.keys.append(key)
 
     def keys(self):

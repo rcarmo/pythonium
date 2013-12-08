@@ -1,7 +1,7 @@
 class _True:
 
     def __init__(self):
-        self.jsobject = JS('true')
+        self.jsobject = jscode('true')
 
     def __jstype__(self):
         return self.jsobject
@@ -10,7 +10,7 @@ class _True:
         return "True"
 
     def __and__(self, other):
-        if JS('other === self'):
+        if jscode('other === self'):
             return True
         return False
 
@@ -18,7 +18,7 @@ class _True:
         return True
 
     def __is__(self, other):
-        if JS('other === self'):
+        if jscode('other === self'):
             return True
         return False
 
@@ -29,7 +29,7 @@ class _True:
 class _False:
 
     def __init__(self):
-        self.jsobject = JS('false')
+        self.jsobject = jscode('false')
 
     def __jstype__(self):
         return self.jsobject
@@ -41,12 +41,12 @@ class _False:
         return False
 
     def __or__(self, other):
-        if JS('other === True'):
+        if jscode('other === True'):
             return True
         return False
 
     def __is__(self, other):
-        if JS('other === self'):
+        if jscode('other === self'):
             return True
         return False
 

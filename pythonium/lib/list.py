@@ -31,7 +31,7 @@ class list:
 
     def append(self, item):
         jsobject = self.jsobject
-        JS('jsobject.push(item)')
+        jscode('jsobject.push(item)')
 
     def insert(self, index, item):
         self.jsobject.splice(index, 0, item)
@@ -39,16 +39,16 @@ class list:
     def __setitem__(self, index, value):
         jsobject = self.jsobject
         index = index.jsobject
-        JS('jsobject[index] = value')
+        jscode('jsobject[index] = value')
 
     def __getitem__(self, s):
         jsobject = self.jsobject
         index = jstype(s)
-        return JS('jsobject[index]')
+        return jscode('jsobject[index]')
 
     def __len__(self):
         jsobject = self.jsobject
-        length = JS('jsobject.length')
+        length = jscode('jsobject.length')
         return int(length)
 
     def __iter__(self):

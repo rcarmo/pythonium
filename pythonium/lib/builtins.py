@@ -22,7 +22,7 @@ def print(*args):
         r = repr(arg)  # returns a str object
         out.append(jstype(r))
     out = jstype(out)
-    JS('console.log.apply(console, out)')
+    jscode('console.log.apply(console, out)')
 
 
 def map(func, objects):
