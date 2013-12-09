@@ -2,6 +2,7 @@
 import os
 import sys
 import difflib 
+from io import StringIO
 from traceback import print_exc
 
 from subprocess import PIPE
@@ -35,13 +36,17 @@ def compare_output(expected, result):
 if __name__ == '__main__':
     ok_ctr = test_ctr = 0
     TMPDIR = os.path.join(TESTS_ROOT, 'tmp')
-    try: os.mkdir(TMPDIR)
-    except OSError: pass
+    try:
+        os.mkdir(TMPDIR)
+    except OSError:
+        pass
     
-
-    # XXX: this force to install pythonium before running tests
-    COMPLIANTJS = Popen(["pythonium", "--generate"], stdout=PIPE).communicate()[0].decode('utf-8')
-
+    stdout = sys.stdout
+    sys.stdout = StringIO()
+    main(['--generate'])
+    COMPLIANTJS = sys.stdout.getvalue()
+    sys.stdout = stdout
+    
     for mode in ('veloce', 'compliant'):
         print('* Running tests for {} mode'.format(mode))
         for test in os.listdir(TESTS_ROOT):
@@ -53,7 +58,11 @@ if __name__ == '__main__':
                     continue
                 test_ctr += 1
                 filepath = os.path.join(TESTS_ROOT, test)
-                exec_script = os.path.join(TMPDIR, test + 'exec-{}.js'.format(mode))
+                if not test.startswith('compliant-'):
+                    ext = 'exec-{}.js'.format(mode)
+                else:
+                    ext = 'exec.js'.format(mode)
+                exec_script = os.path.join(TMPDIR, test + ext)
                 with open(exec_script, 'w') as f:
                     try:
                         if mode =='veloce':
