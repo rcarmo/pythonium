@@ -83,9 +83,10 @@ Pythonium exists in two flavors, each with their own strengths and performance c
   - Support of ``from ... import ...`` via `requirejs <http://requirejs.org/>`_
   - Support of single inheritance classes via `classy <http://classy.pocoo.org/>`_ [1][2]
 
-Also there is `cookbook <https://github.com/pythonium/pythonium/wiki/Pythonium-Veloce-Cookbook>`_.
+[1] Nested class definition are not supported
+[2] Calling super method is done with ``super(arg0, arg1, arg2, ...)``
 
-- Pythonium **Compliant** 100% compliant with CPython 3
+- Pythonium **Compliant** All the above and 100% compliant with CPython 3
 
 How? (1 minute)
 ===============
@@ -99,18 +100,10 @@ Want to help? (30 seconds)
 - `Follow the project on twitter <https://twitter.com/intent/user?screen_name=pythonium>`_
 - `Join the mailling list <https://groups.google.com/forum/#!forum/pythonium-users>`_
 
-Documentation
-=============
-
-Documentation is available in the `wiki <https://github.com/pythonium/pythonium/wiki>`_.
-
 Licensing
 =========
 
 LGPL 2.1 or later
-
-- [1] Nested class definition are not supported
-- [2] Calling super method is done with ``super(arg0, arg1, arg2, ...)``
 
 .. image:: https://d2weczhvl823v0.cloudfront.net/pythonium/pythonium/trend.png
    :alt: Bitdeli badge
