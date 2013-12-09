@@ -67,7 +67,7 @@ if __name__ == '__main__':
                         continue
 
                 try:
-                    result = check_output(['nodejs', exec_script], stderr=STDOUT)
+                    result = check_output(['nodejs', '--harmony', exec_script], stderr=STDOUT)
                 except CalledProcessError as err:
                     print(err.output.decode(errors='replace'))
                     print('< {} ERROR in {} mode :('.format(test, mode))

@@ -41,6 +41,12 @@ def iter(obj):
 
 
 def next(obj):
+    if jscode('obj.next !== undefined'):
+        r = jscode('obj.next()')
+        if jscode('r.done'):
+            raise StopIteration
+        else:
+            return jscode('r.value')
     return obj.__next__()
 
 
