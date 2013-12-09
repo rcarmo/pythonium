@@ -32,19 +32,20 @@ def main(argv=None):
     args = docopt(__doc__, argv, version='pythonium ' + __version__)
     if args['--generate']:
         # call ourself for each file in pythonium.lib:
-        from pythonium.compliant import lib
+        from pythonium import compliant
+        from pythonium.compliant import builtins
 
         # runtime is built separatly
         # it must appear first in the file
         # and it must be built using veloce mode
-        path = lib.__path__[0]
+        path = compliant.__path__[0]
         argv = ['--veloce', os.path.join(path, 'runtime.py')]
         main(argv)
-        for path in lib.__path__:
+
+        # compile builtins
+        for path in builtins.__path__:
             for name in os.listdir(path):
                 if name.endswith('.py'):
-                    if name == 'runtime.py':
-                        continue
                     argv = [os.path.join(path, name)]
                     main(argv)
         return
