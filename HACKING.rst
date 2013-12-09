@@ -47,6 +47,11 @@ Translate your ``app.py`` with ``pythonium app.py > app.py.js`` include both in 
 
   cat pythonium.js app.py.js | nodejs
 
+Veloce mode
+-----------
+
+FIXME
+
 
 Development workflow
 ====================
@@ -101,8 +106,14 @@ This can not be automated in Veloce, but it's done in compliant mode.
 Translations
 ^^^^^^^^^^^^
 
+FIXME
+
 Compliant mode
 --------------
 
+FIXME
+
 Translations
 ^^^^^^^^^^^^
+
+FIXME
