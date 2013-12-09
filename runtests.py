@@ -101,3 +101,5 @@ if __name__ == '__main__':
                     print('< {} PASS in {} mode :)'.format(test, mode))
 
     print("= Passed {}/{} tests".format(ok_ctr, test_ctr))
+    if (ok_ctr - test_ctr) != 0:
+        return sys.exit(1)
