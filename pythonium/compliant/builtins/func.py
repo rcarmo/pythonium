@@ -94,4 +94,16 @@ def classmethod(func):
 def staticmethod(func):
     func.staticmethod = True
     return func
-    
+
+
+class enumerate:
+
+    def __init__(self, iterator):
+        self.iterator = iterator
+        self.index = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return (index, next(self.iterator)

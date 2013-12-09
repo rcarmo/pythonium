@@ -24,5 +24,9 @@ class NotImplementedError(Exception):
     pass
 
 
+class NotImplemented(Exception):
+    pass
+
+
 class ValueError(Exception):
     pass
