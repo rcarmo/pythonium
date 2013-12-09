@@ -3,6 +3,6 @@ node_js:
   - "0.11"
 before_install:
 - sudo apt-get update
-- sudo apt-get install python3 python3-pip
-- sudo pip3 install doctopt
+- sudo apt-get install python3
+- sudo easy_install-3.3 doctopt
 script: "./runtests.py"
