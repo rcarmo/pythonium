@@ -1,6 +1,5 @@
-
-script: "./runtests.py"
 node_js:
    - "0.11.9"
 python:
   - "3.3"
+script: "./runtests.py"
