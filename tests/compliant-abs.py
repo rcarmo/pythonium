@@ -1,0 +1,7 @@
+a = abs(-2)
+b = abs(2)
+c = abs(-2.2)
+d = abs(3.3)
+e = abs(0)
+f = abs(-0)
+print(a, b, c, d, e, f)

@@ -1,0 +1,8 @@
+print(all([1, 2, 3, 4, 5, 6]))
+print(all([]))
+print(all([0]))
+print(all([1, 2, None]))
+print(all([1, 2, None]))
+print(all([1, 2, False]))
+print(all([True, True, True]))
+print(all([True, True, False]))
