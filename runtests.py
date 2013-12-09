@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 import os
 import sys
-import difflib 
+import difflib
 from io import StringIO
 from traceback import print_exc
 
-from subprocess import PIPE
-from subprocess import Popen
 from subprocess import STDOUT
 from subprocess import check_output
 from subprocess import CalledProcessError
-
 
 from pythonium.main import main
 from pythonium.veloce.veloce import veloce_generate_js
