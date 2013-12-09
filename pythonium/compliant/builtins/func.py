@@ -1,10 +1,25 @@
+class range:
+
+    def __init__(self, a, b=None):
+        if b:
+            self.index = a
+            self.end = b
+        else:
+            self.index = 0
+            self.end = a
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.index < self.end:
+            index = self.index
+            self.index += 1
+            return index
+        raise StopIteartion
+
+
 def range(a, b=None):
-    if b:
-        index = a
-        end = b
-    else:
-        index = 0
-        end = a
     out = list()
     while index < end:
         out.append(index)
@@ -23,11 +38,18 @@ def print(*args):
     jscode('console.log.apply(console, out)')
 
 
-def map(func, objects):
-    out = list()
-    for obj in objects:
-        out.append(func(obj))
-    return out
+
+class map:
+
+    def __init__(self, func, iterable):
+        self.func = func
+        self.iterable = iterable
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.func(next(self.iterable))
 
 
 def jstype(obj):
