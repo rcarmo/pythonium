@@ -79,3 +79,11 @@ class list:
 
     def __delitem__(self, index):
         self.jsobject.splice(jstype(index), 1)
+
+
+class tuple(list):
+
+    def __repr__(self):
+        return "(" + ", ".join(map(repr, self)) + ")"
+
+

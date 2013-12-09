@@ -300,47 +300,8 @@ class Compliant(NodeVisitor):
         else:
             self.writer.write('var {} = function({}) {{'.format(name, __args))
         self.writer.push()
-        if not varkwargs and kwargs:
-            varkwargs = '__kwargs'
 
-        # unpack arguments
-        self.writer.write('/* BEGIN unpacking arguments */')
-        if varargs or (varkwargs and varkwargs != '__kwargs') or kwargs:
-            self.writer.write('var __args = Array.prototype.slice.call(arguments);')
-        if (varkwargs and varkwargs != '__kwargs') or kwargs:
-            self.writer.write('if (__args[__args.length - 2] === __ARGUMENTS_PADDING__) {')
-            self.writer.push()
-            self.writer.write('var {} = __args[__args.length - 1];'.format(varkwargs))
-            self.writer.write('var varkwargs_start = __args.length - 2;')
-            self.writer.pull()
-            self.writer.write('} else {')  # no variable keywords was provided so it's empty
-            self.writer.push()
-            self.writer.write('var {} = pythonium_create_empty_dict();'.format(varkwargs))
-            self.writer.write('var varkwargs_start = undefined;')
-            self.writer.pull()
-            self.writer.write('}')
-        num_args = len(args)
-        for index, keyword in enumerate(kwargs.keys()):
-            position = num_args + index - 1
-            self.writer.write('if (varkwargs_start !== undefined && {} > varkwargs_start) {{'.format(position))
-            self.writer.push()
- 
-            self.writer.write('{} = {}.{} || {};'.format(keyword, varkwargs, keyword, kwargs[keyword])) 
-            self.writer.pull()
-            self.writer.write('} else {')
-            self.writer.push()
-            self.writer.write('{} = {} || {}.{} || {};'.format(keyword, keyword, varkwargs, keyword, kwargs[keyword]))
-            self.writer.pull()
-            self.writer.write('}')
-            if varkwargs != '__kwargs':
-                self.writer.write('delete {}.{};'.format(varkwargs, keyword))
-        if varargs:
-            self.writer.write('__args = __args.splice({});'.format(len(args)))
-            if varkwargs and (varkwargs != '__kwargs' or kwargs):
-                self.writer.write('if (varkwargs_start) {{ __args.splice(varkwargs_start - {}) }}'.format(len(args)))
-            self.writer.write('var {} = pythonium_call(list);'.format(varargs))
-            self.writer.write('{}.jsobject = __args;'.format(varargs))
-        self.writer.write('/* END unpacking arguments */')
+        self._unpack_arguments(args, kwargs, varargs, varkwargs)
 
         # check for variable creation use var if not global
         def retrieve_vars(body, vars=None):
@@ -404,7 +365,6 @@ class Compliant(NodeVisitor):
     #              arg* kwonlyargs, identifier? kwarg, expr? kwargannotation, 
     #              expr* defaults, expr* kw_defaults)
     def visit_arguments(self, node):
-        # 'args', 'vararg', 'varargannotation', 'kwonlyargs', 'kwarg', 'kwargannotation', 'defaults', 'kw_defaults'
         args = list(map(lambda x: x.arg, node.args))
         vararg = node.vararg
         kwonlyargs = node.kwonlyargs
@@ -500,14 +460,27 @@ class Compliant(NodeVisitor):
             else:
                 args = []
             args.insert(0, name)
-            call_arguments = 'call_arguments{}'.format(self.uuid())
-            self.writer.write('var {} = [{}];'.format(call_arguments, ', '.join(args)))
             # variable arguments aka. starargs
             if node.starargs:
                 varargs = self.visit(node.starargs)
                 code = "for i in {}: jscode('{}.push(i)')".format(varargs, call_arguments)
                 self.writer.write(self.translate(code))
-            # keywords and variable keywords arguments aka. starkwargs 
+            # keywords and variable keywords arguments aka. starkwargs
+            if node.kwargs:
+                kwargs = self.visit(node.kwargs)
+                if node.keywords:
+                    for key, value in map(self.visit, node.keywords):
+                        self.writer.write('{}.__class__.__setitem__({}, pythonium_call(str, "{}"), {})'.format(kwargs, kwargs, key, value))  # XXX
+            elif node.keywords:
+                kwargs = '__pythonium_kwargs'
+                self.writer.write('var __pythonium_kwargs = pythonium_create_empty_dict();')
+                for key, value in map(self.visit, node.keywords):
+                    self.writer.write('{}.__class__.__setitem__({}, pythonium_call(str, "{}"), {})'.format(kwargs, kwargs, key, value))
+            if node.kwargs or node.keywords:
+                args.append('__ARGUMENTS_PADDING__')
+                args.append(kwargs)
+            call_arguments = 'call_arguments{}'.format(self.uuid())
+            self.writer.write('var {} = [{}];'.format(call_arguments, ', '.join(args)))
             return 'pythonium_call.apply(undefined, {})'.format(call_arguments)
 
     # ListComp(expr elt, comprehension* generators)
@@ -842,10 +815,63 @@ class Compliant(NodeVisitor):
     def visit_Break(self, node):
         self.writer.write('break;')
 
+    def _unpack_arguments(self, args, kwargs, varargs, varkwargs):
+        self.writer.write('/* BEGIN arguments unpacking */')
+        if not varkwargs and kwargs:
+            varkwargs = '__kwargs'
+
+        if varargs or (varkwargs and varkwargs != '__kwargs') or kwargs:
+            self.writer.write('var __args = Array.prototype.slice.call(arguments);')
+        if (varkwargs and varkwargs != '__kwargs') or kwargs:
+            self.writer.write('if (__args[__args.length - 2] === __ARGUMENTS_PADDING__) {')
+            self.writer.push()
+            self.writer.write('var {} = __args[__args.length - 1];'.format(varkwargs))
+            self.writer.write('var varkwargs_start = __args.length - 2;')
+            self.writer.pull()
+            self.writer.write('} else {')  # no variable keywords was provided so it's empty
+            self.writer.push()
+            self.writer.write('var {} = pythonium_create_empty_dict();'.format(varkwargs))
+            self.writer.write('var varkwargs_start = undefined;')
+            self.writer.pull()
+            self.writer.write('}')
+        num_args = len(args)
+        for index, keyword in enumerate(kwargs.keys()):
+            position = num_args + index - 1
+            self.writer.write('if (varkwargs_start !== undefined && {} > varkwargs_start) {{'.format(position))
+            self.writer.push()
+ 
+            self.writer.write('{} = {}.__class__.get({}, {}) || {};'.format(keyword, varkwargs, varkwargs, keyword, kwargs[keyword])) 
+            self.writer.pull()
+            self.writer.write('} else {')
+            self.writer.push()
+            self.writer.write('{} = {} || {}.__class__.get({}, {}) || {};'.format(keyword, keyword, varkwargs, varkwargs, keyword, kwargs[keyword]))
+            self.writer.pull()
+            self.writer.write('}')
+            if varkwargs != '__kwargs':
+                self.writer.write('delete {}.{};'.format(varkwargs, keyword))
+        if varargs:
+            self.writer.write('__args = __args.splice({});'.format(len(args)))
+            if varkwargs and (varkwargs != '__kwargs' or kwargs):
+                self.writer.write('if (varkwargs_start) {{ __args.splice(varkwargs_start - {}) }}'.format(len(args)))
+            self.writer.write('var {} = pythonium_call(tuple);'.format(varargs))
+            self.writer.write('{}.jsobject = __args;'.format(varargs))
+        self.writer.write('/* END arguments unpacking */')
+
+
     # Lambda(arguments args, expr body)
     def visit_Lambda(self, node):
-        args = ', '.join(map(self.visit, node.args.args))
-        return '(function ({}) {{{}}})'.format(args, self.visit(node.body))
+        args, kwargs, vararg, varkwargs = self.visit(node.args)
+        sys.stderr.write(", ".join(args))
+        name = '__lambda{}'.format(self.uuid())
+        self.writer.write('var {} = function({}) {{'.format(name, ', '.join(args)))
+        self.writer.push()
+        self._unpack_arguments(args, kwargs, vararg, varkwargs)
+        body = self.visit(node.body)
+        self.writer.write(body)
+        self.writer.pull()
+        self.writer.write('}')
+        return name
+
 
     # ClassDef(identifier name, expr* bases, keyword* keywords, 
     #          expr? starargs, expr? kwargs, stmt* body, expr* decorator_list)

@@ -1,3 +1,12 @@
+def nest_str_with_quotes(s):
+    r = repr(s)
+    if isinstance(s, str):
+        if "'" in r:
+            r = '"' + r + '"'
+        else:
+            r = "'" + r + "'"
+    return r
+
 class dict:
 
     def __init__(self, **kwargs):
@@ -15,8 +24,8 @@ class dict:
     def __repr__(self):
         out = []
         for key in self._keys:
-            key_repr = repr(key)
-            value_repr = repr(self[key])
+            key_repr = nest_str_with_quotes(key)
+            value_repr = nest_str_with_quotes(self[key])
             out.append(key_repr + ': ' + value_repr)
         return "{" + ", ".join(out) + "}"
 
@@ -60,4 +69,3 @@ class dict:
             jscode('delete jsobject[h]')
         else:
             raise KeyError
-        

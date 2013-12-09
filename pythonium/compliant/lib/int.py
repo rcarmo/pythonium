@@ -16,7 +16,7 @@ class int:
         return self.jsobject
 
     def __repr__(self):
-        return self
+        return str(self.jsobject.toString())
 
     def __add__(self, other):
         a = self.jsobject

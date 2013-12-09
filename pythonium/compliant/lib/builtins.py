@@ -17,10 +17,10 @@ def repr(obj):
 
 
 def print(*args):
-    out = list()
+    out = JSArray()
     for arg in args:
-        out.append(repr(arg))
-    jscode('console.log.apply(console, jstype(out))')
+        out.push(jstype(repr(arg)))
+    jscode('console.log.apply(console, out)')
 
 
 def map(func, objects):

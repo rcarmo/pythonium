@@ -97,7 +97,7 @@ def pythonium_create_empty_dict():
     instance._keys = pythonium_call(list)
     instance.jsobject = JSObject()
     return instance
-
+  
 
 def pythonium_mro(bases):
     """Calculate the Method Resolution Order of bases using the C3 algorithm.
@@ -110,28 +110,35 @@ def pythonium_mro(bases):
     return the linearization of K (the MRO of K, *including* itself).
     """
     # based on http://code.activestate.com/recipes/577748-calculate-the-mro-of-a-class/
-    seqs = [C.__mro__ for C in bases]
+    seqs = [C.__mro__.slice() for C in bases]
     seqs.push(bases.slice())
+
+    def cdr(l):
+        l = l.slice()
+        l = l.splice(1)
+        return l
     res = []
     while True:
-        # non_empty = list(filter(None, seqs))
         non_empty = []
         for seq in seqs:
             empty = True
+            out = []
             for item in seq:
                 if item:
                     empty = False
-                    break
+                    out.push(item)
             if not empty:
-                non_empty.push(seq)
+                non_empty.push(out)
         if non_empty.length == 0:
             # Nothing left to process, we're done.
             return res
         for seq in non_empty:  # Find merge candidates among seq heads.
             candidate = seq[0]
-            not_head = [s for s in non_empty if candidate in s.splice(1)]
+            not_head = []
+            for s in non_empty:
+                if candidate in cdr(s):
+                    not_head.push(s)
             if not_head.length != 0:
-                # Reject the candidate.
                 candidate = None
             else:
                 break

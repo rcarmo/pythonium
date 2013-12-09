@@ -7,7 +7,7 @@ class float:
         return str(self.jsobject)
 
     def __repr__(self):
-        return self
+        return str(self.jsobject.toString())
     
     def __div__(self, other):
         a = self.jsobject
