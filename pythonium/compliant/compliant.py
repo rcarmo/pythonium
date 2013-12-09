@@ -757,7 +757,20 @@ class Compliant(NodeVisitor):
             self.writer.write('}')
 
     # IfExp(expr test, expr body, expr orelse)
-    visit_IfExp = NotImplemented
+    def visit_IfExp(self, node):
+        name = '__pythonium_ifexp_{}'.format(self.uuid())
+        self.writer.write('if (pythonium_is_true({})) {{'.format(self.visit(node.test)))
+        self.writer.push()
+        body = self.visit(node.body)
+        self.writer.write('var {} = {};'.format(name, body))
+        self.writer.pull()
+        self.writer.write('} else {')
+        self.writer.push()
+        orelse = self.visit(node.orelse)
+        self.writer.write('var {} = {};'.format(name, orelse))
+        self.writer.pull()
+        self.writer.write('}')
+        return name
 
     # Ellipsis
     visit_Ellipsis = NotImplemented
