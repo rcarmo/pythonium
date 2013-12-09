@@ -16,7 +16,7 @@ class range:
             index = self.index
             self.index += 1
             return index
-        raise StopIteartion
+        raise StopIteration
 
 
 def range(a, b=None):
