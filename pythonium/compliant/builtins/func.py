@@ -106,4 +106,15 @@ class enumerate:
         return self
 
     def __next__(self):
-        return (index, next(self.iterator)
+        return (index, next(self.iterator))
+
+
+def getattr(obj, attr, d):
+    r = lookup(obj, attr)
+    if jscode('r === undefined'):
+        if jscode('d === undefined'):
+            raise AttributeError
+        else:
+            return d
+    else:
+        return r
