@@ -84,3 +84,14 @@ def callable(obj):
     if jscode("lookup(obj, '__call__')"):
         return True
     return False
+
+
+def classmethod(func):
+    func.classmethod = True
+    return func
+
+
+def staticmethod(func):
+    func.staticmethod = True
+    return func
+    
