@@ -1,5 +1,7 @@
+language: node_js
 node_js:
-   - "0.11.9"
-python:
-  - "3.3"
+  - "0.11"
+before_install:
+- sudo apt-get update
+- sudo apt-get install python3
 script: "./runtests.py"
