@@ -1,7 +1,10 @@
 class bool:
 
     def __init__(self, obj):
-        self.jsobject = pythonium_is_true(obj)
+        if jscode('obj !== undefined'):
+            self.jsobject = pythonium_is_true(obj)
+        else:
+            self.jsobject = pythonium_is_true(jscode('false'))
 
     def __jstype__(self):
         return self.jsobject

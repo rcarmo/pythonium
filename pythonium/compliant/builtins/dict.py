@@ -9,11 +9,9 @@ def nest_str_with_quotes(s):
 
 class dict:
 
-    def __init__(self, **kwargs):
+    def __init__(self):
         self._keys = list()
         self.jsobject = JSObject()
-        for key in kwargs.keys():
-            self[key] = kwargs[key]
 
     def __hash__(self):
         raise TypeError("unhashable type: 'dict'")
