@@ -102,4 +102,4 @@ if __name__ == '__main__':
 
     print("= Passed {}/{} tests".format(ok_ctr, test_ctr))
     if (ok_ctr - test_ctr) != 0:
-        return sys.exit(1)
+        sys.exit(1)
