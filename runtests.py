@@ -48,11 +48,11 @@ if __name__ == '__main__':
         print('* Running tests for {} mode'.format(mode))
         for test in os.listdir(TESTS_ROOT):
             if test.endswith('.py'):
-                print('< Running {} in {} mode.'.format(test, mode))
                 # compliant mode must run any code even code written for veloce mode
                 # but veloce mode can not run compliant tests
                 if test.startswith('compliant-') and mode != 'compliant':
                     continue
+                print('< Running {} in {} mode.'.format(test, mode))
                 test_ctr += 1
                 filepath = os.path.join(TESTS_ROOT, test)
                 if not test.startswith('compliant-'):
