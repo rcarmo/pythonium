@@ -58,8 +58,8 @@ def pythonium_is_true(v):
     if isinstance(v, int) or isinstance(v, float):
         if v.jsobject == 0:
             return False
-    length = lookup(v, '__length__')
-    if length and length() == 0:
+    length = lookup(v, '__len__')
+    if length and length().jsobject == 0:
         return False
     return True
 

@@ -43,7 +43,7 @@ if __name__ == '__main__':
     COMPLIANTJS = Popen(["pythonium", "--generate"], stdout=PIPE).communicate()[0].decode('utf-8')
 
     for mode in ('veloce', 'compliant'):
-        print('* running tests for {} mode'.format(mode))
+        print('* Running tests for {} mode'.format(mode))
         for test in os.listdir(TESTS_ROOT):
             if test.endswith('.py'):
                 print('< Running {} in {} mode.'.format(test, mode))

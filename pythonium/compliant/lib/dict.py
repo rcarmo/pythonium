@@ -36,6 +36,9 @@ class dict:
             return jscode('jsobject[h]')
         return d
 
+    def __len__(self):
+        return len(self._keys)
+
     def __iter__(self):
         return ListIterator(self._keys)
 
