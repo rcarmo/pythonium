@@ -49,9 +49,8 @@ def next(obj):
             return jscode('r.value')
     return obj.__next__()
 
-
 def len(obj):
     return obj.__len__()
 
-
-
+def abs(obj):
+    return obj.__abs__()

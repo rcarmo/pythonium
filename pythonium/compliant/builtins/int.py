@@ -9,6 +9,15 @@ class int:
             return True
         return False
 
+    def __abs__(self):
+        if self < 0:
+            return -self
+        return self
+
+    def __neg__(self):
+        jsobject = self.jsobject
+        return int(jscode('-self.jsobject'))
+
     def __hash__(self):
         return str(self.jsobject)
 
@@ -77,10 +86,6 @@ class int:
 
     def __neq__(self, other):
         return not self.__eq__(other)
-
-    def __neg__(self):
-        jsobject = self.jsobject
-        return int(jscode('-jsobject'))
 
     def __div__(self, other):
         a = self.jsobject
