@@ -5,6 +5,9 @@ class ListIterator:
         self.index = 0
         self.length = len(obj)
 
+    def __iter__(self):
+        return self
+
     def __next__(self):
         if self.index == self.length:
             raise StopIteration

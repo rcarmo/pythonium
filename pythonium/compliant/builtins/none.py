@@ -18,5 +18,8 @@ class _None:
     def __neg__(self):
         return True
 
+    def __not__(self):
+        return True
+
 
 __NONE = _None()

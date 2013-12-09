@@ -9,7 +9,7 @@ class bool:
     def __repr__(self):
         if self.jsobject:
             return 'True'
-        return False
+        return 'False'
 
     def __and__(self, other):
         if self:

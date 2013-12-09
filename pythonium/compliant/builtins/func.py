@@ -29,12 +29,14 @@ def map(func, objects):
         out.append(func(obj))
     return out
 
+
 def jstype(obj):
     return obj.__jstype__()
 
 
 def hash(obj):
     return obj.__hash__()
+
 
 def iter(obj):
     return obj.__iter__()
@@ -49,8 +51,17 @@ def next(obj):
             return jscode('r.value')
     return obj.__next__()
 
+
 def len(obj):
     return obj.__len__()
 
+
 def abs(obj):
     return obj.__abs__()
+
+
+def all(iterable):
+    for element in iterable:
+        if not element:
+            return False
+    return True
