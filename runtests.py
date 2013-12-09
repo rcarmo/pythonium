@@ -53,7 +53,7 @@ if __name__ == '__main__':
                     continue
                 test_ctr += 1
                 filepath = os.path.join(TESTS_ROOT, test)
-                exec_script = os.path.join(TMPDIR, test + 'exec.js')
+                exec_script = os.path.join(TMPDIR, test + 'exec-{}.js'.format(mode))
                 with open(exec_script, 'w') as f:
                     try:
                         if mode =='veloce':
