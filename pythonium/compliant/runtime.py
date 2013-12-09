@@ -51,6 +51,8 @@ def pythonium_is_true(v):
         return False
     if v is True:
         return True
+    if v is None:
+        return False
     if v is __NONE:
         return False
     if v is __FALSE:

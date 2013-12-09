@@ -72,3 +72,15 @@ def any(iterable):
         if element:
             return True
     return False
+
+
+def callable(obj):
+    if jscode("Object.toString.call(obj) ==='[object Function]'"):
+        return True
+    if jscode('obj.next'):
+        return True
+    if obj.__class__:
+        return True
+    if jscode("lookup(obj, '__call__')"):
+        return True
+    return False
