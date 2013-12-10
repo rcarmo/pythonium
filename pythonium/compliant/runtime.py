@@ -1,41 +1,57 @@
-__object = {__bases__: [], __name__: 'object'}
-__object.__mro__ = [__object]
+object = {__bases__: [], __name__: 'object'}
+object.__mro__ = [object]
 
-__type = {__bases__: [__object], __mro__: [__object], __name__: 'type'}
+type = {__bases__: [object], __mro__: [object], __name__: 'type'}
 
-__object.__metaclass__ = __type
+object.__metaclass__ = type
 
 
 __ARGUMENTS_PADDING__ = {ARGUMENTS_PADDING: "YES IT IS!"}
 
 
-def __is__(self, other):
-    return (self is other)
-__object.__is__ = __is__
+def __is__(me, other):
+    return (me is other)
+__is__.is_method = True
+object.__is__ = __is__
 
-def __isnot__(self, other):
-    return not (self is other)
-__object.__isnot__ = __isnot__
+def __isnot__(me, other):
+    return not (me is other)
+__isnot__.is_method = True
+object.__isnot__ = __isnot__
 
+def mro(me):
+    if me is object:
+        raw = me.__mro__
+    elif me.__class__:
+        raw = me.__class__.__mro__
+    else:
+        raw = me.__metaclass__.__mro__
+    l = pythonium_call(list)
+    l.jsobject = raw.slice()
+    return l
+mro.is_method = True
+object.mro = mro
 
 def __hash__(me):
     uid = lookup(me, 'uid')
     if not uid:
-        uid = __object._uid
-        __object._uid += 1
-        self.__uid__ = uid
+        uid = object._uid
+        object._uid += 1
+        me.__uid__ = uid
     return pythonium_call(str, '{' + uid)
-__object._uid = 1
-__object.__hash__ = __hash__
+__hash__.is_method = True
+object._uid = 1
+object.__hash__ = __hash__
 
 
 def __rcontains__(me, other):
     contains = lookup(other, '__contains__')
     return contains(me)
-__object.__rcontains__ = __rcontains__;
+__rcontains__.is_method = True
+object.__rcontains__ = __rcontains__
 
 
-def issubclass(klass, other):  
+def issubclass(klass, other):
     if klass is other:
         return True
     if not klass.__bases__:
@@ -66,9 +82,9 @@ def pythonium_is_true(v):
     return True
 
 
-def isinstance(object, klass):
-    if object.__class__:
-        return issubclass(object.__class__, klass)
+def isinstance(obj, klass):
+    if obj.__class__:
+        return issubclass(obj.__class__, klass)
     return False
 
 def pythonium_obj_to_js_exception(obj):
@@ -83,23 +99,23 @@ def pythonium_is_exception(obj, exc):
     return isinstance(obj, exc)
 
 
-def pythonium_call(object):
+def pythonium_call(obj):
     args = Array.prototype.slice.call(arguments, 1)
-    if object.__metaclass__:
-        instance = {__class__: object}
+    if obj.__metaclass__:
+        instance = {__class__: obj}
         init = lookup(instance, '__init__')
         if init:
             init.apply(instance, args)
         return instance
     else:
-        return object.apply(object, args)
+        return obj.apply(None, args)
 
 def pythonium_create_empty_dict():
     instance = {__class__: dict}
     instance._keys = pythonium_call(list)
     instance.jsobject = JSObject()
     return instance
-  
+
 
 def pythonium_mro(bases):
     """Calculate the Method Resolution Order of bases using the C3 algorithm.
@@ -111,7 +127,7 @@ def pythonium_mro(bases):
     Another way of looking at this, if you pass a single class K, this will
     return the linearization of K (the MRO of K, *including* itself).
     """
-    # based on http://code.activestate.com/recipes/577748-calculate-the-mro-of-a-class/
+    #b ased on http://code.activestate.com/recipes/577748-calculate-the-mro-of-a-class/
     seqs = [C.__mro__.slice() for C in bases]
     seqs.push(bases.slice())
 
@@ -151,12 +167,12 @@ def pythonium_mro(bases):
             # Remove candidate.
             index = seq.indexOf(candidate)
             if index >= 0:
-                del seq[index]
+                seq[index] = None
 
 
 def pythonium_create_class(name, bases, attrs):
     attrs.__name__ = name
-    attrs.__metaclass__ = __type
+    attrs.__metaclass__ = type
     attrs.__bases__ = bases
     mro = pythonium_mro(bases)
     mro.splice(0, 0, attrs)
@@ -164,60 +180,67 @@ def pythonium_create_class(name, bases, attrs):
     return attrs
 
 
-def lookup(object, attr):
-    object_attr = object[attr]
-    if object_attr != None:
-        if object_attr and {}.toString.call(object_attr) == '[object Function]':
+def lookup(obj, attr):
+    obj_attr = obj[attr]
+    if obj_attr != None:
+        if obj_attr and {}.toString.call(obj_attr) == '[object Function]' and obj_attr.is_method and not obj_attr.bound:
             def method_wrapper():
                 args = Array.prototype.slice.call(arguments)
-                args.splice(0, 0, object)
-                return object_attr.apply(None, args)
+                args.splice(0, 0, obj)
+                return obj_attr.apply(None, args)
+            method_wrapper.bound = True
             return method_wrapper
-        return object_attr
+        return obj_attr
     else:
-        for base in object.__class__.__mro__:
+        if obj.__class__:
+            __mro__ = obj.__class__.__mro__
+        else:
+            __mro__ = obj.__metaclass__.__mro__
+        for base in __mro__:
             class_attr = base[attr]
             if class_attr != None:
-                if {}.toString.call(class_attr) == '[object Function]':
+                if {}.toString.call(class_attr) == '[object Function]' and class_attr.is_method and not class_attr.bound:
                     def method_wrapper():
                         args = Array.prototype.slice.call(arguments)
-                        args.splice(0, 0, object)
+                        args.splice(0, 0, obj)
                         return class_attr.apply(None, args)
+                    method_wrapper.bound = True
                     return method_wrapper
                 return class_attr
 
 
-def pythonium_object_get_attribute(object, attr):
-    r = lookup(object, attr)
+def pythonium_object_get_attribute(obj, attr):
+    r = lookup(obj, attr)
     if r != None:
         return r
     else:
-        getattr = lookup(object, '__getattr__')
+        getattr = lookup(obj, '__getattr__')
         if getattr:
             return getattr(attr)
         else:
-            console.trace('AttributeError', attr, object)
+            console.trace('AttributeError', attr, obj)
             raise AttributeError
+pythonium_object_get_attribute.is_method = True
+object.__getattribute__ = pythonium_object_get_attribute
 
-__object.__getattribute__ = pythonium_object_get_attribute
 
-
-def pythonium_get_attribute(object, attr):
-    if object.__class__:
-        getattribute = lookup(object, '__getattribute__')
-        return getattribute(attr)
-    attr = object[attr]
+def pythonium_get_attribute(obj, attr):
+    if obj.__class__ or obj.__metaclass__:
+        getattribute = lookup(obj, '__getattribute__')
+        r = getattribute(attr)
+        return r
+    attr = obj[attr]
     if attr:
         if {}.toString.call(attr) == '[object Function]':
             def method_wrapper():
-                return attr.apply(object, arguments)
+                return attr.apply(obj, arguments)
             return method_wrapper
         else:
             return attr
 
 
-def pythonium_set_attribute(object, attr, value):
-    object[attr] = value
+def pythonium_set_attribute(obj, attr, value):
+    obj[attr] = value
 
 
 def ASSERT(condition, message):

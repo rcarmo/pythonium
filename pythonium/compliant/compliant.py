@@ -337,10 +337,15 @@ class Compliant(NodeVisitor):
         self.writer.pull()
         self.writer.write('};')
 
+        if self._is_inside_method_definition():
+            self.writer.write('{}.is_method = true;'.format(name))
+
         for decorator in node.decorator_list:
             decorator = self.visit(decorator)
             self.writer.write('{} = {}({});'.format(name, decorator, name))
         self._def_stack.pop()
+
+        self.writer.write('')
         return node.name, name 
 
     # Slice(expr? lower, expr? upper, expr? step) 
@@ -893,7 +898,7 @@ class Compliant(NodeVisitor):
         if len(self._def_stack) == 0:  # module level definition must be exported
             self.__all__.append(node.name)
         if len(node.bases) == 0:
-            bases = ['__object']
+            bases = ['object']
         else:
             bases = map(self.visit, node.bases)
         bases = '[{}]'.format(', '.join(bases))

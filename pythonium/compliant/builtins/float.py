@@ -7,7 +7,8 @@ class float:
         return str(self.jsobject)
 
     def __repr__(self):
-        return str(self.jsobject.toString())
+        jsobject = self.jsobject
+        return str(jscode('jsobject.toString()'))
 
     def __neg__(self):
         jsobject = self.jsobject

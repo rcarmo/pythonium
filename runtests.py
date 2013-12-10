@@ -68,7 +68,7 @@ def run(test, filepath, mode):
         print('< {} ERROR in {} mode :('.format(test, mode))
         return
 
-    expected_file = os.path.join(TESTS_ROOT, test+'.expected')
+    expected_file = os.path.join(os.path.dirname(filepath), test+'.expected')
     if os.path.exists(expected_file):
         with open(expected_file, 'br') as f:
             expected = f.read()
@@ -98,16 +98,26 @@ if __name__ == '__main__':
     except OSError:
         pass
 
-    for mode in ('veloce', 'compliant'):
-        print('* Running tests for {} mode'.format(mode))
-        for test in os.listdir(TESTS_ROOT):
+    if len(sys.argv) > 1:
+        for path in sys.argv[1:]:
+            if 'compliant' in path:
+                modes = ('compliant',)
+            else:
+                modes = ('veloce', 'compliant')
+            name = os.path.basename(path)
+            for mode in modes:
+                run(name, path, mode)
+    else:
+        for mode in ('veloce', 'compliant'):
+            print('* Running tests for {} mode'.format(mode))
+            for test in os.listdir(TESTS_ROOT):
+                if test.endswith('.py'):
+                    filepath = os.path.join(TESTS_ROOT, test)
+                    run(test, filepath, mode)
+        for test in os.listdir(COMPLIANT_TESTS_ROOT):
             if test.endswith('.py'):
-                filepath = os.path.join(TESTS_ROOT, test)
+                filepath = os.path.join(COMPLIANT_TESTS_ROOT, test)
                 run(test, filepath, mode)
-    for test in os.listdir(COMPLIANT_TESTS_ROOT):
-        if test.endswith('.py'):
-            filepath = os.path.join(COMPLIANT_TESTS_ROOT, test)
-            run(test, filepath, mode)
-    print("= Passed {}/{} tests".format(ok_ctr, test_ctr))
+        print("= Passed {}/{} tests".format(ok_ctr, test_ctr))
     if (ok_ctr - test_ctr) != 0:
         sys.exit(1)

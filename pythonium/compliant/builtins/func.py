@@ -28,13 +28,22 @@ def range(a, b=None):
 
 
 def repr(obj):
+    if obj is object:
+        return "<class 'object'>"
     return obj.__repr__()
 
 
 def print(*args):
     out = JSArray()
     for arg in args:
-        out.push(jstype(repr(arg)))
+        if jscode('arg.__class__ !== undefined'):
+            r = jstype(repr(arg))
+            jscode('out.push(r)')
+        elif jscode('arg.__metaclass__ !== undefined'):
+            name = jscode('arg.__name__')
+            jscode("""out.push("<class '"+ name +"'>")""")
+        else:
+            jscode('out.push(arg)')
     jscode('console.log.apply(console, out)')
 
 
@@ -43,13 +52,18 @@ class map:
 
     def __init__(self, func, iterable):
         self.func = func
-        self.iterable = iterable
+        self.iterable = iter(iterable)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        return self.func(next(self.iterable))
+        n = next(self.iterable)
+        r = self.func(n)
+        return r
+
+    def __repr__(self):
+        return '<builtins.map xxx>'
 
 
 def jstype(obj):

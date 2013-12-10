@@ -4,7 +4,7 @@ class bool:
         if jscode('obj !== undefined'):
             self.jsobject = pythonium_is_true(obj)
         else:
-            self.jsobject = pythonium_is_true(jscode('false'))
+            self.jsobject = jscode('false')
 
     def __jstype__(self):
         return self.jsobject
@@ -44,4 +44,4 @@ class bool:
 
 
 __TRUE = bool(jscode('true'))
-__FALSE = bool(jscode('false'))
+__FALSE = bool()

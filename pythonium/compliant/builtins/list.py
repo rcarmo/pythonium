@@ -11,8 +11,9 @@ class ListIterator:
     def __next__(self):
         if self.index == self.length:
             raise StopIteration
+        index = self.index
         self.index = self.index + 1
-        return self.list[self.index - 1]
+        return self.list[index]
 
 
 class list:
@@ -24,7 +25,8 @@ class list:
         raise TypeError("unhashable type: 'list'")
 
     def __repr__(self):
-        return "[" + ", ".join(map(repr, self)) + "]"
+        iterable = map(repr, self)
+        return "[" + ", ".join(iterable) + "]"
 
     def __jstype__(self):
         out = JSArray()

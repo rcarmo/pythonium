@@ -13,23 +13,21 @@ class str:
         return '"' + self
 
     def __contains__(self, s):
-        if int(self.jsobject.indexOf(jstype(s))) != -1:
+        jsobject = self.jsobject
+        s = jstype(s)
+        i = jscode('jsobject.indexOf(s)')
+        if int(i) != -1:
             return True
         return False
 
     def __iter__(self):
         return ListIterator(self)
 
-    def join(self, objects):
-        L = len(objects)
-        if not L:
-            return ""
-        out = objects[0]
-        index = 1
-        while index < L:
-            obj = objects[index]
-            out = out + self + obj
-            index += 1
+    def join(self, iterable):
+        iterable = iter(iterable)
+        out = next(iterable)
+        for item in iterable:
+            out = out + self + item
         return out
 
     def __add__(self, other):
@@ -38,7 +36,8 @@ class str:
         return str(jscode('a + b'))
 
     def __len__(self):
-        return int(self.jsobject.length)
+        jsobject = jscode('self.jsobject')
+        return int(jscode('jsobject.length'))
 
     def __lte__(self, other):
         a = self.jsobject

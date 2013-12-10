@@ -399,6 +399,8 @@ class Veloce(NodeVisitor):
             return '[{}]'.format(out)
         elif name == 'jscode':
             return node.args[0].s
+        elif name == 'jstype':
+            return self.visit(node.args[0])
         elif name == 'print':
             args = [self.visit(e) for e in node.args]
             s = 'console.log({})'.format(', '.join(args))
