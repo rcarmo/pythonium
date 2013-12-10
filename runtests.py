@@ -45,7 +45,7 @@ def compare_output(expected, result):
 
 def run(test, filepath, mode):
     global ok_ctr, test_ctr
-    print('< Running {} in {} mode.'.format(test, mode))
+    print('> Running {} in {} mode.'.format(test, mode))
     test_ctr += 1
     ext = 'exec-{}.js'.format(mode)
     exec_script = os.path.join(TMPDIR, test + ext)
@@ -58,14 +58,14 @@ def run(test, filepath, mode):
                 compliant_generate_js(filepath, output=f)
         except Exception as exc:
             print_exc()
-            print('< Translating {} in {} mode failed with the above exception.'.format(test, mode))
+            print('< Translation failed with the above exception.')
             return
 
     try:
         result = check_output(['node', '--harmony', exec_script], stderr=STDOUT)
     except CalledProcessError as err:
         print(err.output.decode(errors='replace'))
-        print('< {} ERROR in {} mode :('.format(test, mode))
+        print('< ERROR :(')
         return
 
     expected_file = os.path.join(os.path.dirname(filepath), test+'.expected')
@@ -77,17 +77,17 @@ def run(test, filepath, mode):
             expected = check_output(['python3', filepath], stderr=STDOUT)
         except CalledProcessError as err:
             print(err.output.decode(errors='replace'))
-            print('< {} PYTHON ERROR :('.format(test))
+            print('< PYTHON ERROR :(')
             return
 
     diffs = compare_output(expected, result)
     if diffs:
         for line in diffs:
             print(line)
-        print('< {} FAILED in {} mode :('.format(test, mode))
+        print('< FAILED :(')
     else:
         ok_ctr += 1
-        print('< {} PASS in {} mode :)'.format(test, mode))
+        print('< PASS :)')
 
 
 if __name__ == '__main__':
