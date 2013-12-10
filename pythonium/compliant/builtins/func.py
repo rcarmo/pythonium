@@ -47,7 +47,6 @@ def print(*args):
     jscode('console.log.apply(console, out)')
 
 
-
 class map:
 
     def __init__(self, func, iterable):
@@ -111,11 +110,9 @@ def any(iterable):
 
 
 def callable(obj):
-    if jscode("Object.toString.call(obj) ==='[object Function]'"):
+    if jscode("{}.toString.call(obj) == '[object Function]'"):
         return True
-    if jscode('obj.next'):
-        return True
-    if obj.__class__:
+    if jscode('obj.__metaclass__ !== undefined'):
         return True
     if jscode("lookup(obj, '__call__')"):
         return True
@@ -135,13 +132,18 @@ def staticmethod(func):
 class enumerate:
 
     def __init__(self, iterator):
-        self.iterator = iterator
+        self.iterator = iter(iterator)
         self.index = 0
+
+    def __repr__(self):
+        return '<enumerate object at 0x1234567890>'
 
     def __iter__(self):
         return self
 
     def __next__(self):
+        index = self.index
+        self.index = self.index + 1
         return (index, next(self.iterator))
 
 

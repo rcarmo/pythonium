@@ -1,1 +1,3 @@
-print(list(enumerate(['A', 'B', 'C'])))
+abc = ['A', 'B', 'C']
+enumeration = enumerate(abc)
+novo = list(enumeration)

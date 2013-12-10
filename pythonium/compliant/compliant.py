@@ -183,9 +183,12 @@ class Compliant(NodeVisitor):
     def visit_Tuple(self, node):
         args = ', '.join(map(self.visit, node.elts))
         if args:
-            return 'pythonium_call(list, [{}])'.format(args)
+            name = '__a_tuple{}'.format(self.uuid())
+            self.writer.write('var {} = pythonium_call(tuple);'.format(name))
+            self.writer.write('{}.jsobject = [{}];'.format(name, args))
+            return name
         else:
-            return 'pythonium_call(list)'
+            return 'pythonium_call(tuple)'
 
     # List(expr* elts, expr_context ctx) 
     def visit_List(self, node):
@@ -713,6 +716,7 @@ class Compliant(NodeVisitor):
     def visit_Return(self, node):
         if node.value:
             self.writer.write('return {};'.format(self.visit(node.value)))
+        self.writer.write('return __NONE;')
 
     # Compare(expr left, cmpop* ops, expr* comparators)
     def visit_Compare(self, node):

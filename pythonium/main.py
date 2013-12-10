@@ -44,7 +44,7 @@ def main(argv=None):
 
         # compile builtins
         for path in builtins.__path__:
-            for name in os.listdir(path):
+            for name in sorted(os.listdir(path)):
                 if name.endswith('.py'):
                     argv = [os.path.join(path, name)]
                     main(argv)

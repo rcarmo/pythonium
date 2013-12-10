@@ -57,7 +57,7 @@ def issubclass(klass, other):
     if not klass.__bases__:
         return __FALSE
     for base in klass.__bases__:
-        if issubclass(base, other):
+        if issubclass(base, other) is __TRUE:
             return __TRUE
     return __FALSE
 
@@ -197,8 +197,11 @@ def lookup(obj, attr):
     else:
         if obj.__class__:
             __mro__ = obj.__class__.__mro__
-        else:
+        elif obj.__metaclass__:
             __mro__ = obj.__metaclass__.__mro__
+        else:
+            # it's a function
+            return None
         for base in __mro__:
             class_attr = base[attr]
             if class_attr != None:

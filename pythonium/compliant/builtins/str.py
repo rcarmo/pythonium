@@ -25,7 +25,10 @@ class str:
 
     def join(self, iterable):
         iterable = iter(iterable)
-        out = next(iterable)
+        try:
+            out = next(iterable)
+        except StopIteration:
+            return ""
         for item in iterable:
             out = out + self + item
         return out

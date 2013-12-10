@@ -7,8 +7,8 @@ class tuple:
         raise TypeError("unhashable type: 'list'")
 
     def __repr__(self):
-        iterable = map(repr, self)
-        return "[" + ", ".join(iterable) + "]"
+        iterable = map(nest_str_with_quotes, self)
+        return "(" + ", ".join(iterable) + ")"
 
     def __jstype__(self):
         out = JSArray()
@@ -62,8 +62,3 @@ class tuple:
 
     def __delitem__(self, index):
         self.jsobject.splice(jstype(index), 1)
-
-    def __repr__(self):
-        return "(" + ", ".join(map(repr, self)) + ")"
-
-

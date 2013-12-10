@@ -18,14 +18,17 @@ class ListIterator:
 
 class list:
     
-    def __init__(self):
+    def __init__(self, iterable):
         self.jsobject = JSArray()
+        if jscode('iterable !== undefined'):
+            for item in iterable:
+                self.append(item)
 
     def __hash__(self):
         raise TypeError("unhashable type: 'list'")
 
     def __repr__(self):
-        iterable = map(repr, self)
+        iterable = map(nest_str_with_quotes, self)
         return "[" + ", ".join(iterable) + "]"
 
     def __jstype__(self):

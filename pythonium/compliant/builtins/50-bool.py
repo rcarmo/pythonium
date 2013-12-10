@@ -1,4 +1,4 @@
-class bool:
+class bool(int):
 
     def __init__(self, obj):
         if jscode('obj !== undefined'):
