@@ -6,9 +6,7 @@ from io import StringIO
 from traceback import print_exc
 from itertools import chain
 
-from subprocess import STDOUT
-from subprocess import check_output
-from subprocess import CalledProcessError
+from envoy import run  # pip install git+https://github.com/kennethreitz/envoy.git
 
 from pythonium.main import main
 from pythonium.veloce.veloce import veloce_generate_js
@@ -44,9 +42,9 @@ def compare_output(expected, result):
     return list(diffs)
 
 
-def run(test, filepath, mode):
+def run_test(test, filepath, mode):
     global ok_ctr, test_ctr
-    print('> Running {} in {} mode.'.format(test, mode))
+    print('> Running {} in {} mode...'.format(test, mode))
     test_ctr += 1
     ext = 'exec-{}.js'.format(mode)
     exec_script = os.path.join(TMPDIR, test + ext)
@@ -59,28 +57,30 @@ def run(test, filepath, mode):
                 compliant_generate_js(filepath, output=f)
         except Exception as exc:
             print_exc()
-            print('< Translation failed with the above exception.')
+            print('< Translation failed with the above exception :(')
             return
 
-    try:
-        result = check_output(['node', '--harmony', exec_script], stderr=STDOUT)
-    except CalledProcessError as err:
-        print(err.output.decode(errors='replace'))
+    result = run('node --harmony {}'.format(exec_script))
+    if result.status_code != 0:
+        print(result.std_out)
+        print(result.std_err)
         print('< ERROR :(')
         return
-
+    else:
+        result = result.std_out
     expected_file = os.path.join(os.path.dirname(filepath), test+'.expected')
     if os.path.exists(expected_file):
         with open(expected_file, 'br') as f:
             expected = f.read()
     else:
-        try:
-            expected = check_output(['python3', filepath], stderr=STDOUT)
-        except CalledProcessError as err:
-            print(err.output.decode(errors='replace'))
+        expected = run('python3 {}'.format(filepath))
+        if expected.status_code != 0:
+            print(expected.std_out)
+            print(expected.std_err)
             print('< PYTHON ERROR :(')
             return
-
+        else:
+            expected = expected.std_out
     diffs = compare_output(expected, result)
     if diffs:
         for line in diffs:
@@ -94,11 +94,11 @@ def run(test, filepath, mode):
 def run_python(test, filepath):
     global ok_ctr, test_ctr
     test_ctr +=1
-    print('> Running python test {}.'.format(test))
-    try:
-        expected = check_output(['python3', filepath], stderr=STDOUT)
-    except CalledProcessError as err:
-        print(err.output.decode(errors='replace'))
+    print('> Running python test {}...'.format(test))
+    expected = run('python3 {}'.format(filepath))
+    if expected.status_code != 0:
+        print(expected.std_out)
+        print(expected.std_err)
         print('< PYTHON ERROR :(')
         return
     else:
@@ -125,22 +125,22 @@ if __name__ == '__main__':
                     modes = ('veloce', 'compliant')
                 name = os.path.basename(path)
                 for mode in modes:
-                    run(name, path, mode)
+                    run_test(name, path, mode)
     else:
         for mode in ('veloce', 'compliant'):
             print('* Running tests for {} mode'.format(mode))
             for test in os.listdir(TESTS_ROOT):
                 if test.endswith('.py'):
                     filepath = os.path.join(TESTS_ROOT, test)
-                    run(test, filepath, mode)
+                    run_test(test, filepath, mode)
         for test in os.listdir(COMPLIANT_TESTS_ROOT):
             if test.endswith('.py'):
                 filepath = os.path.join(COMPLIANT_TESTS_ROOT, test)
-                run(test, filepath, mode)
+                run_test(test, filepath, mode)
         print('* Running python tests')
         for test in os.listdir(PYTHON_TESTS_ROOT):
             if test.endswith('.py'):
                 run_python(test, os.path.join(PYTHON_TESTS_ROOT, test))
-    print("= Passed {}/{} tests".format(ok_ctr, test_ctr))
+    print("*** Passed {}/{} tests".format(ok_ctr, test_ctr))
     if (ok_ctr - test_ctr) != 0:
         sys.exit(1)
