@@ -18,6 +18,7 @@ from pythonium.compliant.compliant import compliant_generate_js
 ROOT = os.path.abspath(os.path.dirname(__file__))
 TESTS_ROOT = os.path.join(ROOT, 'tests')
 COMPLIANT_TESTS_ROOT = os.path.join(TESTS_ROOT, 'compliant')
+PYTHON_TESTS_ROOT = os.path.join(TESTS_ROOT, 'python')
 
 # generate pythonium compliant library
 stdout = sys.stdout
@@ -90,6 +91,20 @@ def run(test, filepath, mode):
         print('< PASS :)')
 
 
+def run_python(test, filepath):
+    global ok_ctr, test_ctr
+    test_ctr +=1
+    print('> Running python test {}.'.format(test))
+    try:
+        expected = check_output(['python3', filepath], stderr=STDOUT)
+    except CalledProcessError as err:
+        print(err.output.decode(errors='replace'))
+        print('< PYTHON ERROR :(')
+        return
+    else:
+        print('> PASS :)')
+        ok_ctr += 1
+
 if __name__ == '__main__':
 
     TMPDIR = os.path.join(TESTS_ROOT, 'tmp')
@@ -98,15 +113,19 @@ if __name__ == '__main__':
     except OSError:
         pass
 
+    # solo mode
     if len(sys.argv) > 1:
         for path in sys.argv[1:]:
-            if 'compliant' in path:
-                modes = ('compliant',)
+            if 'python' in path:
+                run_python(path, path)
             else:
-                modes = ('veloce', 'compliant')
-            name = os.path.basename(path)
-            for mode in modes:
-                run(name, path, mode)
+                if 'compliant' in path:
+                    modes = ('compliant',)
+                else:
+                    modes = ('veloce', 'compliant')
+                name = os.path.basename(path)
+                for mode in modes:
+                    run(name, path, mode)
     else:
         for mode in ('veloce', 'compliant'):
             print('* Running tests for {} mode'.format(mode))
@@ -118,6 +137,10 @@ if __name__ == '__main__':
             if test.endswith('.py'):
                 filepath = os.path.join(COMPLIANT_TESTS_ROOT, test)
                 run(test, filepath, mode)
-        print("= Passed {}/{} tests".format(ok_ctr, test_ctr))
+        print('* Running python tests')
+        for test in os.listdir(PYTHON_TESTS_ROOT):
+            if test.endswith('.py'):
+                run_python(test, os.path.join(PYTHON_TESTS_ROOT, test))
+    print("= Passed {}/{} tests".format(ok_ctr, test_ctr))
     if (ok_ctr - test_ctr) != 0:
         sys.exit(1)
