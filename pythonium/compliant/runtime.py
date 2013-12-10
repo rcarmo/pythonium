@@ -25,8 +25,8 @@ def mro(me):
     elif me.__class__:
         raw = me.__class__.__mro__
     else:
-        raw = me.__metaclass__.__mro__
-    l = pythonium_call(list)
+        raw = me.__mro__
+    l = pythonium_call(tuple)
     l.jsobject = raw.slice()
     return l
 mro.is_method = True
@@ -127,25 +127,28 @@ def pythonium_mro(bases):
     Another way of looking at this, if you pass a single class K, this will
     return the linearization of K (the MRO of K, *including* itself).
     """
-    #b ased on http://code.activestate.com/recipes/577748-calculate-the-mro-of-a-class/
+    # based on http://code.activestate.com/recipes/577748-calculate-the-mro-of-a-class/
     seqs = [C.__mro__.slice() for C in bases]
     seqs.push(bases.slice())
-
+    
     def cdr(l):
         l = l.slice()
         l = l.splice(1)
         return l
+    def contains(l, c):
+        for i in l:
+            if i is c:
+                return True
+        return False
     res = []
     while True:
         non_empty = []
         for seq in seqs:
-            empty = True
             out = []
             for item in seq:
                 if item:
-                    empty = False
                     out.push(item)
-            if not empty:
+            if out.length != 0:
                 non_empty.push(out)
         if non_empty.length == 0:
             # Nothing left to process, we're done.
@@ -154,7 +157,7 @@ def pythonium_mro(bases):
             candidate = seq[0]
             not_head = []
             for s in non_empty:
-                if candidate in cdr(s):
+                if contains(cdr(s), candidate):
                     not_head.push(s)
             if not_head.length != 0:
                 candidate = None
@@ -163,11 +166,11 @@ def pythonium_mro(bases):
         if not candidate:
             raise TypeError("Inconsistent hierarchy, no C3 MRO is possible")
         res.push(candidate)
-        for seq in seqs:
+        for seq in non_empty:
             # Remove candidate.
-            index = seq.indexOf(candidate)
-            if index >= 0:
-                seq[index] = None
+            if seq[0] is candidate:
+                seq[0] = None
+        seqs = non_empty
 
 
 def pythonium_create_class(name, bases, attrs):

@@ -1,23 +1,5 @@
-class ListIterator:
+class tuple:
 
-    def __init__(self, obj):
-        self.list = obj
-        self.index = 0
-        self.length = len(obj)
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self.index == self.length:
-            raise StopIteration
-        index = self.index
-        self.index = self.index + 1
-        return self.list[index]
-
-
-class list:
-    
     def __init__(self):
         self.jsobject = JSArray()
 
@@ -34,10 +16,6 @@ class list:
             item = jstype(item)
             jscode('out.push(item)')
         return out
-
-    def append(self, item):
-        jsobject = self.jsobject
-        jscode('jsobject.push(item)')
 
     def insert(self, index, item):
         self.jsobject.splice(index, 0, item)
@@ -84,3 +62,8 @@ class list:
 
     def __delitem__(self, index):
         self.jsobject.splice(jstype(index), 1)
+
+    def __repr__(self):
+        return "(" + ", ".join(map(repr, self)) + ")"
+
+
