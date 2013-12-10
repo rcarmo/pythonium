@@ -53,13 +53,13 @@ object.__rcontains__ = __rcontains__
 
 def issubclass(klass, other):
     if klass is other:
-        return True
+        return __TRUE
     if not klass.__bases__:
-        return False
+        return __FALSE
     for base in klass.__bases__:
         if issubclass(base, other):
-            return True
-    return False
+            return __TRUE
+    return __FALSE
 
 
 def pythonium_is_true(v):
@@ -85,7 +85,7 @@ def pythonium_is_true(v):
 def isinstance(obj, klass):
     if obj.__class__:
         return issubclass(obj.__class__, klass)
-    return False
+    return __FALSE
 
 def pythonium_obj_to_js_exception(obj):
     def exception():
