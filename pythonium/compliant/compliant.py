@@ -883,7 +883,6 @@ class Compliant(NodeVisitor):
     # Lambda(arguments args, expr body)
     def visit_Lambda(self, node):
         args, kwargs, vararg, varkwargs = self.visit(node.args)
-        sys.stderr.write(", ".join(args))
         name = '__lambda{}'.format(self.uuid())
         self.writer.write('var {} = function({}) {{'.format(name, ', '.join(args)))
         self.writer.push()
