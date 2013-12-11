@@ -1,6 +1,5 @@
 import os
 import sys
-from io import StringIO
 
 from ast import Str
 from ast import Name
@@ -12,26 +11,7 @@ from ast import Global
 from ast import FunctionDef
 from ast import NodeVisitor
 
-from ..utils import YieldSearch
-
-
-class Writer:
-
-    def __init__(self):
-        self.level = 0
-        self.output = StringIO()
-
-    def push(self):
-        self.level += 1
-
-    def pull(self):
-        self.level -= 1
-
-    def write(self, code):
-        self.output.write(' ' * 4 * self.level + code + '\n')
-
-    def value(self):
-        return self.output.getvalue()
+from ..utils import YieldSearch, Writer
 
 
 class Veloce(NodeVisitor):
