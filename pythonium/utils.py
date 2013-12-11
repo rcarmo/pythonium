@@ -1,4 +1,5 @@
-from ast import NodeVisitor
+import os
+from ast import NodeVisitor, parse
 from io import StringIO
 
 
@@ -30,3 +31,40 @@ class Writer:
 
     def value(self):
         return self.output.getvalue()
+
+
+def pythonium_generate_js(filepath, translator, requirejs=False, root_path=None, output=None, deep=None):
+    dirname = os.path.abspath(os.path.dirname(filepath))
+    if not root_path:
+        root_path = dirname
+    basename = os.path.basename(filepath)
+    output_name = os.path.join(dirname, basename + '.js')
+    if not output:
+        print('Generating {}'.format(output_name))
+    # generate js
+    with open(os.path.join(dirname, basename)) as f:
+        input = parse(f.read())
+    tree = parse(input)
+    pytrans = translator()
+    pytrans.visit(tree)
+    script = pytrans.writer.value()
+    if requirejs:
+        out = 'define(function(require) {\n'
+        out += script
+        if isinstance(pytrans.__all__, str):
+            out += '\nreturn {};\n'.format(pytrans.__all__)
+        elif isinstance(pytrans.__all__, list):
+            all = ["{!r}: {}".format(x, x) for x in pytrans.__all__]
+            public = '{{{}}}'.format(', '.join(all))
+            out += '\nreturn {};\n'.format(public)
+        else:
+            raise Exception('__all__ is not defined!')
+        out += '\n})\n'
+        script = out
+    if deep:
+        for dependency in python_core.dependencies:
+            if dependency.startswith('.'):
+                generate_js(os.path.join(dirname, dependency + '.py'), requirejs, root_path, output, deep)
+            else:
+                generate_js(os.path.join(root_path, dependency[1:] + '.py'), requirejs, root_path, output, deep)
+    output.write(script)

@@ -903,34 +903,3 @@ class Compliant(NodeVisitor):
         self.writer.write('});')
         self._def_stack.pop()
 
-
-def compliant_generate_js(filepath, requirejs=False, root_path=None, output=None, deep=None):
-    dirname = os.path.abspath(os.path.dirname(filepath))
-    if not root_path:
-        root_path = dirname
-    basename = os.path.basename(filepath)
-    output_name = os.path.join(dirname, basename + '.js')
-    if not output:
-        print('Generating {}'.format(output_name))
-    # generate js
-    with open(os.path.join(dirname, basename)) as f:
-        input = parse(f.read())
-    tree = parse(input)
-    compliant = Compliant()
-    compliant.visit(tree)
-    script = compliant.writer.value()
-    if requirejs:
-        out = 'define(function(require) {\n'
-        out += script
-        all = map(lambda x: "'{}': {}".format(x, x), compliant.__all__)
-        all = '{{{}}}'.format(', '.join(all))
-        out += 'return {}'.format(all)
-        out += '\n})\n'
-        script = out
-    if deep:
-        for dependency in python_core.dependencies:
-            if dependency.startswith('.'):
-                generate_js(os.path.join(dirname, dependency + '.py'), requirejs, root_path, output, deep)
-            else:
-                generate_js(os.path.join(root_path, dependency[1:] + '.py'), requirejs, root_path, output, deep)
-    output.write(script)

@@ -710,38 +710,3 @@ class Veloce(NodeVisitor):
         self.writer.write('});')
         self.in_classdef = None
 
-
-def veloce_generate_js(filepath, requirejs=False, root_path=None, output=None, deep=None):
-    dirname = os.path.abspath(os.path.dirname(filepath))
-    if not root_path:
-        root_path = dirname
-    basename = os.path.basename(filepath)
-    output_name = os.path.join(dirname, basename + '.js')
-    if not output:
-        print('Generating {}'.format(output_name))
-    # generate js
-    with open(os.path.join(dirname, basename)) as f:
-        input = parse(f.read())
-    tree = parse(input)
-    python_core = Veloce()
-    python_core.visit(tree)
-    script = python_core.writer.value()
-    if requirejs:
-        out = 'define(function(require) {\n'
-        out += script
-        if isinstance(python_core.__all__, str):
-            out += '\nreturn {};\n'.format(python_core.__all__)
-        elif python_core.__all__:
-            public = '{{{}}}'.format(', '.join(map(lambda x: '{}: {}'.format(x[0], x[1]), zip(python_core.__all__, python_core.__all__))))
-            out += '\nreturn {};\n'.format(public)
-        else:
-            raise Exception('__all__ is not defined!')
-        out += '\n})\n'
-        script = out
-    if deep:
-        for dependency in python_core.dependencies:
-            if dependency.startswith('.'):
-                generate_js(os.path.join(dirname, dependency + '.py'), requirejs, root_path, output, deep)
-            else:
-                generate_js(os.path.join(root_path, dependency[1:] + '.py'), requirejs, root_path, output, deep)
-    output.write(script)
