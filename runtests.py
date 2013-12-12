@@ -11,8 +11,9 @@ from subprocess import check_output
 from subprocess import CalledProcessError
 
 from pythonium.main import main
-from pythonium.veloce.veloce import veloce_generate_js
-from pythonium.compliant.compliant import compliant_generate_js
+from pythonium.veloce.veloce import Veloce
+from pythonium.compliant.compliant import Compliant
+from pythonium.utils import pythonium_generate_js
 
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
@@ -51,12 +52,13 @@ def run(test, filepath, mode):
     ext = 'exec-{}.js'.format(mode)
     exec_script = os.path.join(TMPDIR, test + ext)
     with open(exec_script, 'w') as f:
+        if mode =='veloce':
+            translator=Veloce
+        else:
+            f.write(COMPLIANTJS)
+            translator=Compliant
         try:
-            if mode =='veloce':
-                veloce_generate_js(filepath, output=f)
-            else:
-                f.write(COMPLIANTJS)
-                compliant_generate_js(filepath, output=f)
+            pythonium_generate_js(filepath, translator, output=f)
         except Exception as exc:
             print_exc()
             print('< Translation failed with the above exception.')

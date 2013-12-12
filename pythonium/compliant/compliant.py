@@ -1,6 +1,5 @@
 import os
 import sys
-from io import StringIO
 from collections import namedtuple
 
 from ast import Str
@@ -15,30 +14,11 @@ from ast import Subscript
 from ast import FunctionDef
 from ast import NodeVisitor
 
-from ..utils import YieldSearch
+from ..utils import YieldSearch, Writer
 from ..veloce.veloce import Veloce
 
 ClassDefNode = namedtuple('ClassDef', 'name')
 FunctionDefNode = namedtuple('FunctionDef', 'name')
-
-
-class Writer:
-
-    def __init__(self):
-        self.level = 0
-        self.output = StringIO()
-
-    def push(self):
-        self.level += 1
-
-    def pull(self):
-        self.level -= 1
-
-    def write(self, code):
-        self.output.write(' ' * 4 * self.level + code + '\n')
-
-    def value(self):
-        return self.output.getvalue()
 
 
 class Compliant(NodeVisitor):
@@ -923,34 +903,3 @@ class Compliant(NodeVisitor):
         self.writer.write('});')
         self._def_stack.pop()
 
-
-def compliant_generate_js(filepath, requirejs=False, root_path=None, output=None, deep=None):
-    dirname = os.path.abspath(os.path.dirname(filepath))
-    if not root_path:
-        root_path = dirname
-    basename = os.path.basename(filepath)
-    output_name = os.path.join(dirname, basename + '.js')
-    if not output:
-        print('Generating {}'.format(output_name))
-    # generate js
-    with open(os.path.join(dirname, basename)) as f:
-        input = parse(f.read())
-    tree = parse(input)
-    compliant = Compliant()
-    compliant.visit(tree)
-    script = compliant.writer.value()
-    if requirejs:
-        out = 'define(function(require) {\n'
-        out += script
-        all = map(lambda x: "'{}': {}".format(x, x), compliant.__all__)
-        all = '{{{}}}'.format(', '.join(all))
-        out += 'return {}'.format(all)
-        out += '\n})\n'
-        script = out
-    if deep:
-        for dependency in python_core.dependencies:
-            if dependency.startswith('.'):
-                generate_js(os.path.join(dirname, dependency + '.py'), requirejs, root_path, output, deep)
-            else:
-                generate_js(os.path.join(root_path, dependency[1:] + '.py'), requirejs, root_path, output, deep)
-    output.write(script)

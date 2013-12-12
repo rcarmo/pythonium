@@ -22,8 +22,9 @@ import os
 import sys
 from docopt import docopt
 
-from .veloce.veloce import veloce_generate_js
-from .compliant.compliant import compliant_generate_js
+from .veloce.veloce import Veloce
+from .compliant.compliant import Compliant
+from .utils import pythonium_generate_js
 
 __version__ = '0.5.0'
 
@@ -55,8 +56,9 @@ def main(argv=None):
         main(['--help'])
         return
 
-    generator = veloce_generate_js if args['--veloce'] else compliant_generate_js
-    options = {'requirejs': args['--requirejs'],
+    translator = Veloce if args['--veloce'] else Compliant
+    options = {'translator': translator,
+               'requirejs': args['--requirejs'],
                'deep': args['--deep'],
                }
 
@@ -64,10 +66,10 @@ def main(argv=None):
     if outfile:
         with open(outfile, 'w') as output:
             for filepath in filepaths:
-                generator(filepath, output=output, **options)
+                pythonium_generate_js(filepath, output=output, **options)
     else:
         for filepath in filepaths:
-            generator(filepath, output=sys.stdout, **options)
+            pythonium_generate_js(filepath, output=sys.stdout, **options)
 
 
 if __name__ == '__main__':
