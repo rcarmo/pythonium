@@ -10,3 +10,18 @@
 	- ``print`` was defined in ``lib/builtins.py`` and must be used to log Python objects. ``console.log(fuuuu)`` must be used to log JavaScript objects.
 	- rework ``dict`` so that it works more like CPython one.
 	- fixed a bug where if two functions were nested and the nested function was a generator both functions were dubbed generators
+	- replaced JS by jscode
+	- added a minimal Tree.js example (Dirk Krause)
+	- added assert
+	- fixed nested loops
+	- added del without slice support
+	- fixed mro (multiple inheritance)
+	- fixed repr
+	- fixed lambda will full signature support
+	- fixed thruth
+	- added “SPAM if EGG else FOOBAR”
+	- added a minimal HACKING file
+	- added travis
+	- added: bool as a func, callable, enumerate, getattr
+	- rework map and range
+	- added a lot of tests
