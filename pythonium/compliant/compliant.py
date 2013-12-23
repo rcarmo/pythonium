@@ -665,8 +665,9 @@ class Compliant(NodeVisitor):
                 targets = map(self.visit, target.elts)
                 if export:
                     self.__all__.extends(targets)
+                self.writer.write('var getitem = pythonium_get_attribute(__assignement, "__getitem__");')
                 for index, target in enumerate(targets):
-                    self.writer.write('{} = __assignement[{}];\n'.format(target, index))
+                    self.writer.write('{} = getitem(pythonium_call(int, {}));'.format(target, index))
             else:
                 if isinstance(target, Attribute):
                     name = self.visit(target.value)
