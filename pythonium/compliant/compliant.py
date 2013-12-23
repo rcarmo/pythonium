@@ -22,7 +22,7 @@ FunctionDefNode = namedtuple('FunctionDef', 'name')
 
 
 class Compliant(NodeVisitor):
-    
+
     @classmethod
     def translate(cls, code):
         translator = cls()
@@ -54,7 +54,7 @@ class Compliant(NodeVisitor):
     #      | For | While | If | With | Raise | Try | Assert | Import | ImportFrom
     #      | Global | Nonlocal | Expr | Pass | Break | Continue
     #
-    # expr = BoolOp | BinOp | UnaryOp | Lambda | IfExp | Dict | Set 
+    # expr = BoolOp | BinOp | UnaryOp | Lambda | IfExp | Dict | Set
     #      | ListComp | SetComp | DictComp | GeneratorExp | Yield | YieldFrom
     #      | Compare | Call | Num | Str | Bytes | Ellipsis | Attribute
     #      | Subscript | Starred | Name | List | Tuple
@@ -77,7 +77,7 @@ class Compliant(NodeVisitor):
     # excepthandler = ExceptHandler(expr? type, identifier? name, stmt* body)
     #
     # arguments = (arg* args, identifier? vararg, expr? varargannotation,
-    #              arg* kwonlyargs, identifier? kwarg, expr? kwargannotation, 
+    #              arg* kwonlyargs, identifier? kwarg, expr? kwargannotation,
     #              expr* defaults, expr* kw_defaults)
     #
     # arg = (identifier arg, expr? annotation)
@@ -147,7 +147,7 @@ class Compliant(NodeVisitor):
 
     # YieldFrom(expr value)
     visit_YieldFrom = NotImplemented
-        
+
     # In
     def visit_In(self, node):
         return '__rcontains__'
@@ -170,7 +170,7 @@ class Compliant(NodeVisitor):
         else:
             return 'pythonium_call(tuple)'
 
-    # List(expr* elts, expr_context ctx) 
+    # List(expr* elts, expr_context ctx)
     def visit_List(self, node):
         args = ', '.join(map(self.visit, node.elts))
         if args:
@@ -255,7 +255,7 @@ class Compliant(NodeVisitor):
             self.__all__.append(node.name)
         self._def_stack.append(FunctionDefNode(node.name))
         args, kwargs, varargs, varkwargs = self.visit(node.args)
-        
+
         all_parameters = list(args)
         all_parameters.extend(kwargs.keys())
         if varargs:
@@ -329,9 +329,9 @@ class Compliant(NodeVisitor):
         self._def_stack.pop()
 
         self.writer.write('')
-        return node.name, name 
+        return node.name, name
 
-    # Slice(expr? lower, expr? upper, expr? step) 
+    # Slice(expr? lower, expr? upper, expr? step)
     def visit_Slice(self, node):
         start = self.visit(node.lower) if node.lower else 'undefined'
         end = self.visit(node.upper) if node.upper else 'undefined'
@@ -342,7 +342,7 @@ class Compliant(NodeVisitor):
     def visit_Index(self, node):
         return self.visit(node.value)
 
-    # ExtSlice(slice* dims) 
+    # ExtSlice(slice* dims)
     visit_ExtSlice = NotImplemented
 
     # Subscript(expr value, slice slice, expr_context ctx)
@@ -350,7 +350,7 @@ class Compliant(NodeVisitor):
         return "pythonium_call(pythonium_get_attribute({}, '__getitem__'), {})".format(self.visit(node.value), self.visit(node.slice))
 
     # arguments = (arg* args, identifier? vararg, expr? varargannotation,
-    #              arg* kwonlyargs, identifier? kwarg, expr? kwargannotation, 
+    #              arg* kwonlyargs, identifier? kwarg, expr? kwargannotation,
     #              expr* defaults, expr* kw_defaults)
     def visit_arguments(self, node):
         args = list(map(lambda x: x.arg, node.args))
@@ -440,7 +440,7 @@ class Compliant(NodeVisitor):
             except AttributeError:
                 # it is not
                 pass
-            
+
             # positional args
             if node.args:
                 args = [self.visit(e) for e in node.args]
@@ -799,7 +799,7 @@ class Compliant(NodeVisitor):
     # For(expr target, expr iter, stmt* body, stmt* orelse)
     def visit_For(self, node):
         # support only arrays
-        target = node.target.id 
+        target = node.target.id
         iterator = self.visit(node.iter) # iter is the python iterator
         self.writer.write('try {')
         self.writer.push()
@@ -846,8 +846,8 @@ class Compliant(NodeVisitor):
             position = num_args + index - 1
             self.writer.write('if (varkwargs_start !== undefined && {} > varkwargs_start) {{'.format(position))
             self.writer.push()
- 
-            self.writer.write('{} = {}.__class__.get({}, {}) || {};'.format(keyword, varkwargs, varkwargs, keyword, kwargs[keyword])) 
+
+            self.writer.write('{} = {}.__class__.get({}, {}) || {};'.format(keyword, varkwargs, varkwargs, keyword, kwargs[keyword]))
             self.writer.pull()
             self.writer.write('} else {')
             self.writer.push()
@@ -879,7 +879,7 @@ class Compliant(NodeVisitor):
         return name
 
 
-    # ClassDef(identifier name, expr* bases, keyword* keywords, 
+    # ClassDef(identifier name, expr* bases, keyword* keywords,
     #          expr? starargs, expr? kwargs, stmt* body, expr* decorator_list)
     def visit_ClassDef(self, node):
         # 'name', 'bases', 'keywords', 'starargs', 'kwargs', 'body', 'decorator_lis't
@@ -907,4 +907,3 @@ class Compliant(NodeVisitor):
         self.writer.pull()
         self.writer.write('});')
         self._def_stack.pop()
-
