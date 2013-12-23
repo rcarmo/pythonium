@@ -696,6 +696,7 @@ class Compliant(NodeVisitor):
     def visit_Return(self, node):
         if node.value:
             self.writer.write('return {};'.format(self.visit(node.value)))
+            return
         self.writer.write('return __NONE;')
 
     # Compare(expr left, cmpop* ops, expr* comparators)
