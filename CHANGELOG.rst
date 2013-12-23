@@ -1,5 +1,7 @@
 0.6.0
-	- TBD
+	- compliant: added target unpack
+	- compliant: added list comprehension
+	- veloce: fixed lambda
 
 0.5.0
 	- Web Console available online @ http://hypermove.net/pythonium-web-console/
