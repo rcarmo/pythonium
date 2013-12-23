@@ -77,21 +77,21 @@ class Veloce(NodeVisitor):
     ######################################################################
 
     # Interactive(stmt* body)
-    visit_Interactive = NotImplemented
+    def visit_Interactive(self, node): raise NotImplemented
 
     # Expression(expr body)
-    visit_Expression = NotImplemented
+    def visit_Expression(self, node): raise NotImplemented
 
     # Suite(stmt* body)
-    visit_Suite = NotImplemented
+    def visit_Suite(self, node): raise NotImplemented
 
     # expr_context = Load | Store | Del | AugLoad | AugStore | Param
-    visit_Load = NotImplemented
-    visit_Store = NotImplemented
-    visit_Del = NotImplemented
-    visit_AugLoad = NotImplemented
-    visit_AugStore = NotImplemented
-    visit_Param = NotImplemented
+    def visit_Load(self, node): raise NotImplemented
+    def visit_Store(self, node): raise NotImplemented
+    def visit_Del(self, node): raise NotImplemented
+    def visit_AugLoad(self, node): raise NotImplemented
+    def visit_AugStore(self, node): raise NotImplemented
+    def visit_Param(self, node): raise NotImplemented
 
     # Pass
     def visit_Pass(self, node):
@@ -123,14 +123,14 @@ class Veloce(NodeVisitor):
         return 'yield {}'.format(self.visit(node.value))
 
     # YieldFrom(expr value)
-    visit_YieldFrom = NotImplemented
+    def visit_YieldFrom(self, node): raise NotImplemented
 
     # In
     def visit_In(self, node):
         return ' in '
 
     # NotIn
-    visit_NotIn = NotImplemented
+    def visit_NotIn(self, node): raise NotImplemented
 
     # Module(stmt* body)
     def visit_Module(self, node):
@@ -145,13 +145,13 @@ class Veloce(NodeVisitor):
         return '[{}]'.format(', '.join(map(self.visit, node.elts)))
 
     # Set(expr* elts)
-    visit_Set = NotImplemented
+    def visit_Set(self, node): raise NotImplemented
 
     # alias = (identifier name, identifier? asname)
-    visit_alias = NotImplemented
+    def visit_alias(self, node): raise NotImplemented
 
     # Import(alias* names)
-    visit_Import = NotImplemented
+    def visit_Import(self, node): raise NotImplemented
 
     # ImportFrom(identifier? module, alias* names, int? level)
     def visit_ImportFrom(self, node):
@@ -184,7 +184,7 @@ class Veloce(NodeVisitor):
         return ''
 
     # Nonlocal(identifier* names)
-    visit_Nonlocal = NotImplemented
+    def visit_Nonlocal(self, node): raise NotImplemented
 
     # FunctionDef(identifier name, arguments args, stmt* body, expr* decorator_list, expr? returns)
     def visit_FunctionDef(self, node):
@@ -291,7 +291,7 @@ class Veloce(NodeVisitor):
         return self.visit(node.value)
 
     # ExtSlice(slice* dims) 
-    visit_ExtSlice = NotImplemented
+    def visit_ExtSlice(self, node): raise NotImplemented
 
     # Subscript(expr value, slice slice, expr_context ctx)
     def visit_Subscript(self, node):
@@ -311,7 +311,7 @@ class Veloce(NodeVisitor):
         return args, kwargs, vararg, varkwargs
 
     # arg = (identifier arg, expr? annotation)
-    visit_arg = NotImplemented
+    def visit_arg(self, node): raise NotImplemented
 
     # Name(identifier id, expr_context ctx)
     def visit_Name(self, node):
@@ -638,7 +638,7 @@ class Veloce(NodeVisitor):
             self.writer.write('}')
 
     # IfExp(expr test, expr body, expr orelse)
-    visit_IfExp = NotImplemented
+    def visit_IfExp(self, node): raise NotImplemented
 
     # Ellipsis
     visit_Ellipsis = NotImplemented
