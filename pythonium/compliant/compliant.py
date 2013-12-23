@@ -812,7 +812,7 @@ class Compliant(NodeVisitor):
         self.writer.pull()
         self.writer.write('}')
         self.writer.pull()
-        self.writer.write('} catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}')
+        self.writer.write('} catch (__exception__) { if (!pythonium_is_exception(__exception__, StopIteration)) { throw x; }}')
 
     # Continue
     def visit_Continue(self, node):
