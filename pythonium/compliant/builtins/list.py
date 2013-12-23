@@ -24,6 +24,13 @@ class list:
             for item in iterable:
                 self.append(item)
 
+    def __or__(self, other):
+        if self:
+            return self
+        if other:
+            return other
+        return False
+
     def __hash__(self):
         raise TypeError("unhashable type: 'list'")
 
