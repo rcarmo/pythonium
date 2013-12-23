@@ -146,7 +146,8 @@ class Compliant(NodeVisitor):
         return 'yield {}'.format(self.visit(node.value))
 
     # YieldFrom(expr value)
-    visit_YieldFrom = NotImplemented
+    def visit_YieldFrom(self, node):
+        pass
 
     # In
     def visit_In(self, node):

@@ -173,7 +173,26 @@ To attach this method to ``button``, use its ``click`` method::
 
   button.click(on_click)
 
-``add_todo`` is not yet defined and is left as an exercise.
+add a todo
+==========
+
+Add todo takes a str and need to add it to list of todos. First we need to fetch the list of todos::
+
+  todos = jQuery("#todos")
+
+Then a new ``li`` node must be added to the dom. For that matter we write a string of html with what we want to add to ``ul``::
+
+  li = '<li>' + text + '</li>'
+
+Now add it to the dom, for that let's use `jQuery.append <http://api.jquery.com/append/>`_,
+append expects a JavaScript string so we need to convert li to javascript first::
+
+  li = jstype(li)
+  todos.append(li)
+
+Done!
+
+Checkout ``app.py`` file for the complete solution.
 
 Diving
 ======

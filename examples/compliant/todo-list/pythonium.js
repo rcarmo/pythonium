@@ -1,134 +1,229 @@
-__object = {__bases__:[],__name__:"object"};
-__object.__mro__ = [__object];
-__type = {__bases__:[__object],__mro__:[__object],__name__:"type"};
-__object.__metaclass__ = __type;
+object = {__bases__:[],__name__:"object"};
+object.__mro__ = [object];
+type = {__bases__:[object],__mro__:[object],__name__:"type"};
+object.__metaclass__ = type;
 __ARGUMENTS_PADDING__ = {ARGUMENTS_PADDING:"YES IT IS!"};
-var __isnot__ = function(self, other) {
-    return !(this === other);
+var __is__ = function(me, other) {
+    return (me === other);
+    return undefined;
 };
-__object.__isnot__ = __isnot__;
+__is__.is_method = true;
+object.__is__ = __is__;
+var __isnot__ = function(me, other) {
+    return !(me === other);
+    return undefined;
+};
+__isnot__.is_method = true;
+object.__isnot__ = __isnot__;
+var mro = function(me) {
+    var l,raw;
+    if((me === object)) {
+        raw = me.__mro__;
+    }
+    else {
+        if(me.__class__) {
+            raw = me.__class__.__mro__;
+        }
+        else {
+            raw = me.__mro__;
+        }
+    }
+    l = pythonium_call(tuple);
+    l.jsobject = raw.slice();
+    return l;
+    return undefined;
+};
+mro.is_method = true;
+object.mro = mro;
+var __hash__ = function(me) {
+    var uid;
+    uid = lookup(me, "uid");
+    if(!uid) {
+        uid = object._uid;
+        object._uid = object._uid + 1;
+        me.__uid__ = uid;
+    }
+    return pythonium_call(str, ("{" + uid));
+    return undefined;
+};
+__hash__.is_method = true;
+object._uid = 1;
+object.__hash__ = __hash__;
+var __rcontains__ = function(me, other) {
+    var contains;
+    contains = lookup(other, "__contains__");
+    return contains(me);
+    return undefined;
+};
+__rcontains__.is_method = true;
+object.__rcontains__ = __rcontains__;
 var issubclass = function(klass, other) {
     if((klass === other)) {
-        return true;
+        return __TRUE;
+        return undefined;
     }
     if(!klass.__bases__) {
-        return false;
+        return __FALSE;
+        return undefined;
     }
     var iterator_base = klass.__bases__;
     for (var base_iterator_index=0; base_iterator_index < iterator_base.length; base_iterator_index++) {
         var base = iterator_base[base_iterator_index];
-        if(issubclass(base, other)) {
-            return true;
+        if((issubclass(base, other) === __TRUE)) {
+            return __TRUE;
+            return undefined;
         }
     }
-    return false;
-};
-var pythonium_create_dict = function(keys, values) {
-    var max,index,value,out,key;
-    out = {};
-    max = keys.length;
-    index = 0;
-    while((index < max)) {
-        key = keys[index].jsobject;
-        value = values[index];
-        out[key] = value;
-        index = index + 1;
-    }
-    return pythonium_call(dict, out, undefined);
+    return __FALSE;
+    return undefined;
 };
 var pythonium_is_true = function(v) {
-    if(((v === __FALSE)||(v === false))) {
+    var length;
+    if((v === false)) {
         return false;
+        return undefined;
     }
-    if(((v === __TRUE)||(v !== undefined&&(v != __NONE)))) {
+    if((v === true)) {
         return true;
+        return undefined;
     }
-    if(isinstance(v, int)) {
-        if((pythonium_get_attribute(v, "jsobject") == 0)) {
+    if((v === undefined)) {
+        return false;
+        return undefined;
+    }
+    if((v === __NONE)) {
+        return false;
+        return undefined;
+    }
+    if((v === __FALSE)) {
+        return false;
+        return undefined;
+    }
+    if((isinstance(v, int)||isinstance(v, float))) {
+        if((v.jsobject == 0)) {
             return false;
+            return undefined;
         }
-        return true;
     }
-    return false;
+    length = lookup(v, "__len__");
+    if((length&&(length().jsobject == 0))) {
+        return false;
+        return undefined;
+    }
+    return true;
+    return undefined;
 };
-var isinstance = function(object, klass) {
-    if(object.__class__) {
-        return issubclass(object.__class__, klass);
+var isinstance = function(obj, klass) {
+    if(obj.__class__) {
+        return issubclass(obj.__class__, klass);
+        return undefined;
     }
-    return false;
+    return __FALSE;
+    return undefined;
 };
 var pythonium_obj_to_js_exception = function(obj) {
     var exception = function() {
         this.exception = obj;
     };
     return exception;
+    return undefined;
 };
 var pythonium_is_exception = function(obj, exc) {
     if((obj === exc)) {
         return true;
+        return undefined;
     }
     return isinstance(obj, exc);
+    return undefined;
 };
-var pythonium_call = function(object) {
-    var instance,args,init;
+var pythonium_call = function(obj) {
+    var args,instance,init;
     args = Array.prototype.slice.call(arguments, 1);
-    if(object.__metaclass__) {
-        instance = {__class__:object};
+    if(obj.__metaclass__) {
+        instance = {__class__:obj};
         init = lookup(instance, "__init__");
         if(init) {
             init.apply(instance, args);
         }
         return instance;
+        return undefined;
     }
     else {
-        return object.apply(object, args);
+        return obj.apply(undefined, args);
+        return undefined;
     }
 };
+var pythonium_create_empty_dict = function() {
+    var instance;
+    instance = {__class__:dict};
+    instance._keys = pythonium_call(list);
+    instance.jsobject = Object();
+    return instance;
+    return undefined;
+};
 var pythonium_mro = function(bases) {
-    var res,seqs,non_empty,candidate,index,not_head,empty;
+    var candidate,not_head,out,non_empty,seqs,res;
     "Calculate the Method Resolution Order of bases using the C3 algorithm.\n\n    Suppose you intended creating a class K with the given base classes. This\n    function returns the MRO which K would have, *excluding* K itself (since\n    it doesn't yet exist), as if you had actually created the class.\n\n    Another way of looking at this, if you pass a single class K, this will\n    return the linearization of K (the MRO of K, *including* itself).\n    ";
     var __comp0__ = [];
     var __iterator1__ = bases;
     for (var __index2__ = 0; __index2__<__iterator1__.length; __index2__++) {
         var C = __iterator1__[__index2__];
-        __comp0__.push(C.__mro__);
+        __comp0__.push(C.__mro__.slice());
     }
     seqs = __comp0__;
     seqs.push(bases.slice());
+    var cdr = function(l) {
+        l = l.slice();
+        l = l.splice(1);
+        return l;
+        return undefined;
+    };
+    var contains = function(l, c) {
+        var iterator_i = l;
+        for (var i_iterator_index=0; i_iterator_index < iterator_i.length; i_iterator_index++) {
+            var i = iterator_i[i_iterator_index];
+            if((i === c)) {
+                return true;
+                return undefined;
+            }
+        }
+        return false;
+        return undefined;
+    };
     res = [];
     while(true) {
         non_empty = [];
         var iterator_seq = seqs;
         for (var seq_iterator_index=0; seq_iterator_index < iterator_seq.length; seq_iterator_index++) {
             var seq = iterator_seq[seq_iterator_index];
-            empty = true;
+            out = [];
             var iterator_item = seq;
             for (var item_iterator_index=0; item_iterator_index < iterator_item.length; item_iterator_index++) {
                 var item = iterator_item[item_iterator_index];
                 if(item) {
-                    empty = false;
-                    break;
+                    out.push(item);
                 }
             }
-            if(!empty) {
-                non_empty.push(seq);
+            if((out.length != 0)) {
+                non_empty.push(out);
             }
         }
         if((non_empty.length == 0)) {
             return res;
+            return undefined;
         }
         var iterator_seq = non_empty;
         for (var seq_iterator_index=0; seq_iterator_index < iterator_seq.length; seq_iterator_index++) {
             var seq = iterator_seq[seq_iterator_index];
             candidate = seq[0];
-            var __comp3__ = [];
-            var __iterator4__ = non_empty;
-            for (var __index5__ = 0; __index5__<__iterator4__.length; __index5__++) {
-                var s = __iterator4__[__index5__];
-                if(!(candidate  in  s.splice(1))) { continue; }
-                __comp3__.push(s);
+            not_head = [];
+            var iterator_s = non_empty;
+            for (var s_iterator_index=0; s_iterator_index < iterator_s.length; s_iterator_index++) {
+                var s = iterator_s[s_iterator_index];
+                if(contains(cdr(s), candidate)) {
+                    not_head.push(s);
+                }
             }
-            not_head = __comp3__;
             if((not_head.length != 0)) {
                 candidate = undefined;
             }
@@ -140,563 +235,746 @@ var pythonium_mro = function(bases) {
             throw TypeError("Inconsistent hierarchy, no C3 MRO is possible");
         }
         res.push(candidate);
-        var iterator_seq = seqs;
+        var iterator_seq = non_empty;
         for (var seq_iterator_index=0; seq_iterator_index < iterator_seq.length; seq_iterator_index++) {
             var seq = iterator_seq[seq_iterator_index];
-            index = seq.indexOf(candidate);
-            if((index >= 0)) {
-                delete seq[index];
+            if((seq[0] === candidate)) {
+                seq[0] = undefined;
             }
         }
+        seqs = non_empty;
     }
 };
 var pythonium_create_class = function(name, bases, attrs) {
     var mro;
     attrs.__name__ = name;
-    attrs.__metaclass__ = __type;
+    attrs.__metaclass__ = type;
     attrs.__bases__ = bases;
     mro = pythonium_mro(bases);
     mro.splice(0, 0, attrs);
     attrs.__mro__ = mro;
     return attrs;
+    return undefined;
 };
-var lookup = function(object, attr) {
-    var class_attr,object_attr;
-    object_attr = object[attr];
-    if((object_attr != undefined)) {
-        if((object_attr&&({}.toString.call(object_attr) == "[object Function]"))) {
+var lookup = function(obj, attr) {
+    var class_attr,obj_attr,__mro__;
+    obj_attr = obj[attr];
+    if((obj_attr != undefined)) {
+        if((obj_attr&&({}.toString.call(obj_attr) == "[object Function]")&&obj_attr.is_method&&!obj_attr.bound)) {
             var method_wrapper = function() {
                 var args;
                 args = Array.prototype.slice.call(arguments);
-                args.splice(0, 0, object);
-                return object_attr.apply(undefined, args);
+                args.splice(0, 0, obj);
+                return obj_attr.apply(undefined, args);
+                return undefined;
             };
+            method_wrapper.bound = true;
             return method_wrapper;
+            return undefined;
         }
-        return object_attr;
+        return obj_attr;
+        return undefined;
     }
     else {
-        var iterator_base = object.__class__.__mro__;
+        if(obj.__class__) {
+            __mro__ = obj.__class__.__mro__;
+        }
+        else {
+            if(obj.__metaclass__) {
+                __mro__ = obj.__metaclass__.__mro__;
+            }
+            else {
+                return undefined;
+                return undefined;
+            }
+        }
+        var iterator_base = __mro__;
         for (var base_iterator_index=0; base_iterator_index < iterator_base.length; base_iterator_index++) {
             var base = iterator_base[base_iterator_index];
             class_attr = base[attr];
             if((class_attr != undefined)) {
-                if(({}.toString.call(class_attr) == "[object Function]")) {
+                if((({}.toString.call(class_attr) == "[object Function]")&&class_attr.is_method&&!class_attr.bound)) {
                     var method_wrapper = function() {
                         var args;
                         args = Array.prototype.slice.call(arguments);
-                        args.splice(0, 0, object);
+                        args.splice(0, 0, obj);
                         return class_attr.apply(undefined, args);
+                        return undefined;
                     };
+                    method_wrapper.bound = true;
                     return method_wrapper;
+                    return undefined;
                 }
                 return class_attr;
+                return undefined;
             }
         }
     }
 };
-var pythonium_object_get_attribute = function(object, attr) {
+var pythonium_object_get_attribute = function(obj, attr) {
     var r,getattr;
-    r = lookup(object, attr);
+    r = lookup(obj, attr);
     if((r != undefined)) {
         return r;
+        return undefined;
     }
     else {
-        getattr = lookup(object, "__getattr__");
+        getattr = lookup(obj, "__getattr__");
         if(getattr) {
             return getattr(attr);
+            return undefined;
         }
         else {
+            console.trace("AttributeError", attr, obj);
             throw AttributeError;
         }
     }
 };
-__object.__getattribute__ = pythonium_object_get_attribute;
-var pythonium_get_attribute = function(object, attr) {
-    var getattribute;
-    if(object.__class__) {
-        getattribute = lookup(object, "__getattribute__");
-        return getattribute(attr);
+pythonium_object_get_attribute.is_method = true;
+object.__getattribute__ = pythonium_object_get_attribute;
+var pythonium_get_attribute = function(obj, attr) {
+    var r,getattribute;
+    if((obj.__class__||obj.__metaclass__)) {
+        getattribute = lookup(obj, "__getattribute__");
+        r = getattribute(attr);
+        return r;
+        return undefined;
     }
-    attr = object[attr];
+    attr = obj[attr];
     if(attr) {
         if(({}.toString.call(attr) == "[object Function]")) {
             var method_wrapper = function() {
-                return attr.apply(object, arguments);
+                return attr.apply(obj, arguments);
+                return undefined;
             };
             return method_wrapper;
+            return undefined;
         }
         else {
             return attr;
+            return undefined;
         }
     }
 };
-var pythonium_set_attribute = function(object, attr, value) {
-    object[attr] = value;
+var pythonium_set_attribute = function(obj, attr, value) {
+    obj[attr] = value;
 };
-var range = function(a, b) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    if (__args[__args.length - 2] === __ARGUMENTS_PADDING__) {
-        var __kwargs = __args[__args.length - 1];
-        var varkwargs_start = __args.length - 2;
-    } else {
-        var __kwargs = {};
-        var varkwargs_start = undefined;
-    }
-    if (varkwargs_start !== undefined && 1 > varkwargs_start) {
-        b = __kwargs.b || __NONE;
-    } else {
-        b = b || __kwargs.b || __NONE;
-    }
-    /* END unpacking arguments */
-    var index,end,out;
-    /* BEGIN function */
-    if (pythonium_is_true(b)) {
-        index = a;
-        end = b;
-    }
-    else {
-        index = pythonium_call(int, 0);
-        end = a;
-    }
-    out = pythonium_call(list);
-    while(pythonium_is_true((pythonium_get_attribute(index, "__lt__")(end)))) {
-        pythonium_call(pythonium_get_attribute(out, "append"), index);
-        index = pythonium_call(pythonium_get_attribute(index, "__add__"), pythonium_call(int, 1));
-    }
-    return out;
-};
-var repr = function(obj) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    return pythonium_call(pythonium_get_attribute(obj, "__repr__"));
-};
-var print = function() {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    var args = __args.splice(0);
-    args = pythonium_call(list, args);
-    /* END unpacking arguments */
-    var out,r;
-    /* BEGIN function */
-    out = pythonium_call(list);
-    try {
-        var __next__ = pythonium_get_attribute(iter(args), "__next__");
-        while(true) {
-            var arg = pythonium_call(__next__);
-            r = pythonium_call(repr, arg);
-            pythonium_call(pythonium_get_attribute(out, "append"), pythonium_get_attribute(r, "jsobject"));
-        }
-    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
-    pythonium_call(pythonium_get_attribute(pythonium_get_attribute(console, "log"), "apply"), console, pythonium_get_attribute(out, "jsobject"));
-};
-var map = function(func, objects) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var out;
-    /* BEGIN function */
-    out = pythonium_call(list);
-    try {
-        var __next__ = pythonium_get_attribute(iter(objects), "__next__");
-        while(true) {
-            var obj = pythonium_call(__next__);
-            pythonium_call(pythonium_get_attribute(out, "append"), pythonium_call(func, obj));
-        }
-    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
-    return out;
-};
-var jstype = function(obj) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    return pythonium_get_attribute(obj, "jsobject");
-};
-/* class definition _True */
-var __init__ = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    pythonium_set_attribute(self, "jsobject", true);
-};
-var __and__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    if (pythonium_is_true(other === self)) {
-        return __TRUE;
-    }
-    return __FALSE;
-};
-var __or__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    return __TRUE;
-};
-var __is__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    if (pythonium_is_true(other === self)) {
-        return __TRUE;
-    }
-    return __FALSE;
-};
-var __neg__ = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    return __FALSE;
-};
-var _True = pythonium_create_class("_True", [__object], {
-    __init__: __init__,
-    __and__: __and__,
-    __or__: __or__,
-    __is__: __is__,
-    __neg__: __neg__,
-});
-/* class definition _False */
-var __init__ = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    pythonium_set_attribute(self, "jsobject", false);
-};
-var __and__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    return __FALSE;
-};
-var __or__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    if (pythonium_is_true(other === True)) {
-        return __TRUE;
-    }
-    return __FALSE;
-};
-var __is__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    if (pythonium_is_true(other === self)) {
-        return __TRUE;
-    }
-    return __FALSE;
-};
-var __neg__ = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    return __TRUE;
-};
-var _False = pythonium_create_class("_False", [__object], {
-    __init__: __init__,
-    __and__: __and__,
-    __or__: __or__,
-    __is__: __is__,
-    __neg__: __neg__,
-});
-__TRUE = pythonium_call(_True);
-__FALSE = pythonium_call(_False);
-/* class definition StopIteration */
-/* pass */
-var StopIteration = pythonium_create_class("StopIteration", [__object], {
-});
-var iter = function(obj) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    return pythonium_call(pythonium_get_attribute(obj, "__iter__"));
-};
-var next = function(obj) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    return pythonium_call(pythonium_get_attribute(obj, "__next__"));
-};
-var len = function(obj) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    return pythonium_call(pythonium_get_attribute(obj, "__len__"));
-};
-/* class definition ListIterator */
-var __init__ = function(self, obj) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    pythonium_set_attribute(self, "list", obj);
-    pythonium_set_attribute(self, "index", pythonium_call(int, 0));
-    pythonium_set_attribute(self, "length", pythonium_call(len, obj));
-};
-var __next__ = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    if (pythonium_is_true((pythonium_get_attribute(pythonium_get_attribute(self, "index"), "__eq__")(pythonium_get_attribute(self, "length"))))) {
-        throw StopIteration;
-    }
-    pythonium_set_attribute(self, "index", (pythonium_call(pythonium_get_attribute(pythonium_get_attribute(self, "index"), "__add__"), pythonium_call(int, 1))));
-    return pythonium_call(pythonium_get_attribute(pythonium_get_attribute(self, "list"), '__getitem__'), (pythonium_call(pythonium_get_attribute(pythonium_get_attribute(self, "index"), "__sub__"), pythonium_call(int, 1))));
-};
-var ListIterator = pythonium_create_class("ListIterator", [__object], {
-    __init__: __init__,
-    __next__: __next__,
-});
-/* class definition list */
-var __init__ = function(self, jsobject) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    if (__args[__args.length - 2] === __ARGUMENTS_PADDING__) {
-        var __kwargs = __args[__args.length - 1];
-        var varkwargs_start = __args.length - 2;
-    } else {
-        var __kwargs = {};
-        var varkwargs_start = undefined;
-    }
-    if (varkwargs_start !== undefined && 1 > varkwargs_start) {
-        jsobject = __kwargs.jsobject || __NONE;
-    } else {
-        jsobject = jsobject || __kwargs.jsobject || __NONE;
-    }
-    /* END unpacking arguments */
-    /* BEGIN function */
-    if (pythonium_is_true(jsobject)) {
-        pythonium_set_attribute(self, "jsobject", jsobject);
-    }
-    else {
-        pythonium_set_attribute(self, "jsobject", []);
+var ASSERT = function(condition, message) {
+    if(!condition) {
+        throw (message||pythonium_call(str, "Assertion failed"));
     }
 };
-var __repr__ = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var s;
-    /* BEGIN function */
-    s = (pythonium_call(pythonium_get_attribute((pythonium_call(pythonium_get_attribute(pythonium_call(str, "["), "__add__"), pythonium_call(pythonium_get_attribute(pythonium_call(str, ", "), "join"), self))), "__add__"), pythonium_call(str, "]")));
-    return s;
-};
-var append = function(self, item) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var jsobject;
-    /* BEGIN function */
-    jsobject = pythonium_get_attribute(self, "jsobject");
-    jsobject.push(item);
-};
-var insert = function(self, index, item) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    pythonium_call(pythonium_get_attribute(pythonium_get_attribute(self, "jsobject"), "splice"), index, pythonium_call(int, 0), item);
-};
-var __setitem__ = function(self, index, value) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var jsobject;
-    /* BEGIN function */
-    jsobject = pythonium_get_attribute(self, "jsobject");
-    index = pythonium_get_attribute(index, "jsobject");
-    jsobject[index] = value;
-};
-var __getitem__ = function(self, s) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var index,jsobject;
-    /* BEGIN function */
-    jsobject = pythonium_get_attribute(self, "jsobject");
-    index = pythonium_get_attribute(s, "jsobject");
-    return jsobject[index];
-};
-var __len__ = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var length,jsobject;
-    /* BEGIN function */
-    jsobject = pythonium_get_attribute(self, "jsobject");
-    length = jsobject.length;
-    return pythonium_call(int, length);
-};
-var __iter__ = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    return pythonium_call(ListIterator, self);
-};
-var list = pythonium_create_class("list", [__object], {
-    __init__: __init__,
-    __repr__: __repr__,
-    append: append,
-    insert: insert,
-    __setitem__: __setitem__,
-    __getitem__: __getitem__,
-    __len__: __len__,
-    __iter__: __iter__,
-});
-/* class definition float */
-var __init__ = function(self, jsobject) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
+/* class definition int */
+var __int___init__ = function(self, jsobject) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
     /* BEGIN function */
     pythonium_set_attribute(self, "jsobject", jsobject);
 };
-var __repr__ = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
+__int___init__.is_method = true;
+
+var __int___not__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject;
     /* BEGIN function */
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    if (pythonium_is_true(jsobject == 0)) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
+};
+__int___not__.is_method = true;
+
+var __int___abs__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    if (pythonium_is_true((pythonium_get_attribute(self, "__lt__")(pythonium_call(int, 0))))) {
+        return pythonium_call(pythonium_get_attribute(self, "__neg__"));
+        return __NONE;
+    }
     return self;
+    return __NONE;
 };
-var __div__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b;
+__int___abs__.is_method = true;
+
+var __int___neg__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject;
+    /* BEGIN function */
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    var call_arguments0 = [int, -self.jsobject];
+    return pythonium_call.apply(undefined, call_arguments0);
+    return __NONE;
+};
+__int___neg__.is_method = true;
+
+var __int___hash__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments1 = [str, pythonium_get_attribute(self, "jsobject")];
+    return pythonium_call.apply(undefined, call_arguments1);
+    return __NONE;
+};
+__int___hash__.is_method = true;
+
+var __int___jstype__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    return pythonium_get_attribute(self, "jsobject");
+    return __NONE;
+};
+__int___jstype__.is_method = true;
+
+var __int___repr__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject;
+    /* BEGIN function */
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    var call_arguments2 = [str, jsobject.toString()];
+    return pythonium_call.apply(undefined, call_arguments2);
+    return __NONE;
+};
+__int___repr__.is_method = true;
+
+var __int___add__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
-    return pythonium_call(float, a / b);
+    var call_arguments3 = [int, a + b];
+    return pythonium_call.apply(undefined, call_arguments3);
+    return __NONE;
 };
-var __sub__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b;
+__int___add__.is_method = true;
+
+var __int___sub__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
-    return pythonium_call(float, a - b);
+    var call_arguments4 = [int, a - b];
+    return pythonium_call.apply(undefined, call_arguments4);
+    return __NONE;
 };
-var __eq__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b;
+__int___sub__.is_method = true;
+
+var __int___lt__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    if (pythonium_is_true(a < b)) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
+};
+__int___lt__.is_method = true;
+
+var __int___gt__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    if (pythonium_is_true(a > b)) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
+};
+__int___gt__.is_method = true;
+
+var __int___gte__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    if (pythonium_is_true(a >= b)) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
+};
+__int___gte__.is_method = true;
+
+var __int___lte__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    if (pythonium_is_true(a <= b)) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
+};
+__int___lte__.is_method = true;
+
+var __int___mul__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,c,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    c = a * b;
+    var call_arguments5 = [int, c];
+    return pythonium_call.apply(undefined, call_arguments5);
+    return __NONE;
+};
+__int___mul__.is_method = true;
+
+var __int___or__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,c,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    c = a || b;
+    var call_arguments6 = [int, c];
+    return pythonium_call.apply(undefined, call_arguments6);
+    return __NONE;
+};
+__int___or__.is_method = true;
+
+var __int___eq__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
     if (pythonium_is_true(a == b)) {
         return __TRUE;
+        return __NONE;
     }
     return __FALSE;
+    return __NONE;
 };
-var float = pythonium_create_class("float", [__object], {
-    __init__: __init__,
-    __repr__: __repr__,
-    __div__: __div__,
-    __sub__: __sub__,
-    __eq__: __eq__,
+__int___eq__.is_method = true;
+
+var __int___neq__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments7 = [pythonium_get_attribute(self, "__eq__"), other];
+    return pythonium_call(pythonium_get_attribute(pythonium_call.apply(undefined, call_arguments7), "__not__"));
+    return __NONE;
+};
+__int___neq__.is_method = true;
+
+var __int___div__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    var call_arguments8 = [int, a / b];
+    return pythonium_call.apply(undefined, call_arguments8);
+    return __NONE;
+};
+__int___div__.is_method = true;
+
+var int = pythonium_create_class("int", [object], {
+    __init__: __int___init__,
+    __not__: __int___not__,
+    __abs__: __int___abs__,
+    __neg__: __int___neg__,
+    __hash__: __int___hash__,
+    __jstype__: __int___jstype__,
+    __repr__: __int___repr__,
+    __add__: __int___add__,
+    __sub__: __int___sub__,
+    __lt__: __int___lt__,
+    __gt__: __int___gt__,
+    __gte__: __int___gte__,
+    __lte__: __int___lte__,
+    __mul__: __int___mul__,
+    __or__: __int___or__,
+    __eq__: __int___eq__,
+    __neq__: __int___neq__,
+    __div__: __int___div__,
 });
-/* class definition _None */
-var __and__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
+/* class definition bool */
+var __bool___init__ = function(self, obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
     /* BEGIN function */
-    if (pythonium_is_true((pythonium_get_attribute(other, "__is__")(__TRUE)))) {
-        return __TRUE;
+    if (pythonium_is_true(obj !== undefined)) {
+        var call_arguments0 = [pythonium_is_true, obj];
+        pythonium_set_attribute(self, "jsobject", pythonium_call.apply(undefined, call_arguments0));
+    }
+    else {
+        pythonium_set_attribute(self, "jsobject", false);
+    }
+};
+__bool___init__.is_method = true;
+
+var __bool___jstype__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    return pythonium_get_attribute(self, "jsobject");
+    return __NONE;
+};
+__bool___jstype__.is_method = true;
+
+var __bool___repr__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    if (pythonium_is_true(pythonium_get_attribute(self, "jsobject"))) {
+        return pythonium_call(str, "True");
+        return __NONE;
+    }
+    return pythonium_call(str, "False");
+    return __NONE;
+};
+__bool___repr__.is_method = true;
+
+var __bool___and__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    if (pythonium_is_true(self)) {
+        if (pythonium_is_true(other)) {
+            return __TRUE;
+            return __NONE;
+        }
     }
     return __FALSE;
+    return __NONE;
 };
-var __or__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
+__bool___and__.is_method = true;
+
+var __bool___or__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
     /* BEGIN function */
-    if (pythonium_is_true((pythonium_get_attribute(other, "__is__")(__TRUE)))) {
+    if (pythonium_is_true(self)) {
         return __TRUE;
+        return __NONE;
+    }
+    if (pythonium_is_true(other)) {
+        return __TRUE;
+        return __NONE;
     }
     return __FALSE;
+    return __NONE;
 };
-var __is__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
+__bool___or__.is_method = true;
+
+var __bool___is__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
     /* BEGIN function */
-    if (pythonium_is_true(other === self)) {
+    if (pythonium_is_true(self === other)) {
         return __TRUE;
+        return __NONE;
     }
     return __FALSE;
+    return __NONE;
 };
-var __neg__ = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
+__bool___is__.is_method = true;
+
+var __bool___neg__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
     /* BEGIN function */
+    if (pythonium_is_true(self)) {
+        return __FALSE;
+        return __NONE;
+    }
     return __TRUE;
+    return __NONE;
 };
-var _None = pythonium_create_class("_None", [__object], {
-    __and__: __and__,
-    __or__: __or__,
-    __is__: __is__,
-    __neg__: __neg__,
-});
-__NONE = pythonium_call(_None);
-/* class definition iterator */
-var __init__ = function(self, list) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
+__bool___neg__.is_method = true;
+
+var __bool___not__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
     /* BEGIN function */
-    /* pass */
+    if (pythonium_is_true(self)) {
+        return __FALSE;
+        return __NONE;
+    }
+    return __TRUE;
+    return __NONE;
 };
-var iterator = pythonium_create_class("iterator", [__object], {
-    __init__: __init__,
+__bool___not__.is_method = true;
+
+var bool = pythonium_create_class("bool", [int], {
+    __init__: __bool___init__,
+    __jstype__: __bool___jstype__,
+    __repr__: __bool___repr__,
+    __and__: __bool___and__,
+    __or__: __bool___or__,
+    __is__: __bool___is__,
+    __neg__: __bool___neg__,
+    __not__: __bool___not__,
 });
-/* class definition slice */
-var __init__ = function(self, start, step, end) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
+var call_arguments1 = [bool, true];
+__TRUE = pythonium_call.apply(undefined, call_arguments1);
+var call_arguments2 = [bool];
+__FALSE = pythonium_call.apply(undefined, call_arguments2);
+var nest_str_with_quotes = function(s) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var r;
     /* BEGIN function */
-    pythonium_set_attribute(self, "start", start);
-    pythonium_set_attribute(self, "step", step);
-    pythonium_set_attribute(self, "end", end);
+    var call_arguments0 = [repr, s];
+    r = pythonium_call.apply(undefined, call_arguments0);
+    var call_arguments1 = [isinstance, s, str];
+    if (pythonium_is_true(pythonium_call.apply(undefined, call_arguments1))) {
+        if (pythonium_is_true((pythonium_get_attribute(pythonium_call(str, "'"), "__rcontains__")(r)))) {
+            r = (pythonium_call(pythonium_get_attribute((pythonium_call(pythonium_get_attribute(pythonium_call(str, '"'), "__add__"), r)), "__add__"), pythonium_call(str, '"')));
+        }
+        else {
+            r = (pythonium_call(pythonium_get_attribute((pythonium_call(pythonium_get_attribute(pythonium_call(str, "'"), "__add__"), r)), "__add__"), pythonium_call(str, "'")));
+        }
+    }
+    return r;
+    return __NONE;
 };
-var slice = pythonium_create_class("slice", [__object], {
-    __init__: __init__,
+
+/* class definition dict */
+var __dict___init__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments2 = [list];
+    pythonium_set_attribute(self, "_keys", pythonium_call.apply(undefined, call_arguments2));
+    pythonium_set_attribute(self, "jsobject", Object());
+};
+__dict___init__.is_method = true;
+
+var __dict___hash__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments3 = [TypeError, pythonium_call(str, "unhashable type: 'dict'")];
+    throw pythonium_call.apply(undefined, call_arguments3);
+};
+__dict___hash__.is_method = true;
+
+var __dict___jstype__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    throw NotImplementedError;
+};
+__dict___jstype__.is_method = true;
+
+var __dict___repr__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var out,value_repr,key_repr;
+    /* BEGIN function */
+    out = pythonium_call(list);
+    try {
+        var __next4__ = pythonium_get_attribute(iter(pythonium_get_attribute(self, "_keys")), "__next__");
+        while(true) {
+            var key = __next4__();
+            var call_arguments5 = [nest_str_with_quotes, key];
+            key_repr = pythonium_call.apply(undefined, call_arguments5);
+            var call_arguments6 = [nest_str_with_quotes, pythonium_call(pythonium_get_attribute(self, '__getitem__'), key)];
+            value_repr = pythonium_call.apply(undefined, call_arguments6);
+            var call_arguments7 = [pythonium_get_attribute(out, "append"), (pythonium_call(pythonium_get_attribute((pythonium_call(pythonium_get_attribute(key_repr, "__add__"), pythonium_call(str, ": "))), "__add__"), value_repr))];
+            pythonium_call.apply(undefined, call_arguments7);
+        }
+    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
+    var call_arguments8 = [pythonium_get_attribute(pythonium_call(str, ", "), "join"), out];
+    return (pythonium_call(pythonium_get_attribute((pythonium_call(pythonium_get_attribute(pythonium_call(str, "{"), "__add__"), pythonium_call.apply(undefined, call_arguments8))), "__add__"), pythonium_call(str, "}")));
+    return __NONE;
+};
+__dict___repr__.is_method = true;
+
+var __dict_get = function(self, key, d) {
+    /* BEGIN arguments unpacking */
+    var __args = Array.prototype.slice.call(arguments);
+    if (__args[__args.length - 2] === __ARGUMENTS_PADDING__) {
+        var __kwargs = __args[__args.length - 1];
+        var varkwargs_start = __args.length - 2;
+    } else {
+        var __kwargs = pythonium_create_empty_dict();
+        var varkwargs_start = undefined;
+    }
+    if (varkwargs_start !== undefined && 2 > varkwargs_start) {
+        d = __kwargs.__class__.get(__kwargs, d) || __NONE;
+    } else {
+        d = d || __kwargs.__class__.get(__kwargs, d) || __NONE;
+    }
+    /* END arguments unpacking */
+    var jsobject,h;
+    /* BEGIN function */
+    if (pythonium_is_true((pythonium_get_attribute(key, "__rcontains__")(pythonium_get_attribute(self, "_keys"))))) {
+        var call_arguments9 = [hash, key];
+        var call_arguments10 = [jstype, pythonium_call.apply(undefined, call_arguments9)];
+        h = pythonium_call.apply(undefined, call_arguments10);
+        jsobject = pythonium_get_attribute(self, "jsobject");
+        return jsobject[h];
+        return __NONE;
+    }
+    return d;
+    return __NONE;
+};
+__dict_get.is_method = true;
+
+var __dict___len__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments11 = [len, pythonium_get_attribute(self, "_keys")];
+    return pythonium_call.apply(undefined, call_arguments11);
+    return __NONE;
+};
+__dict___len__.is_method = true;
+
+var __dict___iter__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments12 = [ListIterator, pythonium_get_attribute(self, "_keys")];
+    return pythonium_call.apply(undefined, call_arguments12);
+    return __NONE;
+};
+__dict___iter__.is_method = true;
+
+var __dict___getitem__ = function(self, key) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject,h;
+    /* BEGIN function */
+    if (pythonium_is_true((pythonium_get_attribute(key, "__rcontains__")(pythonium_get_attribute(self, "_keys"))))) {
+        var call_arguments13 = [hash, key];
+        var call_arguments14 = [jstype, pythonium_call.apply(undefined, call_arguments13)];
+        h = pythonium_call.apply(undefined, call_arguments14);
+        jsobject = pythonium_get_attribute(self, "jsobject");
+        return jsobject[h];
+        return __NONE;
+    }
+    var call_arguments15 = [KeyError, key];
+    throw pythonium_call.apply(undefined, call_arguments15);
+};
+__dict___getitem__.is_method = true;
+
+var __dict___setitem__ = function(self, key, value) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject,h;
+    /* BEGIN function */
+    var call_arguments16 = [hash, key];
+    var call_arguments17 = [jstype, pythonium_call.apply(undefined, call_arguments16)];
+    h = pythonium_call.apply(undefined, call_arguments17);
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    jsobject[h] = value;
+    var call_arguments18 = [pythonium_get_attribute(pythonium_get_attribute(self, "_keys"), "append"), key];
+    pythonium_call.apply(undefined, call_arguments18);
+};
+__dict___setitem__.is_method = true;
+
+var __dict_keys = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    return pythonium_get_attribute(self, "_keys");
+    return __NONE;
+};
+__dict_keys.is_method = true;
+
+var __dict_items = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var out;
+    /* BEGIN function */
+    var call_arguments19 = [list];
+    out = pythonium_call.apply(undefined, call_arguments19);
+    try {
+        var __next20__ = pythonium_get_attribute(iter(pythonium_get_attribute(self, "_keys")), "__next__");
+        while(true) {
+            var key = __next20__();
+            var __a_list21 = pythonium_call(list);
+            __a_list21.jsobject = [key, pythonium_call(pythonium_get_attribute(self, '__getitem__'), key)];
+            var call_arguments22 = [pythonium_get_attribute(out, "append"), __a_list21];
+            pythonium_call.apply(undefined, call_arguments22);
+        }
+    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
+    return out;
+    return __NONE;
+};
+__dict_items.is_method = true;
+
+var __dict___delitem__ = function(self, key) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject,h;
+    /* BEGIN function */
+    if (pythonium_is_true((pythonium_get_attribute(key, "__rcontains__")(pythonium_get_attribute(self, "_keys"))))) {
+        var call_arguments23 = [pythonium_get_attribute(pythonium_get_attribute(self, "_keys"), "remove"), key];
+        pythonium_call.apply(undefined, call_arguments23);
+        var call_arguments24 = [hash, key];
+        var call_arguments25 = [jstype, pythonium_call.apply(undefined, call_arguments24)];
+        h = pythonium_call.apply(undefined, call_arguments25);
+        jsobject = pythonium_get_attribute(self, "jsobject");
+        delete jsobject[h];
+    }
+    else {
+        throw KeyError;
+    }
+};
+__dict___delitem__.is_method = true;
+
+var dict = pythonium_create_class("dict", [object], {
+    __init__: __dict___init__,
+    __hash__: __dict___hash__,
+    __jstype__: __dict___jstype__,
+    __repr__: __dict___repr__,
+    get: __dict_get,
+    __len__: __dict___len__,
+    __iter__: __dict___iter__,
+    __getitem__: __dict___getitem__,
+    __setitem__: __dict___setitem__,
+    keys: __dict_keys,
+    items: __dict_items,
+    __delitem__: __dict___delitem__,
 });
 /* class definition Exception */
-var __init__ = function(self, message) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
+var __Exception___init__ = function(self, message) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
     /* BEGIN function */
     pythonium_set_attribute(self, "message", message);
 };
-var Exception = pythonium_create_class("Exception", [__object], {
-    __init__: __init__,
+__Exception___init__.is_method = true;
+
+var Exception = pythonium_create_class("Exception", [object], {
+    __init__: __Exception___init__,
 });
 /* class definition TypeError */
 /* pass */
@@ -706,349 +984,1404 @@ var TypeError = pythonium_create_class("TypeError", [Exception], {
 /* pass */
 var AttributeError = pythonium_create_class("AttributeError", [Exception], {
 });
-/* class definition int */
-var __init__ = function(self, jsobject) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
+/* class definition KeyError */
+/* pass */
+var KeyError = pythonium_create_class("KeyError", [Exception], {
+});
+/* class definition StopIteration */
+/* pass */
+var StopIteration = pythonium_create_class("StopIteration", [Exception], {
+});
+/* class definition NotImplementedError */
+/* pass */
+var NotImplementedError = pythonium_create_class("NotImplementedError", [Exception], {
+});
+/* class definition NotImplemented */
+/* pass */
+var NotImplemented = pythonium_create_class("NotImplemented", [Exception], {
+});
+/* class definition ValueError */
+/* pass */
+var ValueError = pythonium_create_class("ValueError", [Exception], {
+});
+/* class definition float */
+var __float___init__ = function(self, jsobject) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
     /* BEGIN function */
     pythonium_set_attribute(self, "jsobject", jsobject);
 };
-var __repr__ = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
+__float___init__.is_method = true;
+
+var __float___hash__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
     /* BEGIN function */
+    var call_arguments0 = [str, pythonium_get_attribute(self, "jsobject")];
+    return pythonium_call.apply(undefined, call_arguments0);
+    return __NONE;
+};
+__float___hash__.is_method = true;
+
+var __float___repr__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject;
+    /* BEGIN function */
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    var call_arguments1 = [str, jsobject.toString()];
+    return pythonium_call.apply(undefined, call_arguments1);
+    return __NONE;
+};
+__float___repr__.is_method = true;
+
+var __float___neg__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject;
+    /* BEGIN function */
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    var call_arguments2 = [int, -self.jsobject];
+    return pythonium_call.apply(undefined, call_arguments2);
+    return __NONE;
+};
+__float___neg__.is_method = true;
+
+var __float___abs__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    if (pythonium_is_true((pythonium_get_attribute(self, "__lt__")(pythonium_call(int, 0))))) {
+        return pythonium_call(pythonium_get_attribute(self, "__neg__"));
+        return __NONE;
+    }
     return self;
+    return __NONE;
 };
-var __add__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b;
+__float___abs__.is_method = true;
+
+var __float___sub__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
-    return pythonium_call(int, a + b);
+    var call_arguments3 = [float, a - b];
+    return pythonium_call.apply(undefined, call_arguments3);
+    return __NONE;
 };
-var __sub__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b;
+__float___sub__.is_method = true;
+
+var __float___eq__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
-    return pythonium_call(int, a - b);
+    if (pythonium_is_true(a == b)) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
 };
-var __lt__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b;
+__float___eq__.is_method = true;
+
+var __float___add__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    var call_arguments4 = [int, a + b];
+    return pythonium_call.apply(undefined, call_arguments4);
+    return __NONE;
+};
+__float___add__.is_method = true;
+
+var __float___lt__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
     if (pythonium_is_true(a < b)) {
         return __TRUE;
+        return __NONE;
     }
     return __FALSE;
+    return __NONE;
 };
-var __lte__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b;
-    /* BEGIN function */
-    a = pythonium_get_attribute(self, "jsobject");
-    b = pythonium_get_attribute(other, "jsobject");
-    if (pythonium_is_true(a <= b)) {
-        return __TRUE;
-    }
-    return __FALSE;
-};
-var __mul__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b,c;
-    /* BEGIN function */
-    a = pythonium_get_attribute(self, "jsobject");
-    b = pythonium_get_attribute(other, "jsobject");
-    c = a * b;
-    return pythonium_call(int, c);
-};
-var __or__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b,c;
-    /* BEGIN function */
-    a = pythonium_get_attribute(self, "jsobject");
-    b = pythonium_get_attribute(other, "jsobject");
-    c = a || b;
-    return pythonium_call(int, c);
-};
-var __eq__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b;
-    /* BEGIN function */
-    a = pythonium_get_attribute(self, "jsobject");
-    b = pythonium_get_attribute(other, "jsobject");
-    if (pythonium_is_true(a == b)) {
-        return __TRUE;
-    }
-    return __FALSE;
-};
-var __neg__ = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var jsobject;
-    /* BEGIN function */
-    jsobject = pythonium_get_attribute(self, "jsobject");
-    return pythonium_call(int, -jsobject);
-};
-var __div__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b;
-    /* BEGIN function */
-    a = pythonium_get_attribute(self, "jsobject");
-    b = pythonium_get_attribute(other, "jsobject");
-    return pythonium_call(int, a / b);
-};
-var int = pythonium_create_class("int", [__object], {
-    __init__: __init__,
-    __repr__: __repr__,
-    __add__: __add__,
-    __sub__: __sub__,
-    __lt__: __lt__,
-    __lte__: __lte__,
-    __mul__: __mul__,
-    __or__: __or__,
-    __eq__: __eq__,
-    __neg__: __neg__,
-    __div__: __div__,
-});
-/* class definition dict */
-var __init__ = function(self, jsobject) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    pythonium_set_attribute(self, "jsobject", jsobject);
-};
-var __repr__ = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var key_repr,value_repr,out;
-    /* BEGIN function */
-    out = pythonium_call(list);
-    try {
-        var __next__ = pythonium_get_attribute(iter(pythonium_call(pythonium_get_attribute(self, "keys"))), "__next__");
-        while(true) {
-            var key = pythonium_call(__next__);
-            key_repr = pythonium_call(repr, key);
-            value_repr = pythonium_call(repr, pythonium_call(pythonium_get_attribute(self, "get"), key));
-            pythonium_call(pythonium_get_attribute(out, "append"), (pythonium_call(pythonium_get_attribute((pythonium_call(pythonium_get_attribute(key_repr, "__add__"), pythonium_call(str, ": "))), "__add__"), value_repr)));
-        }
-    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
-    return (pythonium_call(pythonium_get_attribute((pythonium_call(pythonium_get_attribute(pythonium_call(str, "{"), "__add__"), pythonium_call(pythonium_get_attribute(pythonium_call(str, ", "), "join"), out))), "__add__"), pythonium_call(str, "}")));
-};
-var get = function(self, key, d) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    if (__args[__args.length - 2] === __ARGUMENTS_PADDING__) {
-        var __kwargs = __args[__args.length - 1];
-        var varkwargs_start = __args.length - 2;
-    } else {
-        var __kwargs = {};
-        var varkwargs_start = undefined;
-    }
-    if (varkwargs_start !== undefined && 2 > varkwargs_start) {
-        d = __kwargs.d || __NONE;
-    } else {
-        d = d || __kwargs.d || __NONE;
-    }
-    /* END unpacking arguments */
-    var attr,jsobject;
-    /* BEGIN function */
-    jsobject = pythonium_get_attribute(self, "jsobject");
-    key = pythonium_get_attribute(key, "jsobject");
-    attr = jsobject[key];
-    if (pythonium_is_true((pythonium_get_attribute(__NONE, "__isnot__")(attr)))) {
-        return attr;
-    }
-    else {
-        return d;
-    }
-};
-var __setitem__ = function(self, key, value) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    pythonium_call(pythonium_get_attribute(pythonium_get_attribute(self, "jsobject"), "__setitem__"), key, value);
-};
-var keys = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    return pythonium_call(map, str, pythonium_call(list, pythonium_call(pythonium_get_attribute(Object, "keys"), pythonium_get_attribute(self, "jsobject"))));
-};
-var items = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var out;
-    /* BEGIN function */
-    out = pythonium_call(list);
-    try {
-        var __next__ = pythonium_get_attribute(iter(pythonium_call(pythonium_get_attribute(self, "keys"))), "__next__");
-        while(true) {
-            var key = pythonium_call(__next__);
-            pythonium_call(pythonium_get_attribute(out, "append"), pythonium_call(list, [key, pythonium_call(pythonium_get_attribute(self, "get"), key)]));
-        }
-    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
-    return out;
-};
-var dict = pythonium_create_class("dict", [__object], {
-    __init__: __init__,
-    __repr__: __repr__,
-    get: get,
-    __setitem__: __setitem__,
-    keys: keys,
-    items: items,
-});
-/* class definition str */
-var __init__ = function(self, jsobject) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    pythonium_set_attribute(self, "jsobject", jsobject);
-};
-var __repr__ = function(self) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    /* BEGIN function */
-    return self;
-};
-var join = function(self, objects) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var L,index,out,obj;
-    /* BEGIN function */
-    L = pythonium_call(len, objects);
-    if (pythonium_is_true(pythonium_call(pythonium_get_attribute(L, "__neg__")))) {
-        return pythonium_call(str, "");
-    }
-    out = pythonium_call(pythonium_get_attribute(objects, '__getitem__'), pythonium_call(int, 0));
-    index = pythonium_call(int, 1);
-    while(pythonium_is_true((pythonium_get_attribute(index, "__lt__")(L)))) {
-        obj = pythonium_call(pythonium_get_attribute(objects, '__getitem__'), index);
-        out = (pythonium_call(pythonium_get_attribute((pythonium_call(pythonium_get_attribute(out, "__add__"), self)), "__add__"), obj));
-        index = pythonium_call(pythonium_get_attribute(index, "__add__"), pythonium_call(int, 1));
-    }
-    return out;
-};
-var __add__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b;
-    /* BEGIN function */
-    a = pythonium_get_attribute(self, "jsobject");
-    b = pythonium_get_attribute(other, "jsobject");
-    return pythonium_call(str, a + b);
-};
-var __lte__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b;
-    /* BEGIN function */
-    a = pythonium_get_attribute(self, "jsobject");
-    b = pythonium_get_attribute(other, "jsobject");
-    if (pythonium_is_true(a <= b)) {
-        return __TRUE;
-    }
-    return __FALSE;
-};
-var __gte__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b;
-    /* BEGIN function */
-    a = pythonium_get_attribute(self, "jsobject");
-    b = pythonium_get_attribute(other, "jsobject");
-    if (pythonium_is_true(a >= b)) {
-        return __TRUE;
-    }
-    return __FALSE;
-};
-var __gt__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b;
+__float___lt__.is_method = true;
+
+var __float___gt__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
     if (pythonium_is_true(a > b)) {
         return __TRUE;
+        return __NONE;
     }
     return __FALSE;
+    return __NONE;
 };
-var __eq__ = function(self, other) {
-    /* BEGIN unpacking arguments */
+__float___gt__.is_method = true;
+
+var __float___gte__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    if (pythonium_is_true(a >= b)) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
+};
+__float___gte__.is_method = true;
+
+var __float___lte__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    if (pythonium_is_true(a <= b)) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
+};
+__float___lte__.is_method = true;
+
+var __float___mul__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,c,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    c = a * b;
+    var call_arguments5 = [int, c];
+    return pythonium_call.apply(undefined, call_arguments5);
+    return __NONE;
+};
+__float___mul__.is_method = true;
+
+var __float___or__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,c,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    c = a || b;
+    var call_arguments6 = [int, c];
+    return pythonium_call.apply(undefined, call_arguments6);
+    return __NONE;
+};
+__float___or__.is_method = true;
+
+var __float___neq__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments7 = [pythonium_get_attribute(self, "__eq__"), other];
+    return pythonium_call(pythonium_get_attribute(pythonium_call.apply(undefined, call_arguments7), "__not__"));
+    return __NONE;
+};
+__float___neq__.is_method = true;
+
+var __float___div__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    var call_arguments8 = [int, a / b];
+    return pythonium_call.apply(undefined, call_arguments8);
+    return __NONE;
+};
+__float___div__.is_method = true;
+
+var float = pythonium_create_class("float", [object], {
+    __init__: __float___init__,
+    __hash__: __float___hash__,
+    __repr__: __float___repr__,
+    __neg__: __float___neg__,
+    __abs__: __float___abs__,
+    __sub__: __float___sub__,
+    __eq__: __float___eq__,
+    __add__: __float___add__,
+    __lt__: __float___lt__,
+    __gt__: __float___gt__,
+    __gte__: __float___gte__,
+    __lte__: __float___lte__,
+    __mul__: __float___mul__,
+    __or__: __float___or__,
+    __neq__: __float___neq__,
+    __div__: __float___div__,
+});
+/* class definition range */
+var __range___init__ = function(self, a, b) {
+    /* BEGIN arguments unpacking */
     var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
-    var a,b;
+    if (__args[__args.length - 2] === __ARGUMENTS_PADDING__) {
+        var __kwargs = __args[__args.length - 1];
+        var varkwargs_start = __args.length - 2;
+    } else {
+        var __kwargs = pythonium_create_empty_dict();
+        var varkwargs_start = undefined;
+    }
+    if (varkwargs_start !== undefined && 2 > varkwargs_start) {
+        b = __kwargs.__class__.get(__kwargs, b) || __NONE;
+    } else {
+        b = b || __kwargs.__class__.get(__kwargs, b) || __NONE;
+    }
+    /* END arguments unpacking */
+    /* BEGIN function */
+    if (pythonium_is_true(b)) {
+        pythonium_set_attribute(self, "index", a);
+        pythonium_set_attribute(self, "end", b);
+    }
+    else {
+        pythonium_set_attribute(self, "index", pythonium_call(int, 0));
+        pythonium_set_attribute(self, "end", a);
+    }
+};
+__range___init__.is_method = true;
+
+var __range___iter__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    return self;
+    return __NONE;
+};
+__range___iter__.is_method = true;
+
+var __range___next__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var index;
+    /* BEGIN function */
+    if (pythonium_is_true((pythonium_get_attribute(pythonium_get_attribute(self, "index"), "__lt__")(pythonium_get_attribute(self, "end"))))) {
+        index = pythonium_get_attribute(self, "index");
+        pythonium_get_attribute(self, "index") = pythonium_call(pythonium_get_attribute(pythonium_get_attribute(self, "index"), "__add__"), pythonium_call(int, 1));
+        return index;
+        return __NONE;
+    }
+    throw StopIteration;
+};
+__range___next__.is_method = true;
+
+var range = pythonium_create_class("range", [object], {
+    __init__: __range___init__,
+    __iter__: __range___iter__,
+    __next__: __range___next__,
+});
+var range = function(a, b) {
+    /* BEGIN arguments unpacking */
+    var __args = Array.prototype.slice.call(arguments);
+    if (__args[__args.length - 2] === __ARGUMENTS_PADDING__) {
+        var __kwargs = __args[__args.length - 1];
+        var varkwargs_start = __args.length - 2;
+    } else {
+        var __kwargs = pythonium_create_empty_dict();
+        var varkwargs_start = undefined;
+    }
+    if (varkwargs_start !== undefined && 1 > varkwargs_start) {
+        b = __kwargs.__class__.get(__kwargs, b) || __NONE;
+    } else {
+        b = b || __kwargs.__class__.get(__kwargs, b) || __NONE;
+    }
+    /* END arguments unpacking */
+    var out;
+    /* BEGIN function */
+    var call_arguments0 = [list];
+    out = pythonium_call.apply(undefined, call_arguments0);
+    while(pythonium_is_true((pythonium_get_attribute(index, "__lt__")(end)))) {
+        var call_arguments1 = [pythonium_get_attribute(out, "append"), index];
+        pythonium_call.apply(undefined, call_arguments1);
+        index = pythonium_call(pythonium_get_attribute(index, "__add__"), pythonium_call(int, 1));
+    }
+    return out;
+    return __NONE;
+};
+
+var repr = function(obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    if (pythonium_is_true((pythonium_get_attribute(obj, "__is__")(object)))) {
+        return pythonium_call(str, "<class 'object'>");
+        return __NONE;
+    }
+    var call_arguments2 = [pythonium_get_attribute(obj, "__repr__")];
+    return pythonium_call.apply(undefined, call_arguments2);
+    return __NONE;
+};
+
+var print = function() {
+    /* BEGIN arguments unpacking */
+    var __args = Array.prototype.slice.call(arguments);
+    __args = __args.splice(0);
+    var args = pythonium_call(tuple);
+    args.jsobject = __args;
+    /* END arguments unpacking */
+    var out,name,r;
+    /* BEGIN function */
+    out = [];
+    try {
+        var __next3__ = pythonium_get_attribute(iter(args), "__next__");
+        while(true) {
+            var arg = __next3__();
+            if (pythonium_is_true(arg.__class__ !== undefined)) {
+                var call_arguments4 = [repr, arg];
+                var call_arguments5 = [jstype, pythonium_call.apply(undefined, call_arguments4)];
+                r = pythonium_call.apply(undefined, call_arguments5);
+                out.push(r);
+            }
+            else {
+                if (pythonium_is_true(arg.__metaclass__ !== undefined)) {
+                    name = arg.__name__;
+                    out.push("<class '"+ name +"'>");
+                }
+                else {
+                    out.push(arg);
+                }
+            }
+        }
+    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
+    console.log.apply(console, out);
+};
+
+/* class definition map */
+var __map___init__ = function(self, func, iterable) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    pythonium_set_attribute(self, "func", func);
+    var call_arguments6 = [iter, iterable];
+    pythonium_set_attribute(self, "iterable", pythonium_call.apply(undefined, call_arguments6));
+};
+__map___init__.is_method = true;
+
+var __map___iter__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    return self;
+    return __NONE;
+};
+__map___iter__.is_method = true;
+
+var __map___next__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var n,r;
+    /* BEGIN function */
+    var call_arguments7 = [next, pythonium_get_attribute(self, "iterable")];
+    n = pythonium_call.apply(undefined, call_arguments7);
+    var call_arguments8 = [pythonium_get_attribute(self, "func"), n];
+    r = pythonium_call.apply(undefined, call_arguments8);
+    return r;
+    return __NONE;
+};
+__map___next__.is_method = true;
+
+var __map___repr__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    return pythonium_call(str, "<builtins.map xxx>");
+    return __NONE;
+};
+__map___repr__.is_method = true;
+
+var map = pythonium_create_class("map", [object], {
+    __init__: __map___init__,
+    __iter__: __map___iter__,
+    __next__: __map___next__,
+    __repr__: __map___repr__,
+});
+var jstype = function(obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments9 = [pythonium_get_attribute(obj, "__jstype__")];
+    return pythonium_call.apply(undefined, call_arguments9);
+    return __NONE;
+};
+
+var hash = function(obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments10 = [pythonium_get_attribute(obj, "__hash__")];
+    return pythonium_call.apply(undefined, call_arguments10);
+    return __NONE;
+};
+
+var iter = function(obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments11 = [pythonium_get_attribute(obj, "__iter__")];
+    return pythonium_call.apply(undefined, call_arguments11);
+    return __NONE;
+};
+
+var next = function(obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var r;
+    /* BEGIN function */
+    if (pythonium_is_true(obj.next !== undefined)) {
+        r = obj.next();
+        if (pythonium_is_true(r.done)) {
+            throw StopIteration;
+        }
+        else {
+            return r.value;
+            return __NONE;
+        }
+    }
+    var call_arguments12 = [pythonium_get_attribute(obj, "__next__")];
+    return pythonium_call.apply(undefined, call_arguments12);
+    return __NONE;
+};
+
+var len = function(obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments13 = [pythonium_get_attribute(obj, "__len__")];
+    return pythonium_call.apply(undefined, call_arguments13);
+    return __NONE;
+};
+
+var abs = function(obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments14 = [pythonium_get_attribute(obj, "__abs__")];
+    return pythonium_call.apply(undefined, call_arguments14);
+    return __NONE;
+};
+
+var all = function(iterable) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    try {
+        var __next15__ = pythonium_get_attribute(iter(iterable), "__next__");
+        while(true) {
+            var element = __next15__();
+            if (pythonium_is_true(pythonium_call(pythonium_get_attribute(element, "__not__")))) {
+                return __FALSE;
+                return __NONE;
+            }
+        }
+    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
+    return __TRUE;
+    return __NONE;
+};
+
+var any = function(iterable) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    try {
+        var __next16__ = pythonium_get_attribute(iter(iterable), "__next__");
+        while(true) {
+            var element = __next16__();
+            if (pythonium_is_true(element)) {
+                return __TRUE;
+                return __NONE;
+            }
+        }
+    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
+    return __FALSE;
+    return __NONE;
+};
+
+var callable = function(obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    if (pythonium_is_true({}.toString.call(obj) == '[object Function]')) {
+        return __TRUE;
+        return __NONE;
+    }
+    if (pythonium_is_true(obj.__metaclass__ !== undefined)) {
+        return __TRUE;
+        return __NONE;
+    }
+    if (pythonium_is_true(lookup(obj, '__call__'))) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
+};
+
+var classmethod = function(func) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    pythonium_set_attribute(func, "classmethod", __TRUE);
+    return func;
+    return __NONE;
+};
+
+var staticmethod = function(func) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    pythonium_set_attribute(func, "staticmethod", __TRUE);
+    return func;
+    return __NONE;
+};
+
+/* class definition enumerate */
+var __enumerate___init__ = function(self, iterator) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments17 = [iter, iterator];
+    pythonium_set_attribute(self, "iterator", pythonium_call.apply(undefined, call_arguments17));
+    pythonium_set_attribute(self, "index", pythonium_call(int, 0));
+};
+__enumerate___init__.is_method = true;
+
+var __enumerate___repr__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    return pythonium_call(str, "<enumerate object at 0x1234567890>");
+    return __NONE;
+};
+__enumerate___repr__.is_method = true;
+
+var __enumerate___iter__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    return self;
+    return __NONE;
+};
+__enumerate___iter__.is_method = true;
+
+var __enumerate___next__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var index;
+    /* BEGIN function */
+    index = pythonium_get_attribute(self, "index");
+    pythonium_set_attribute(self, "index", (pythonium_call(pythonium_get_attribute(pythonium_get_attribute(self, "index"), "__add__"), pythonium_call(int, 1))));
+    var call_arguments18 = [next, pythonium_get_attribute(self, "iterator")];
+    var __a_tuple19 = pythonium_call(tuple);
+    __a_tuple19.jsobject = [index, pythonium_call.apply(undefined, call_arguments18)];
+    return __a_tuple19;
+    return __NONE;
+};
+__enumerate___next__.is_method = true;
+
+var enumerate = pythonium_create_class("enumerate", [object], {
+    __init__: __enumerate___init__,
+    __repr__: __enumerate___repr__,
+    __iter__: __enumerate___iter__,
+    __next__: __enumerate___next__,
+});
+var getattr = function(obj, attr, d) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var r;
+    /* BEGIN function */
+    var call_arguments20 = [lookup, obj, attr];
+    r = pythonium_call.apply(undefined, call_arguments20);
+    if (pythonium_is_true(r === undefined)) {
+        if (pythonium_is_true(d === undefined)) {
+            throw AttributeError;
+        }
+        else {
+            return d;
+            return __NONE;
+        }
+    }
+    else {
+        return r;
+        return __NONE;
+    }
+};
+
+/* class definition ListIterator */
+var __ListIterator___init__ = function(self, obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    pythonium_set_attribute(self, "list", obj);
+    pythonium_set_attribute(self, "index", pythonium_call(int, 0));
+    var call_arguments0 = [len, obj];
+    pythonium_set_attribute(self, "length", pythonium_call.apply(undefined, call_arguments0));
+};
+__ListIterator___init__.is_method = true;
+
+var __ListIterator___iter__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    return self;
+    return __NONE;
+};
+__ListIterator___iter__.is_method = true;
+
+var __ListIterator___next__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var index;
+    /* BEGIN function */
+    if (pythonium_is_true((pythonium_get_attribute(pythonium_get_attribute(self, "index"), "__eq__")(pythonium_get_attribute(self, "length"))))) {
+        throw StopIteration;
+    }
+    index = pythonium_get_attribute(self, "index");
+    pythonium_set_attribute(self, "index", (pythonium_call(pythonium_get_attribute(pythonium_get_attribute(self, "index"), "__add__"), pythonium_call(int, 1))));
+    return pythonium_call(pythonium_get_attribute(pythonium_get_attribute(self, "list"), '__getitem__'), index);
+    return __NONE;
+};
+__ListIterator___next__.is_method = true;
+
+var ListIterator = pythonium_create_class("ListIterator", [object], {
+    __init__: __ListIterator___init__,
+    __iter__: __ListIterator___iter__,
+    __next__: __ListIterator___next__,
+});
+/* class definition list */
+var __list___init__ = function(self, iterable) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    pythonium_set_attribute(self, "jsobject", []);
+    if (pythonium_is_true(iterable !== undefined)) {
+        try {
+            var __next1__ = pythonium_get_attribute(iter(iterable), "__next__");
+            while(true) {
+                var item = __next1__();
+                var call_arguments2 = [pythonium_get_attribute(self, "append"), item];
+                pythonium_call.apply(undefined, call_arguments2);
+            }
+        } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
+    }
+};
+__list___init__.is_method = true;
+
+var __list___hash__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments3 = [TypeError, pythonium_call(str, "unhashable type: 'list'")];
+    throw pythonium_call.apply(undefined, call_arguments3);
+};
+__list___hash__.is_method = true;
+
+var __list___repr__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var iterable;
+    /* BEGIN function */
+    var call_arguments4 = [map, nest_str_with_quotes, self];
+    iterable = pythonium_call.apply(undefined, call_arguments4);
+    var call_arguments5 = [pythonium_get_attribute(pythonium_call(str, ", "), "join"), iterable];
+    return (pythonium_call(pythonium_get_attribute((pythonium_call(pythonium_get_attribute(pythonium_call(str, "["), "__add__"), pythonium_call.apply(undefined, call_arguments5))), "__add__"), pythonium_call(str, "]")));
+    return __NONE;
+};
+__list___repr__.is_method = true;
+
+var __list___jstype__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var out,item;
+    /* BEGIN function */
+    out = [];
+    try {
+        var __next6__ = pythonium_get_attribute(iter(self), "__next__");
+        while(true) {
+            var item = __next6__();
+            var call_arguments7 = [jstype, item];
+            item = pythonium_call.apply(undefined, call_arguments7);
+            out.push(item);
+        }
+    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
+    return out;
+    return __NONE;
+};
+__list___jstype__.is_method = true;
+
+var __list_append = function(self, item) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject;
+    /* BEGIN function */
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    jsobject.push(item);
+};
+__list_append.is_method = true;
+
+var __list_insert = function(self, index, item) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments8 = [pythonium_get_attribute(pythonium_get_attribute(self, "jsobject"), "splice"), index, pythonium_call(int, 0), item];
+    pythonium_call.apply(undefined, call_arguments8);
+};
+__list_insert.is_method = true;
+
+var __list___setitem__ = function(self, index, value) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject;
+    /* BEGIN function */
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    index = pythonium_get_attribute(index, "jsobject");
+    jsobject[index] = value;
+};
+__list___setitem__.is_method = true;
+
+var __list___getitem__ = function(self, s) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject,index;
+    /* BEGIN function */
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    var call_arguments9 = [jstype, s];
+    index = pythonium_call.apply(undefined, call_arguments9);
+    return jsobject[index];
+    return __NONE;
+};
+__list___getitem__.is_method = true;
+
+var __list___len__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject,length;
+    /* BEGIN function */
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    length = jsobject.length;
+    var call_arguments10 = [int, length];
+    return pythonium_call.apply(undefined, call_arguments10);
+    return __NONE;
+};
+__list___len__.is_method = true;
+
+var __list___iter__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments11 = [ListIterator, self];
+    return pythonium_call.apply(undefined, call_arguments11);
+    return __NONE;
+};
+__list___iter__.is_method = true;
+
+var __list___contains__ = function(self, obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    try {
+        var __next12__ = pythonium_get_attribute(iter(self), "__next__");
+        while(true) {
+            var item = __next12__();
+            if (pythonium_is_true((pythonium_get_attribute(obj, "__eq__")(item)))) {
+                return __TRUE;
+                return __NONE;
+            }
+        }
+    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
+    return __FALSE;
+    return __NONE;
+};
+__list___contains__.is_method = true;
+
+var __list_pop = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments13 = [pythonium_get_attribute(pythonium_get_attribute(self, "jsobject"), "pop")];
+    return pythonium_call.apply(undefined, call_arguments13);
+    return __NONE;
+};
+__list_pop.is_method = true;
+
+var __list_index = function(self, obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var index;
+    /* BEGIN function */
+    index = pythonium_call(int, 0);
+    try {
+        var __next14__ = pythonium_get_attribute(iter(self), "__next__");
+        while(true) {
+            var item = __next14__();
+            if (pythonium_is_true((pythonium_get_attribute(item, "__eq__")(obj)))) {
+                return index;
+                return __NONE;
+            }
+            index = pythonium_call(pythonium_get_attribute(index, "__add__"), pythonium_call(int, 1));
+        }
+    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
+    throw ValueError;
+};
+__list_index.is_method = true;
+
+var __list_remove = function(self, obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject,index;
+    /* BEGIN function */
+    var call_arguments15 = [pythonium_get_attribute(self, "index"), obj];
+    index = pythonium_call.apply(undefined, call_arguments15);
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    jsobject.splice(jstype(index), 1);
+};
+__list_remove.is_method = true;
+
+var __list___delitem__ = function(self, index) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments16 = [jstype, index];
+    var call_arguments17 = [pythonium_get_attribute(pythonium_get_attribute(self, "jsobject"), "splice"), pythonium_call.apply(undefined, call_arguments16), pythonium_call(int, 1)];
+    pythonium_call.apply(undefined, call_arguments17);
+};
+__list___delitem__.is_method = true;
+
+var list = pythonium_create_class("list", [object], {
+    __init__: __list___init__,
+    __hash__: __list___hash__,
+    __repr__: __list___repr__,
+    __jstype__: __list___jstype__,
+    append: __list_append,
+    insert: __list_insert,
+    __setitem__: __list___setitem__,
+    __getitem__: __list___getitem__,
+    __len__: __list___len__,
+    __iter__: __list___iter__,
+    __contains__: __list___contains__,
+    pop: __list_pop,
+    index: __list_index,
+    remove: __list_remove,
+    __delitem__: __list___delitem__,
+});
+/* class definition _None */
+var ___None___and__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    if (pythonium_is_true((pythonium_get_attribute(other, "__is__")(__TRUE)))) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
+};
+___None___and__.is_method = true;
+
+var ___None___or__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    if (pythonium_is_true((pythonium_get_attribute(other, "__is__")(__TRUE)))) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
+};
+___None___or__.is_method = true;
+
+var ___None___is__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    if (pythonium_is_true(other === self)) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
+};
+___None___is__.is_method = true;
+
+var ___None___neg__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    return __TRUE;
+    return __NONE;
+};
+___None___neg__.is_method = true;
+
+var ___None___not__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    return __TRUE;
+    return __NONE;
+};
+___None___not__.is_method = true;
+
+var _None = pythonium_create_class("_None", [object], {
+    __and__: ___None___and__,
+    __or__: ___None___or__,
+    __is__: ___None___is__,
+    __neg__: ___None___neg__,
+    __not__: ___None___not__,
+});
+var call_arguments0 = [_None];
+__NONE = pythonium_call.apply(undefined, call_arguments0);
+/* class definition slice */
+var __slice___init__ = function(self, start, step, end) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    pythonium_set_attribute(self, "start", start);
+    pythonium_set_attribute(self, "step", step);
+    pythonium_set_attribute(self, "end", end);
+};
+__slice___init__.is_method = true;
+
+var slice = pythonium_create_class("slice", [object], {
+    __init__: __slice___init__,
+});
+/* class definition str */
+var __str___init__ = function(self, jsobject) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    pythonium_set_attribute(self, "jsobject", jsobject);
+};
+__str___init__.is_method = true;
+
+var __str___repr__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    return self;
+    return __NONE;
+};
+__str___repr__.is_method = true;
+
+var __str___jstype__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    return pythonium_get_attribute(self, "jsobject");
+    return __NONE;
+};
+__str___jstype__.is_method = true;
+
+var __str___hash__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    return (pythonium_call(pythonium_get_attribute(pythonium_call(str, '"'), "__add__"), self));
+    return __NONE;
+};
+__str___hash__.is_method = true;
+
+var __str___contains__ = function(self, s) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject,i;
+    /* BEGIN function */
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    var call_arguments0 = [jstype, s];
+    s = pythonium_call.apply(undefined, call_arguments0);
+    i = jsobject.indexOf(s);
+    var call_arguments1 = [int, i];
+    if (pythonium_is_true((pythonium_get_attribute(pythonium_call.apply(undefined, call_arguments1), "__neq__")(pythonium_call(pythonium_get_attribute(pythonium_call(int, 1), "__neg__")))))) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
+};
+__str___contains__.is_method = true;
+
+var __str___iter__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments2 = [ListIterator, self];
+    return pythonium_call.apply(undefined, call_arguments2);
+    return __NONE;
+};
+__str___iter__.is_method = true;
+
+var __str_join = function(self, iterable) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var out;
+    /* BEGIN function */
+    var call_arguments3 = [iter, iterable];
+    iterable = pythonium_call.apply(undefined, call_arguments3);
+    try {
+        var call_arguments4 = [next, iterable];
+        out = pythonium_call.apply(undefined, call_arguments4);
+    } catch (__exception__) {
+        if (pythonium_is_exception(__exception__, StopIteration)) {
+            return pythonium_call(str, "");
+            return __NONE;
+        }
+    }
+    try {
+        var __next5__ = pythonium_get_attribute(iter(iterable), "__next__");
+        while(true) {
+            var item = __next5__();
+            out = (pythonium_call(pythonium_get_attribute((pythonium_call(pythonium_get_attribute(out, "__add__"), self)), "__add__"), item));
+        }
+    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
+    return out;
+    return __NONE;
+};
+__str_join.is_method = true;
+
+var __str___add__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    var call_arguments6 = [str, a + b];
+    return pythonium_call.apply(undefined, call_arguments6);
+    return __NONE;
+};
+__str___add__.is_method = true;
+
+var __str___len__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject;
+    /* BEGIN function */
+    jsobject = self.jsobject;
+    var call_arguments7 = [int, jsobject.length];
+    return pythonium_call.apply(undefined, call_arguments7);
+    return __NONE;
+};
+__str___len__.is_method = true;
+
+var __str___lte__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    if (pythonium_is_true(a <= b)) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
+};
+__str___lte__.is_method = true;
+
+var __str___gte__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    if (pythonium_is_true(a >= b)) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
+};
+__str___gte__.is_method = true;
+
+var __str___gt__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
+    /* BEGIN function */
+    a = pythonium_get_attribute(self, "jsobject");
+    b = pythonium_get_attribute(other, "jsobject");
+    if (pythonium_is_true(a > b)) {
+        return __TRUE;
+        return __NONE;
+    }
+    return __FALSE;
+    return __NONE;
+};
+__str___gt__.is_method = true;
+
+var __str___eq__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var b,a;
     /* BEGIN function */
     a = pythonium_get_attribute(self, "jsobject");
     b = pythonium_get_attribute(other, "jsobject");
     if (pythonium_is_true(a == b)) {
         return __TRUE;
+        return __NONE;
     }
     return __FALSE;
+    return __NONE;
 };
-var __getitem__ = function(self, index) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
+__str___eq__.is_method = true;
+
+var __str___getitem__ = function(self, index) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
     var jsobject,c;
     /* BEGIN function */
     jsobject = pythonium_get_attribute(self, "jsobject");
     index = pythonium_get_attribute(index, "jsobject");
     c = jsobject[index];
-    return pythonium_call(str, c);
+    var call_arguments8 = [str, c];
+    return pythonium_call.apply(undefined, call_arguments8);
+    return __NONE;
 };
-var __neq__ = function(self, other) {
-    /* BEGIN unpacking arguments */
-    var __args = Array.prototype.slice.call(arguments);
-    /* END unpacking arguments */
+__str___getitem__.is_method = true;
+
+var __str___neq__ = function(self, other) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
     /* BEGIN function */
-    return pythonium_call(pythonium_get_attribute(pythonium_call(pythonium_get_attribute(self, "__eq__"), other), "__neg__"));
+    var call_arguments9 = [pythonium_get_attribute(self, "__eq__"), other];
+    return pythonium_call(pythonium_get_attribute(pythonium_call.apply(undefined, call_arguments9), "__not__"));
+    return __NONE;
 };
-var str = pythonium_create_class("str", [__object], {
-    __init__: __init__,
-    __repr__: __repr__,
-    join: join,
-    __add__: __add__,
-    __lte__: __lte__,
-    __gte__: __gte__,
-    __gt__: __gt__,
-    __eq__: __eq__,
-    __getitem__: __getitem__,
-    __neq__: __neq__,
+__str___neq__.is_method = true;
+
+var str = pythonium_create_class("str", [object], {
+    __init__: __str___init__,
+    __repr__: __str___repr__,
+    __jstype__: __str___jstype__,
+    __hash__: __str___hash__,
+    __contains__: __str___contains__,
+    __iter__: __str___iter__,
+    join: __str_join,
+    __add__: __str___add__,
+    __len__: __str___len__,
+    __lte__: __str___lte__,
+    __gte__: __str___gte__,
+    __gt__: __str___gt__,
+    __eq__: __str___eq__,
+    __getitem__: __str___getitem__,
+    __neq__: __str___neq__,
+});
+/* class definition tuple */
+var __tuple___init__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    pythonium_set_attribute(self, "jsobject", []);
+};
+__tuple___init__.is_method = true;
+
+var __tuple___hash__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments0 = [TypeError, pythonium_call(str, "unhashable type: 'list'")];
+    throw pythonium_call.apply(undefined, call_arguments0);
+};
+__tuple___hash__.is_method = true;
+
+var __tuple___repr__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var iterable;
+    /* BEGIN function */
+    var call_arguments1 = [map, nest_str_with_quotes, self];
+    iterable = pythonium_call.apply(undefined, call_arguments1);
+    var call_arguments2 = [pythonium_get_attribute(pythonium_call(str, ", "), "join"), iterable];
+    return (pythonium_call(pythonium_get_attribute((pythonium_call(pythonium_get_attribute(pythonium_call(str, "("), "__add__"), pythonium_call.apply(undefined, call_arguments2))), "__add__"), pythonium_call(str, ")")));
+    return __NONE;
+};
+__tuple___repr__.is_method = true;
+
+var __tuple___jstype__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var out,item;
+    /* BEGIN function */
+    out = [];
+    try {
+        var __next3__ = pythonium_get_attribute(iter(self), "__next__");
+        while(true) {
+            var item = __next3__();
+            var call_arguments4 = [jstype, item];
+            item = pythonium_call.apply(undefined, call_arguments4);
+            out.push(item);
+        }
+    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
+    return out;
+    return __NONE;
+};
+__tuple___jstype__.is_method = true;
+
+var __tuple_insert = function(self, index, item) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments5 = [pythonium_get_attribute(pythonium_get_attribute(self, "jsobject"), "splice"), index, pythonium_call(int, 0), item];
+    pythonium_call.apply(undefined, call_arguments5);
+};
+__tuple_insert.is_method = true;
+
+var __tuple___setitem__ = function(self, index, value) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject;
+    /* BEGIN function */
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    index = pythonium_get_attribute(index, "jsobject");
+    jsobject[index] = value;
+};
+__tuple___setitem__.is_method = true;
+
+var __tuple___getitem__ = function(self, s) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject,index;
+    /* BEGIN function */
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    var call_arguments6 = [jstype, s];
+    index = pythonium_call.apply(undefined, call_arguments6);
+    return jsobject[index];
+    return __NONE;
+};
+__tuple___getitem__.is_method = true;
+
+var __tuple___len__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject,length;
+    /* BEGIN function */
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    length = jsobject.length;
+    var call_arguments7 = [int, length];
+    return pythonium_call.apply(undefined, call_arguments7);
+    return __NONE;
+};
+__tuple___len__.is_method = true;
+
+var __tuple___iter__ = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments8 = [ListIterator, self];
+    return pythonium_call.apply(undefined, call_arguments8);
+    return __NONE;
+};
+__tuple___iter__.is_method = true;
+
+var __tuple___contains__ = function(self, obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    try {
+        var __next9__ = pythonium_get_attribute(iter(self), "__next__");
+        while(true) {
+            var item = __next9__();
+            if (pythonium_is_true((pythonium_get_attribute(obj, "__eq__")(item)))) {
+                return __TRUE;
+                return __NONE;
+            }
+        }
+    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
+    return __FALSE;
+    return __NONE;
+};
+__tuple___contains__.is_method = true;
+
+var __tuple_pop = function(self) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments10 = [pythonium_get_attribute(pythonium_get_attribute(self, "jsobject"), "pop")];
+    return pythonium_call.apply(undefined, call_arguments10);
+    return __NONE;
+};
+__tuple_pop.is_method = true;
+
+var __tuple_index = function(self, obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var index;
+    /* BEGIN function */
+    index = pythonium_call(int, 0);
+    try {
+        var __next11__ = pythonium_get_attribute(iter(self), "__next__");
+        while(true) {
+            var item = __next11__();
+            if (pythonium_is_true((pythonium_get_attribute(item, "__eq__")(obj)))) {
+                return index;
+                return __NONE;
+            }
+            index = pythonium_call(pythonium_get_attribute(index, "__add__"), pythonium_call(int, 1));
+        }
+    } catch (x) { if (!pythonium_is_exception(x, StopIteration)) { throw x; }}
+    throw ValueError;
+};
+__tuple_index.is_method = true;
+
+var __tuple_remove = function(self, obj) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    var jsobject,index;
+    /* BEGIN function */
+    var call_arguments12 = [pythonium_get_attribute(self, "index"), obj];
+    index = pythonium_call.apply(undefined, call_arguments12);
+    jsobject = pythonium_get_attribute(self, "jsobject");
+    jsobject.splice(jstype(index), 1);
+};
+__tuple_remove.is_method = true;
+
+var __tuple___delitem__ = function(self, index) {
+    /* BEGIN arguments unpacking */
+    /* END arguments unpacking */
+    /* BEGIN function */
+    var call_arguments13 = [jstype, index];
+    var call_arguments14 = [pythonium_get_attribute(pythonium_get_attribute(self, "jsobject"), "splice"), pythonium_call.apply(undefined, call_arguments13), pythonium_call(int, 1)];
+    pythonium_call.apply(undefined, call_arguments14);
+};
+__tuple___delitem__.is_method = true;
+
+var tuple = pythonium_create_class("tuple", [object], {
+    __init__: __tuple___init__,
+    __hash__: __tuple___hash__,
+    __repr__: __tuple___repr__,
+    __jstype__: __tuple___jstype__,
+    insert: __tuple_insert,
+    __setitem__: __tuple___setitem__,
+    __getitem__: __tuple___getitem__,
+    __len__: __tuple___len__,
+    __iter__: __tuple___iter__,
+    __contains__: __tuple___contains__,
+    pop: __tuple_pop,
+    index: __tuple_index,
+    remove: __tuple_remove,
+    __delitem__: __tuple___delitem__,
 });
