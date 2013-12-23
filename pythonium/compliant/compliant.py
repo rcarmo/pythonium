@@ -475,13 +475,14 @@ class Compliant(NodeVisitor):
     def visit_ListComp(self, node):
         # 'elt', 'generators'
         comprehension = '__comp{}__'.format(self.uuid())
-        self.writer.write('var {} = [];'.format(comprehension))
+        self.writer.write('var {} = pythonium_call(list);'.format(comprehension))
         list(map(self.visit, node.generators))
         value = self.visit(node.elt)
-        self.writer.write('{}.push({});'.format(comprehension, value))
+        self.writer.write('pythonium_get_attribute({}, "append")({});'.format(comprehension, value))
         for _ in node.generators:
             self.writer.pull()
-            self.writer.write('}')
+            self.writer.write('}} catch (__exception__) {if (!pythonium_is_exception(__exception__, StopIteration)) { throw x; }}')
+            self.writer.pull()
         return comprehension
 
     # SetComp(expr elt, comprehension* generators)
@@ -498,12 +499,14 @@ class Compliant(NodeVisitor):
         # 'target', 'iter', 'ifs'
         iterator = '__iterator{}__'.format(self.uuid())
         index = '__index{}__'.format(self.uuid())
-        self.writer.write('var {} = {};'.format(iterator, self.visit(node.iter)))
-        self.writer.write('for (var {} = 0; {}<{}.length; {}++) {{'.format(index, index, iterator, index))
+        self.writer.write('var {} = iter({});'.format(iterator, self.visit(node.iter)))
+        self.writer.write('try {')
         self.writer.push()
-        self.writer.write('var {} = {}[{}];'.format(self.visit(node.target), iterator, index))
+        self.writer.write('while (true) {')
+        self.writer.push()
+        self.writer.write('var {} = next({});'.format(self.visit(node.target), iterator))
         if node.ifs:
-            self.writer.write('if(!{}) {{ continue; }}'.format(' && '.join(map(self.visit, node.ifs))))
+            self.writer.write('if(!pythonium_is_true({})) {{ continue; }}'.format(' && '.join(map(self.visit, node.ifs))))
 
     # While(expr test, stmt* body, stmt* orelse)
     def visit_While(self, node):

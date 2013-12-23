@@ -92,3 +92,9 @@ class int:
         a = self.jsobject
         b = other.jsobject
         return int(jscode('a / b'))
+
+    def __mod__(self, other):
+        a = self.jsobject
+        b = other.jsobject
+        return int(jscode('a % b'))
+
