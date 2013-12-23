@@ -668,7 +668,7 @@ class Compliant(NodeVisitor):
             if isinstance(target, Tuple):
                 targets = map(self.visit, target.elts)
                 if export:
-                    self.__all__.extends(targets)
+                    self.__all__.extend(targets)
                 self.writer.write('var getitem = pythonium_get_attribute(__assignement, "__getitem__");')
                 for index, target in enumerate(targets):
                     self.writer.write('{} = getitem(pythonium_call(int, {}));'.format(target, index))
@@ -688,7 +688,7 @@ class Compliant(NodeVisitor):
                     else:
                         name = target
                         if export:
-                            self.__all__.extends(name)
+                            self.__all__.extend(name)
                     self.writer.write('{} = __assignement;'.format(name))
                 if self._def_stack and isinstance(self._def_stack[-1], ClassDefNode):
                     return target, name
