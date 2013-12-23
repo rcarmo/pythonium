@@ -11,9 +11,11 @@ Requirements
 Installing nodejs
 -----------------
 
+**23/12/13 the following doesn't work, rely on your operating system documentation to install a recent version of nodejs**
+
 cli dance in a **Python 2** environment, the build system does not support Python 3::
 
-  git clone --depth 1 https://github.com/joyent/node.git
+  git clone https://github.com/joyent/node.git
   cd node
   git checkout v0.11.9
   python2 configure
