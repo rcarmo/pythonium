@@ -20,16 +20,16 @@ generated with -g or --generate option to run the code.
 """
 import os
 import sys
-from docopt import docopt
 
 from .veloce.veloce import Veloce
 from .compliant.compliant import Compliant
 from .utils import pythonium_generate_js
 
-__version__ = '0.6.0'
+__version__ = '0.6.1'
 
 
 def main(argv=None):
+    from docopt import docopt
     args = docopt(__doc__, argv, version='pythonium ' + __version__)
     if args['--generate']:
         # call ourself for each file in pythonium.lib:
