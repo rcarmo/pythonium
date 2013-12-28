@@ -614,7 +614,8 @@ class Veloce(NodeVisitor):
     def visit_Return(self, node):
         if node.value:
             self.writer.write('return {};'.format(self.visit(node.value)))
-        self.writer.write('return undefined;')
+        else:
+            self.writer.write('return undefined;')
 
     # Compare(expr left, cmpop* ops, expr* comparators)
     def visit_Compare(self, node):
