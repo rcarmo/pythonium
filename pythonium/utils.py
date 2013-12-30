@@ -33,7 +33,7 @@ class Writer:
         return self.output.getvalue()
 
 
-def pythonium_generate_js(filepath, translator, requirejs=False, root_path=None, output=None, deep=None):
+def pythonium_generate_js(filepath, translator_class, requirejs=False, root_path=None, output=None, deep=None):
     dirname = os.path.abspath(os.path.dirname(filepath))
     if not root_path:
         root_path = dirname
@@ -45,16 +45,16 @@ def pythonium_generate_js(filepath, translator, requirejs=False, root_path=None,
     with open(os.path.join(dirname, basename)) as f:
         input = parse(f.read())
     tree = parse(input)
-    pytrans = translator()
-    pytrans.visit(tree)
-    script = pytrans.writer.value()
+    translator = translator_class()
+    translator.visit(tree)
+    script = translator.writer.value()
     if requirejs:
         out = 'define(function(require) {\n'
         out += script
-        if isinstance(pytrans.__all__, str):
-            out += '\nreturn {};\n'.format(pytrans.__all__)
-        elif isinstance(pytrans.__all__, list):
-            all = ["{!r}: {}".format(x, x) for x in pytrans.__all__]
+        if isinstance(translator.__all__, str):
+            out += '\nreturn {};\n'.format(translator.__all__)
+        elif isinstance(translator.__all__, list):
+            all = ["{!r}: {}".format(x, x) for x in translator.__all__]
             public = '{{{}}}'.format(', '.join(all))
             out += '\nreturn {};\n'.format(public)
         else:
@@ -62,9 +62,9 @@ def pythonium_generate_js(filepath, translator, requirejs=False, root_path=None,
         out += '\n})\n'
         script = out
     if deep:
-        for dependency in python_core.dependencies:
+        for dependency in translator.dependencies:
             if dependency.startswith('.'):
-                generate_js(os.path.join(dirname, dependency + '.py'), requirejs, root_path, output, deep)
+                pythonium_generate_js(os.path.join(dirname, dependency + '.py'), requirejs, root_path, output, deep)
             else:
-                generate_js(os.path.join(root_path, dependency[1:] + '.py'), requirejs, root_path, output, deep)
+                pythonium_generate_js(os.path.join(root_path, dependency[1:] + '.py'), requirejs, root_path, output, deep)
     output.write(script)

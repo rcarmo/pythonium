@@ -25,7 +25,7 @@ from .veloce.veloce import Veloce
 from .compliant.compliant import Compliant
 from .utils import pythonium_generate_js
 
-__version__ = '0.6.2'
+__version__ = '0.6.3'
 
 
 def main(argv=None):
@@ -57,7 +57,7 @@ def main(argv=None):
         return
 
     translator = Veloce if args['--veloce'] else Compliant
-    options = {'translator': translator,
+    options = {'translator_class': translator,
                'requirejs': args['--requirejs'],
                'deep': args['--deep'],
                }
