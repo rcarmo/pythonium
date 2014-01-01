@@ -1,8 +1,5 @@
 def func(x, y, arg, kwargs):
-    print(x)
-    print(y)
-    print(arg[0])
-    print(arg[1])
+    return x + y + arg[0] + arg[1]
     print(kwargs["key"])
-x = lambda x, y, *args, **kwargs: func(x, y, args, kwargs)
-x(42, 1337, 11, 100, key="value")
+f = lambda x, y, *args, **kwargs: func(x, y, args, kwargs) + 1
+print f(42, 1337, 11, 100, key="value")
