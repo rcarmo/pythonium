@@ -1,14 +1,7 @@
 Pythonium
 #########
 
-.. image:: https://travis-ci.org/pythonium/pythonium.png  
-   :target: https://travis-ci.org/pythonium/pythonium
-
-**tldr**: Python 3 to Javascript translator written in Python that produces fast portable javascript code.
-
-Read the `tutorial <https://github.com/pythonium/pythonium/tree/master/examples/todo-list#todo-list>`_.
-
-(8 minutes)
+**tldr**: Python 3 to Javascript translator written in Python that produces fast portable javascript code, discontinued by its original developer for some reason. Since it's LGPL, I decided to keep a copy around for reference purposes.
 
 Quick examples (2 minutes)
 ==========================
@@ -89,24 +82,13 @@ Pythonium exists in two flavors, each with their own strengths and performance c
 
 - Pythonium **Compliant** All the above and 100% compliant with CPython 3
 
-How? (1 minute)
-===============
+References (mostly inactive)
+============================
 
-Ahah!
-
-Want to help? (30 seconds)
-==========================
-
-- `Star this repository <https://github.com/pythonium/pythonium>`_
-- `Follow the project on twitter <https://twitter.com/intent/user?screen_name=pythonium>`_
-- `Join the mailling list <https://groups.google.com/forum/#!forum/pythonium-users>`_
+- `Original project Twitter account <https://twitter.com/intent/user?screen_name=pythonium>`_
+- `Mailling list archives <https://groups.google.com/forum/#!forum/pythonium-users>`_
 
 Licensing
 =========
 
 LGPL 2.1 or later
-
-.. image:: https://d2weczhvl823v0.cloudfront.net/pythonium/pythonium/trend.png
-   :alt: Bitdeli badge
-   :target: https://bitdeli.com/free
-
