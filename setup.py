@@ -13,7 +13,7 @@ setup(
     url='https://github.com/pythonium/pythonium',
     zip_safe=False,
     packages=['pythonium', 'pythonium.compliant', 'pythonium.compliant.builtins', 'pythonium.veloce','pythonium.BowerLoad'],
-    install_requires=['docopt'],
+    install_requires=['docopt','setuptools-bower'],
     entry_points="""
     [console_scripts]
     pythonium=pythonium.main:main
