@@ -12,7 +12,7 @@ setup(
     author_email='amirouche.boubekki@gmail.com',
     url='https://github.com/pythonium/pythonium',
     zip_safe=False,
-    packages=['pythonium', 'pythonium.compliant', 'pythonium.compliant.builtins', 'pythonium.veloce'],
+    packages=['pythonium', 'pythonium.compliant', 'pythonium.compliant.builtins', 'pythonium.veloce','pythonium.BowerLoad'],
     install_requires=['docopt'],
     entry_points="""
     [console_scripts]
