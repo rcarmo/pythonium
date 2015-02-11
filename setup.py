@@ -12,8 +12,8 @@ setup(
     author_email='amirouche.boubekki@gmail.com',
     url='https://github.com/pythonium/pythonium',
     zip_safe=False,
-    packages=['pythonium', 'pythonium.compliant', 'pythonium.compliant.builtins', 'pythonium.veloce'],
-    install_requires=['docopt'],
+    packages=['pythonium', 'pythonium.compliant', 'pythonium.compliant.builtins', 'pythonium.veloce','pythonium.BowerLoad'],
+    install_requires=['docopt','setuptools-bower'],
     entry_points="""
     [console_scripts]
     pythonium=pythonium.main:main
