@@ -2,6 +2,7 @@ __author__ = 'Jason'
 
 from pythonium.BowerLoad import JsLibraryAnalyser
 import setuptools_bower
+import voodoo
 
 class BowerLoader:
     def __init__(self):
